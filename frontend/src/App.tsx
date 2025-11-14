@@ -1,26 +1,18 @@
-import React from 'react';
-import logo from './logo.svg';
+import { useEffect, useState } from "react";
+import { getMessage } from "./api";
 import './App.css';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    getMessage().then(setMsg).catch((err) => {
+      console.error("Failed to fetch message:", err);
+      setMsg("Failed to load message");
+    });
+  }, []);
+
+  return <h1>{msg}</h1>;
 }
 
 export default App;
