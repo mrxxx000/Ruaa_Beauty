@@ -15,7 +15,7 @@ const Lashes: React.FC = () => {
             <span className="brand-title">Ruaa Beauty</span>
           </div>
           <nav className="nav">
-            <Link to="/#Lashes">Lashes</Link>
+            <Link to="/">Home</Link>
             <Link to="/makeup">Makeup</Link>
             <Link to="/mehendi">Mehendi</Link>
             <Link to="/about">About</Link>

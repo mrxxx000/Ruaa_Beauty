@@ -16,10 +16,10 @@ const Contact: React.FC = () => {
           </div>
           <nav className="nav">
             <Link to="/">Home</Link>
-            <Link to="#Lashes">Lashes</Link>
-            <Link to="#Makeup">Makeup</Link>
+            <Link to="/lashes">Lashes</Link>
+            <Link to="/makeup">Makeup</Link>
             <Link to="/mehendi">Mehendi</Link>
-            <Link to="#about">About</Link>
+            <Link to="/about">About</Link>
           </nav>
         </div>
       </header>

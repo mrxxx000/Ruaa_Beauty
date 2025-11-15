@@ -33,9 +33,9 @@ const Mehendi: React.FC = () => {
 					</div>
 					<nav className="nav">
 						<Link to="/">Home</Link>
-                        <Link to="#Lashes">Lashes</Link>
-                        <Link to="#Makeup">Makeup</Link>
-                        <Link to="#about">About</Link>
+                        <Link to="/lashes">Lashes</Link>
+                        <Link to="/makeup">Makeup</Link>
+                        <Link to="/about">About</Link>
                         <Link to="/contact">Contact</Link>
 					</nav>
 				</div>
