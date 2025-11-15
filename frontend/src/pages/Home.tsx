@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import Hero from '../components/Hero';
@@ -75,6 +75,19 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
 };
 
 const Home: React.FC = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      // scroll to the element with matching id, if present
+      const el = document.getElementById(id);
+      if (el) {
+        // small timeout to allow layout/paint after navigation
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+      }
+    }
+  }, [location]);
   return (
     <div className="home-landing">
       <header className="site-header">
@@ -86,11 +99,11 @@ const Home: React.FC = () => {
             <span className="brand-title">Ruaa Beauty</span>
           </div>
           <nav className="nav">
-            <Link to="#Lashes">Lashes</Link>
-            <Link to="#Makeup">Makeup</Link>
+            <Link to="/lashes">Lashes</Link>
+            <Link to="/makeup">Makeup</Link>
             <Link to="/mehendi">Mehendi</Link>
-            <Link to="#about">About</Link>
-              <Link to="/contact">Contact</Link>
+            <Link to="/about">About</Link>
+            <Link to="/contact">Contact</Link>
           </nav>
         </div>
       </header>
@@ -99,7 +112,7 @@ const Home: React.FC = () => {
         <Hero />
 
         {/* Lashes video grid: 2 videos per row. Place your short video files in public/assets and update the `videos` array in VideoGrid. */}
-        <section className="videos container" id="videos">
+        <section className="videos container" id="Lashes">
           <h2 style={{ marginBottom: 18 }}>Lashes</h2>
           <VideoGrid />
         </section>
