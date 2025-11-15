@@ -148,7 +148,7 @@
   transform: translateY(2px); /* nudge down to align with logo */
 }
 .brand img { width:96px; height:auto; object-fit:contain; border-radius:6px }
-.nav a { margin-left: 18px; color: #6b6b6b; text-decoration:none }
+.nav a { margin-left: 12px; color: #6b6b6b; text-decoration:none }
 
 .hero {
   position: relative;
@@ -268,6 +268,8 @@
 .mehendi-gallery { padding: 28px 0 64px 0 }
 .mehendi-slide { display:flex; align-items:center; justify-content:center; min-height:320px }
 .pair-wrap { display:flex; gap:12px; max-width:980px; width:100%; }
+/* allow wrapping so tiles can flow to next line on narrow viewports */
+.pair-wrap { flex-wrap: wrap; }
 .pair-img { width:50%; object-fit:cover; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.12) }
 .single-wrap { max-width:760px; width:100%; }
 .single-img { width:100%; border-radius:12px; object-fit:cover; box-shadow:0 8px 30px rgba(0,0,0,0.12) }
@@ -281,9 +283,11 @@
 .thumb-btn { width:14px; height:14px; border-radius:999px; background:rgba(0,0,0,0.15); border:none; cursor:pointer }
 .thumb-btn.active { background:linear-gradient(90deg,#ff9ccf,#ff6fa3) }
 
-@media (max-width:860px) {
-  .pair-wrap { flex-direction:column }
-  .pair-img { width:100% }
+@media (max-width:920px) {
+  /* keep two images per row on narrow/mobile view: two columns with wrapping */
+  .pair-wrap { flex-direction: row; }
+  /* account for the gap (12px) so two images sit side-by-side */
+  .pair-img { width: calc(50% - 6px); }
   .mehendi-title { font-size:1.6rem }
   .mehendi-hero { min-height: 420px }
 }
@@ -345,7 +349,13 @@
   .mehendi-title { font-size: 1.4rem }
   .mehendi-desc { font-size: 0.95rem }
 
-  .more-designs-grid .single-wrap { flex: 1 1 100%; max-width: 100% }
+  /* show two items per row on typical mobile viewports; account for gap */
+  .more-designs-grid .single-wrap {
+    flex: 1 1 calc(50% - 12px);
+    max-width: calc(50% - 12px);
+    box-sizing: border-box;
+    margin-bottom: 12px;
+  }
 }
 
 /* Prevent mobile browsers from auto-zooming due to large text or horizontal overflow */

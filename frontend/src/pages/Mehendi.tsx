@@ -58,7 +58,8 @@ const Mehendi: React.FC = () => {
 
 				<section className="container mehendi-gallery">
 					<div className="mehendi-slide" aria-live="polite">
-						<div className="pair" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+						{/* use the pair-wrap class so the stylesheet's responsive rules apply (stacks on small screens) */}
+						<div className="pair-wrap">
 							<img src={active === 'a' ? slideA : slideB} alt="Mehendi design left" className="pair-img" />
 							<img src={active === 'a' ? slideB : slideA} alt="Mehendi design right" className="pair-img" />
 						</div>
