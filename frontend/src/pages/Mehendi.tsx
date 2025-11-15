@@ -7,6 +7,8 @@ const slideA = process.env.PUBLIC_URL + '/assets/SnapInsta.to_448241189_18153017
 const slideB = process.env.PUBLIC_URL + '/assets/SnapInsta.to_448396960_432194449635910_11943437998895029_n.jpg';
 const heroImg = process.env.PUBLIC_URL + '/assets/SnapInsta.to_432691013_331302829451121_5481086954294582843_n.jpg';
 const singleImg = process.env.PUBLIC_URL + '/assets/503560008_18060668414464336_4481666084541690454_n.jpeg';
+const more1 = process.env.PUBLIC_URL + '/assets/f9ee56db-cfbd-4a39-99db-cfc4a268312f.jpg';
+const more2 = process.env.PUBLIC_URL + '/assets/13c307f1-e5bc-4f0c-ab4b-6a7cb281e89c.jpg';
 
 const Mehendi: React.FC = () => {
 	const [active, setActive] = useState<'a' | 'b'>('a');
@@ -28,7 +30,10 @@ const Mehendi: React.FC = () => {
 					</div>
 					<nav className="nav">
 						<Link to="/">Home</Link>
-						<Link to="/mehendi">Mehendi</Link>
+                        <Link to="#Lashes">Lashes</Link>
+                        <Link to="#Makeup">Makeup</Link>
+                        <Link to="#about">About</Link>
+                        <Link to="/contact">Contact</Link>
 					</nav>
 				</div>
 			</header>
@@ -66,8 +71,16 @@ const Mehendi: React.FC = () => {
 
 					<div style={{ marginTop: 28 }}>
 						<h3>More designs</h3>
-						<div style={{ maxWidth: 420 }}>
-							<img src={singleImg} alt="Mehendi single" className="single-img" style={{ width: '100%', borderRadius: 12 }} />
+						<div className="more-designs-grid" style={{ marginTop: 12 }}>
+							<div className="single-wrap">
+								<img src={singleImg} alt="Mehendi single" className="single-img" />
+							</div>
+							<div className="single-wrap">
+								<img src={more1} alt="Mehendi extra 1" className="single-img" />
+							</div>
+							<div className="single-wrap">
+								<img src={more2} alt="Mehendi extra 2" className="single-img" />
+							</div>
 						</div>
 					</div>
 				</section>

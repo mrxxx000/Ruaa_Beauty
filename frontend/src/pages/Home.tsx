@@ -4,14 +4,15 @@ import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import Hero from '../components/Hero';
 
-const VideoGrid: React.FC = () => {
-  // Update these file names with your actual short video files placed under public/assets
-  const videos = [
+const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
+  // If caller provides videos prop, use it; otherwise use the default lashes shorts
+  const defaultVideos = [
     process.env.PUBLIC_URL + '/assets/short1.mp4',
     process.env.PUBLIC_URL + '/assets/short2.mp4',
     process.env.PUBLIC_URL + '/assets/short3.mp4',
     process.env.PUBLIC_URL + '/assets/short4.mp4'
   ];
+  const list = videos && videos.length ? videos : defaultVideos;
 
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const [active, setActive] = useState<number | null>(null);
@@ -54,7 +55,7 @@ const VideoGrid: React.FC = () => {
 
   return (
     <div className="video-grid">
-      {videos.map((src, i) => (
+      {list.map((src, i) => (
         <div className="video-card" key={i} onClick={() => handleClick(i)}>
           <video
             ref={(el) => { videoRefs.current[i] = el; }}
@@ -63,7 +64,6 @@ const VideoGrid: React.FC = () => {
             loop
             muted
             className="short-video"
-            // clicking the card handles unmute/mute; prevent the built-in controls from showing
           />
           <div className={`video-overlay ${active === i ? 'active' : ''}`}>
             {active === i ? '🔊' : '🔇'}
@@ -89,9 +89,8 @@ const Home: React.FC = () => {
             <Link to="#Lashes">Lashes</Link>
             <Link to="#Makeup">Makeup</Link>
             <Link to="/mehendi">Mehendi</Link>
-            <Link to="#products">Products</Link>
             <Link to="#about">About</Link>
-            <Link to="#contact">Contact</Link>
+              <Link to="/contact">Contact</Link>
           </nav>
         </div>
       </header>
@@ -99,20 +98,32 @@ const Home: React.FC = () => {
       <main>
         <Hero />
 
-        {/* Shorts video grid: 2 videos per row. Place your short video files in public/assets and update the `videos` array in VideoGrid. */}
+        {/* Lashes video grid: 2 videos per row. Place your short video files in public/assets and update the `videos` array in VideoGrid. */}
         <section className="videos container" id="videos">
-          <h2 style={{ marginBottom: 18 }}>Shorts</h2>
+          <h2 style={{ marginBottom: 18 }}>Lashes</h2>
           <VideoGrid />
+        </section>
+
+        {/* Mehendi shorts - same layout as Lashes, using specific mehendi videos */}
+        <section className="videos container" id="mehendi-shorts">
+          <h2 style={{ marginBottom: 18 }}>Mehendi</h2>
+          <VideoGrid
+            videos={[
+              process.env.PUBLIC_URL + '/assets/mehendi1.mp4',
+              process.env.PUBLIC_URL + '/assets/mehendi2.mp4'
+            ]}
+          />
         </section>
 
         <section className="cta">
           <div className="container text-center">
             <h2>Ready to Glow?</h2>
             <p>Browse our collection of premium beauty products and find your perfect match.</p>
-            <a className="primary-btn" href="#products">Explore Products</a>
           </div>
         </section>
       </main>
+
+      
 
       <footer className="site-footer">
         <div className="container text-center">

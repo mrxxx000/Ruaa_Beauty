@@ -223,6 +223,24 @@
   .video-card { min-height: 220px }
 }
 
+/* Make hero and mehendi-hero full-bleed on small screens so background reaches the edges */
+@media (max-width: 640px) {
+  .hero, .mehendi-hero {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    background-size: cover;
+    background-position: center;
+    border-radius: 0; /* ensure overlay corners don't show */
+  }
+
+  /* reduce inner container side padding inside hero so content aligns nicely */
+  .hero > .container, .mehendi-hero > .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
 
 /* Shorts / video grid styles */
 .shorts h2 { margin: 0 0 12px 0 }
@@ -254,6 +272,11 @@
 .single-wrap { max-width:760px; width:100%; }
 .single-img { width:100%; border-radius:12px; object-fit:cover; box-shadow:0 8px 30px rgba(0,0,0,0.12) }
 
+/* More designs grid for Mehendi page */
+.more-designs-grid { display:flex; gap:12px; flex-wrap:wrap; justify-content:center }
+.more-designs-grid .single-wrap { flex: 1 1 320px; max-width: 360px }
+
+
 .mehendi-thumbs { display:flex; gap:8px; justify-content:center; margin-top:12px }
 .thumb-btn { width:14px; height:14px; border-radius:999px; background:rgba(0,0,0,0.15); border:none; cursor:pointer }
 .thumb-btn.active { background:linear-gradient(90deg,#ff9ccf,#ff6fa3) }
@@ -263,5 +286,44 @@
   .pair-img { width:100% }
   .mehendi-title { font-size:1.6rem }
   .mehendi-hero { min-height: 420px }
+}
+
+/* Videos section title styling (Lashes / Mehendi) */
+.videos h2, .videos h3 {
+  font-size: 2rem;
+  text-align: center;
+  font-weight: 800;
+  margin-bottom: 18px;
+  color: #ff6fa3;
+  letter-spacing: 0.2px;
+}
+
+@media (min-width: 1100px) {
+  .videos h2, .videos h3 { font-size: 2.4rem; }
+}
+
+/* Mobile tweaks to improve spacing and readability */
+@media (max-width: 640px) {
+  .header-inner { flex-direction: column; gap: 10px; align-items: center }
+  .nav { width: 100%; display:flex; justify-content: center; flex-wrap:wrap; gap:10px }
+  .nav a { margin-left: 0; padding: 6px 10px; font-size: 0.95rem }
+  .brand img { width:72px }
+
+  .hero { min-height: 420px }
+  .hero-inner { padding: 28px 0 }
+  .hero-title { font-size: 1.9rem }
+  .hero-sub { font-size: 1rem }
+  .hero-text p { font-size: 0.95rem; line-height: 1.45 }
+  .primary-btn { padding: 10px 16px; font-size: 0.95rem }
+
+  .video-card { min-height: 160px }
+  .video-overlay { right: 6px; top: 6px; padding: 5px 7px; font-size: 0.85rem }
+
+  .mehendi-hero { min-height: 360px }
+  .mehendi-hero-inner { padding: 32px 0 }
+  .mehendi-title { font-size: 1.4rem }
+  .mehendi-desc { font-size: 0.95rem }
+
+  .more-designs-grid .single-wrap { flex: 1 1 100%; max-width: 100% }
 }
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import '../styles/App.css';
 
 // Serve the image from the public folder so CRA can include it in builds.
@@ -42,13 +43,9 @@ const Hero: React.FC = () => {
           </p>
 
           <div style={{ marginTop: 18 }}>
-            <a className="primary-btn" href="#book">
+            <Link className="primary-btn" to="/contact">
               Book Appointment
-            </a>
-
-            <a className="secondary-btn" href="#gallery" style={{ marginLeft: 12 }}>
-              View Gallery
-            </a>
+            </Link>
           </div>
         </div>
       </div>
