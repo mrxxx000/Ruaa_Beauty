@@ -9,6 +9,9 @@ const heroImg = process.env.PUBLIC_URL + '/assets/SnapInsta.to_432691013_3313028
 const singleImg = process.env.PUBLIC_URL + '/assets/503560008_18060668414464336_4481666084541690454_n.jpeg';
 const more1 = process.env.PUBLIC_URL + '/assets/f9ee56db-cfbd-4a39-99db-cfc4a268312f.jpg';
 const more2 = process.env.PUBLIC_URL + '/assets/13c307f1-e5bc-4f0c-ab4b-6a7cb281e89c.jpg';
+const more3 = process.env.PUBLIC_URL + '/assets/SnapInsta.to_173380434_1154157505029811_1175835221239818215_n.jpg';
+const more4 = process.env.PUBLIC_URL + '/assets/SnapInsta.to_130305880_129954255557964_2672503637875550747_n.jpg';
+const more5 = process.env.PUBLIC_URL + '/assets/SnapInsta.to_125829760_423863109003604_954682821372848647_n.jpg';
 
 const Mehendi: React.FC = () => {
 	const [active, setActive] = useState<'a' | 'b'>('a');
@@ -81,6 +84,15 @@ const Mehendi: React.FC = () => {
 							</div>
 							<div className="single-wrap">
 								<img src={more2} alt="Mehendi extra 2" className="single-img" />
+							</div>
+							<div className="single-wrap">
+								<img src={more3} alt="Mehendi extra 3" className="single-img" />
+							</div>
+							<div className="single-wrap">
+								<img src={more4} alt="Mehendi extra 4" className="single-img" />
+							</div>
+							<div className="single-wrap">
+								<img src={more5} alt="Mehendi extra 5" className="single-img" />
 							</div>
 						</div>
 					</div>

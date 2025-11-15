@@ -310,20 +310,50 @@
   .videos h2, .videos h3 { font-size: 2.4rem; }
 }
 
-/* Make the videos section full-bleed so video tiles touch the viewport edges */
+/* Videos section: default centered on larger screens; full-bleed only on small viewports */
+
 .videos {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
+  /* default block layout so headings stack above the grid; grid itself will be centered */
+  width: 100%;
+  margin-left: 16%;
+  margin-right: 0;
   padding-left: 0;
   padding-right: 0;
+  display: block;
 }
 
 .videos .video-grid {
   width: 100%;
-  margin: 0;
+  margin: 0 auto; /* center the grid inside the section */
   gap: 12px; /* keep small gap between tiles */
   grid-template-columns: repeat(2, 1fr);
+  max-width: 1100px; /* prevent video tiles from stretching too wide on very large screens */
+}
+
+/* Make the videos section full-bleed on narrow screens so tiles can touch the viewport edges */
+@media (max-width: 640px) {
+  .videos {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .videos .video-grid {
+    width: 100%;
+    margin: 0;
+    /* show two videos per row on typical mobile devices */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Very small devices: stack videos to a single column to keep them legible */
+@media (max-width: 360px) {
+  .videos .video-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Remove extra rounded corners at the very edges while keeping card radius between tiles */
