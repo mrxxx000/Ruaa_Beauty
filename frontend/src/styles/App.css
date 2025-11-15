@@ -302,6 +302,27 @@
   .videos h2, .videos h3 { font-size: 2.4rem; }
 }
 
+/* Make the videos section full-bleed so video tiles touch the viewport edges */
+.videos {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.videos .video-grid {
+  width: 100%;
+  margin: 0;
+  gap: 12px; /* keep small gap between tiles */
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Remove extra rounded corners at the very edges while keeping card radius between tiles */
+.videos .video-card:first-child { border-top-left-radius: 0; border-bottom-left-radius: 0 }
+.videos .video-card:last-child { border-top-right-radius: 0; border-bottom-right-radius: 0 }
+
+
 /* Mobile tweaks to improve spacing and readability */
 @media (max-width: 640px) {
   .header-inner { flex-direction: column; gap: 10px; align-items: center }
@@ -325,5 +346,18 @@
   .mehendi-desc { font-size: 0.95rem }
 
   .more-designs-grid .single-wrap { flex: 1 1 100%; max-width: 100% }
+}
+
+/* Prevent mobile browsers from auto-zooming due to large text or horizontal overflow */
+@media (max-width: 640px) {
+  html, body { width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+  /* slightly smaller base font to avoid auto-zoom on some Android browsers */
+  html { font-size: 15px; }
+
+  /* tighten container padding globally on small screens */
+  .container { padding-left: 12px; padding-right: 12px }
+
+  /* ensure headings don't force zoom */
+  .videos h2, .videos h3 { font-size: 1.6rem }
 }
 
