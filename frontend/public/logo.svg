@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200" role="img" aria-label="Ruaa wordmark">
+  <defs>
+    <linearGradient id="lg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#ff9ccf" />
+      <stop offset="100%" stop-color="#ff6fa3" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="transparent" />
+  <!-- Wordmark: 'Ruaa' -->
+  <text x="50%" y="58%" text-anchor="middle" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="96" fill="url(#lg)">
+    Ruaa
+  </text>
+  <!-- small accent dot under the second 'a' for a playful mark -->
+  <circle cx="360" cy="140" r="6" fill="#ff6fa3" opacity="0.9" />
+</svg>

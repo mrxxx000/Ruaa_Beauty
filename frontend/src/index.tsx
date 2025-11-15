@@ -7,6 +7,21 @@ import reportWebVitals from './reportWebVitals';
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+
+// set page title and favicon to match site branding
+document.title = 'Ruaa Beauty';
+// prefer public/logo.svg (wordmark) for favicon; fallback to favicon.ico handled by index.html
+const setFavicon = (url: string) => {
+  let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'icon';
+    document.getElementsByTagName('head')[0].appendChild(link);
+  }
+  link.href = url;
+};
+setFavicon('/logo.svg');
+
 root.render(
   <React.StrictMode>
     <App />
