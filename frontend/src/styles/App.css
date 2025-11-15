@@ -206,9 +206,42 @@
 }
 .secondary-btn:hover { background: rgba(255,255,255,0.06); }
 
+/* Video grid styles */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+.video-card { position: relative; overflow: hidden; border-radius: 12px; background: #000; min-height: 320px }
+.short-video { width: 100%; height: 100%; object-fit: cover; display: block }
+.video-overlay { position: absolute; right: 10px; top: 10px; background: rgba(0,0,0,0.35); color: #fff; padding: 6px 10px; border-radius: 999px; font-weight:700 }
+.video-overlay.active { background: rgba(255,255,255,0.9); color: #111 }
+
+@media (max-width: 640px) {
+  .video-grid { grid-template-columns: 1fr }
+  .video-card { min-height: 220px }
+}
+
+
+/* Shorts / video grid styles */
+.shorts h2 { margin: 0 0 12px 0 }
+.shorts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.short-item { width: 100%; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+.short-video { width: 100%; height: auto; display: block; border-radius: 12px; }
+
+@media (max-width: 720px) {
+  .shorts-grid { grid-template-columns: 1fr; }
+}
+
 /* Mehendi section styles */
 .mehendi-section { margin-top: 28px; }
-.mehendi-hero { position: relative; min-height: 420px; background-size: cover; background-position: center; display:flex; align-items:center; }
+.mehendi-hero { position: relative; min-height: 720px; background-size: cover; background-position: center; display:flex; align-items:center; }
 .mehendi-hero-overlay { position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.25)); }
 .mehendi-hero-inner { position:relative; z-index:2; padding:64px 0; }
 .mehendi-title { color: #fff; font-size:2.6rem; margin:0 0 12px 0 }
@@ -229,5 +262,6 @@
   .pair-wrap { flex-direction:column }
   .pair-img { width:100% }
   .mehendi-title { font-size:1.6rem }
+  .mehendi-hero { min-height: 420px }
 }
 

@@ -1,8 +1,78 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import Hero from '../components/Hero';
-import MehendiSection from '../components/MehendiSection';
+
+const VideoGrid: React.FC = () => {
+  // Update these file names with your actual short video files placed under public/assets
+  const videos = [
+    process.env.PUBLIC_URL + '/assets/short1.mp4',
+    process.env.PUBLIC_URL + '/assets/short2.mp4',
+    process.env.PUBLIC_URL + '/assets/short3.mp4',
+    process.env.PUBLIC_URL + '/assets/short4.mp4'
+  ];
+
+  const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
+  const [active, setActive] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Try to autoplay all muted videos on mount
+    videoRefs.current.forEach((v) => {
+      if (!v) return;
+      v.muted = true;
+      v.play().catch(() => {
+        // ignore play errors (browsers may block autoplay in some cases)
+      });
+    });
+  }, []);
+
+  const handleClick = (index: number) => {
+    const clicked = videoRefs.current[index];
+    if (!clicked) return;
+
+    // If clicked was muted, unmute it and mute/pause others
+    if (clicked.muted) {
+      videoRefs.current.forEach((v, i) => {
+        if (!v) return;
+        if (i === index) {
+          v.muted = false;
+          v.play().catch(() => {});
+        } else {
+          v.muted = true;
+          v.pause();
+        }
+      });
+      setActive(index);
+    } else {
+      // If it's already unmuted, mute it back
+      clicked.muted = true;
+      clicked.play().catch(() => {});
+      setActive(null);
+    }
+  };
+
+  return (
+    <div className="video-grid">
+      {videos.map((src, i) => (
+        <div className="video-card" key={i} onClick={() => handleClick(i)}>
+          <video
+            ref={(el) => { videoRefs.current[i] = el; }}
+            src={src}
+            playsInline
+            loop
+            muted
+            className="short-video"
+            // clicking the card handles unmute/mute; prevent the built-in controls from showing
+          />
+          <div className={`video-overlay ${active === i ? 'active' : ''}`}>
+            {active === i ? '🔊' : '🔇'}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const Home: React.FC = () => {
   return (
@@ -16,38 +86,23 @@ const Home: React.FC = () => {
             <span className="brand-title">Ruaa Beauty</span>
           </div>
           <nav className="nav">
-            <a href="#Lashes">Lashes</a>
-            <a href="#Makeup">Makeup</a>
-            <a href="#Mehendi">Mehendi</a>
-            <a href="#products">Products</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
+            <Link to="#Lashes">Lashes</Link>
+            <Link to="#Makeup">Makeup</Link>
+            <Link to="/mehendi">Mehendi</Link>
+            <Link to="#products">Products</Link>
+            <Link to="#about">About</Link>
+            <Link to="#contact">Contact</Link>
           </nav>
         </div>
       </header>
 
       <main>
-  <Hero />
-  <MehendiSection />
+        <Hero />
 
-        <section className="features container" id="about">
-          <div className="feature">
-            <div className="feature-icon">✨</div>
-            <h3>Premium Quality</h3>
-            <p>Only the finest beauty products, carefully selected for exceptional quality and performance.</p>
-          </div>
-
-          <div className="feature">
-            <div className="feature-icon">💗</div>
-            <h3>Cruelty-Free</h3>
-            <p>All our products are ethically sourced and never tested on animals.</p>
-          </div>
-
-          <div className="feature">
-            <div className="feature-icon">🛡️</div>
-            <h3>Satisfaction Guaranteed</h3>
-            <p>Love it or return it. We stand behind every product we sell.</p>
-          </div>
+        {/* Shorts video grid: 2 videos per row. Place your short video files in public/assets and update the `videos` array in VideoGrid. */}
+        <section className="videos container" id="videos">
+          <h2 style={{ marginBottom: 18 }}>Shorts</h2>
+          <VideoGrid />
         </section>
 
         <section className="cta">
