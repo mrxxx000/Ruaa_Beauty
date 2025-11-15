@@ -18,22 +18,50 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
   const [active, setActive] = useState<number | null>(null);
 
   useEffect(() => {
-    // Try to autoplay all muted videos on mount
+    // Lazy-load videos when they enter the viewport to avoid loading all at once
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const vid = entry.target as HTMLVideoElement;
+          if (!vid) return;
+
+          if (entry.isIntersecting) {
+            // If not loaded yet, set the src from data-src and load
+            if (!vid.dataset.loaded) {
+              const src = vid.dataset.src;
+              if (src) {
+                vid.src = src;
+                // allow browser to fetch
+                try { vid.load(); } catch (e) {}
+                vid.dataset.loaded = '1';
+              }
+            }
+            // try to play the muted video for preview
+            vid.muted = true;
+            vid.play().catch(() => {});
+          } else {
+            // pause videos that leave viewport to save CPU/bandwidth
+            try { vid.pause(); } catch (e) {}
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    // observe current refs
     videoRefs.current.forEach((v) => {
-      if (!v) return;
-      v.muted = true;
-      v.play().catch(() => {
-        // ignore play errors (browsers may block autoplay in some cases)
-      });
+      if (v) observer.observe(v);
     });
+
+    return () => observer.disconnect();
   }, []);
 
   const handleClick = (index: number) => {
     const clicked = videoRefs.current[index];
     if (!clicked) return;
 
-    // If clicked was muted, unmute it and mute/pause others
     if (clicked.muted) {
+      // unmute clicked, mute/pause others
       videoRefs.current.forEach((v, i) => {
         if (!v) return;
         if (i === index) {
@@ -46,7 +74,6 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
       });
       setActive(index);
     } else {
-      // If it's already unmuted, mute it back
       clicked.muted = true;
       clicked.play().catch(() => {});
       setActive(null);
@@ -59,7 +86,9 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
         <div className="video-card" key={i} onClick={() => handleClick(i)}>
           <video
             ref={(el) => { videoRefs.current[i] = el; }}
-            src={src}
+            // do not set src initially; use data-src for lazy loading
+            data-src={src}
+            preload="none"
             playsInline
             loop
             muted
