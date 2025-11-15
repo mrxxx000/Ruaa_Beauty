@@ -25,19 +25,19 @@ const Contact: React.FC = () => {
       </header>
 
       <main>
-        <section className="container" style={{ padding: '48px 0' }}>
-          <div style={{ maxWidth: 820, margin: '0 auto', textAlign: 'center' }}>
-            <h1 style={{ fontSize: '2.4rem', marginBottom: 12 }}>Contact Us</h1>
-            <p style={{ fontSize: '1.05rem', color: '#333' }}>
+        <section className="container contact-main">
+          <div className="contact-inner">
+            <h1 className="contact-title">Contact Us</h1>
+            <p className="contact-lead">
               Whatever you need — we’re here to help!
             </p>
 
-            <div style={{ marginTop: 20, fontSize: '1.05rem', textAlign: 'left' }}>
+            <div className="contact-block">
               <h3>General beauty bookings (lashes, makeup, threading)</h3>
               <p>
                 If you want to order lashes or book lash lifts, brow lifts, professional makeup, or facial threading, contact us on:
               </p>
-              <p>📱 WhatsApp: <a href="https://wa.me/46706479469" target="_blank" rel="noreferrer">+46 70 647 94 69</a> or DM us on Instagram <a href="https://www.instagram.com/ruaa5r/" target="_blank" rel="noreferrer">@ruaa5r</a></p>
+              <p>📱 WhatsApp: <a href="https://wa.me/46704679469" target="_blank" rel="noreferrer">+46 70 467 94 69</a> or DM us on Instagram <a href="https://www.instagram.com/ruaa5r/" target="_blank" rel="noreferrer">@ruaa5r</a></p>
 
               <h3 style={{ marginTop: 18 }}>Mehendi bookings</h3>
               <p>

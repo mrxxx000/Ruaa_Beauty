@@ -267,9 +267,7 @@
 
 .mehendi-gallery { padding: 28px 0 64px 0 }
 .mehendi-slide { display:flex; align-items:center; justify-content:center; min-height:320px }
-.pair-wrap { display:flex; gap:12px; max-width:980px; width:100%; }
-/* allow wrapping so tiles can flow to next line on narrow viewports */
-.pair-wrap { flex-wrap: wrap; }
+.pair-wrap { display:flex; gap:12px; max-width:980px; width:100%; flex-wrap: nowrap; }
 .pair-img { width:50%; object-fit:cover; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.12) }
 .single-wrap { max-width:760px; width:100%; }
 .single-img { width:100%; border-radius:12px; object-fit:cover; box-shadow:0 8px 30px rgba(0,0,0,0.12) }
@@ -290,6 +288,12 @@
   .pair-img { width: calc(50% - 6px); }
   .mehendi-title { font-size:1.6rem }
   .mehendi-hero { min-height: 420px }
+}
+
+/* On very small devices stack vertically to avoid tiny side-by-side images */
+@media (max-width:360px) {
+  .pair-wrap { flex-direction: column; flex-wrap: wrap }
+  .pair-img { width: 100%; margin-bottom: 12px }
 }
 
 /* Videos section title styling (Lashes / Mehendi) */
@@ -369,5 +373,23 @@
 
   /* ensure headings don't force zoom */
   .videos h2, .videos h3 { font-size: 1.6rem }
+}
+
+/* Contact page styles */
+.contact-main { padding: 48px 0 }
+.contact-inner { max-width: 820px; margin: 0 auto; text-align: center }
+.contact-title { font-size: 2.4rem; margin-bottom: 12px }
+.contact-lead { font-size: 1.05rem; color: #333 }
+.contact-block { margin-top: 20px; font-size: 1.05rem; text-align: left }
+.contact-block a { color: inherit; word-break: break-word }
+
+@media (max-width: 640px) {
+  .contact-inner { padding: 0 12px }
+  .contact-title { font-size: 1.6rem }
+  .contact-lead { font-size: 1rem }
+  .contact-block { font-size: 0.98rem }
+  /* make sure links wrap and don't overflow */
+  .contact-block a { display: inline-block }
+  .contact-block h3 { font-size: 1.05rem }
 }
 
