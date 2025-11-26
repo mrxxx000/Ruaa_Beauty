@@ -28,12 +28,29 @@ const BookingForm: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [focusedField, setFocusedField] = useState<string>('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Booking request', formData);
-    setSubmitted(true);
-    setFormData(defaultData);
-    setTimeout(() => setSubmitted(false), 5000);
+    try {
+      const resp = await fetch(process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/api/booking` : 'http://localhost:5000/api/booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (resp.ok) {
+        setSubmitted(true);
+        setFormData(defaultData);
+        setTimeout(() => setSubmitted(false), 5000);
+      } else {
+        const data = await resp.json().catch(() => null);
+        console.error('Booking api error', data);
+        alert((data && data.message) || 'Failed to send booking request. Please try again.');
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Booking submit error', err);
+      alert('An error occurred while sending booking request. Please try again later.');
+    }
   };
 
   return (
