@@ -28,6 +28,17 @@ app.post('/api/booking', async (req, res) => {
     const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined;
     const secure = typeof process.env.SMTP_SECURE !== 'undefined' ? process.env.SMTP_SECURE === 'true' : port === 465;
 
+    // If smtp-related env vars are not provided, assume development mode and skip sending emails.
+    const smtpConfigured = !!(process.env.SMTP_HOST || process.env.SMTP_USER || process.env.SMTP_FROM);
+    if (!smtpConfigured) {
+      // eslint-disable-next-line no-console
+      console.warn('SMTP not configured; skipping email send. Booking will be accepted but emails will not be sent.');
+      // Log the booking payload so developer can inspect it in dev.
+      // eslint-disable-next-line no-console
+      console.log('Booking details:', { name, email, phone, service, date, time, location, notes });
+      return res.status(200).json({ message: 'Booking received (emails skipped - SMTP not configured)' });
+    }
+
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || undefined,
       port: port,
