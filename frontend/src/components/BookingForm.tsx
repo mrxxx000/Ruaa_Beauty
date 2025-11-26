@@ -31,7 +31,11 @@ const BookingForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const resp = await fetch(process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/api/booking` : 'http://localhost:5000/api/booking', {
+      // Use an explicit API base that can be configured via REACT_APP_API_URL.
+      // In production (Vercel) set REACT_APP_API_URL to your backend base (https://api.example.com)
+      // When not set, fall back to a relative '/api' so the frontend can be proxied/rewritten by the host.
+      const apiBase = process.env.REACT_APP_API_URL || '/api';
+      const resp = await fetch(`${apiBase}/booking`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
