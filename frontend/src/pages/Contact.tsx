@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
+import BookingForm from '../components/BookingForm';
 
 const Contact: React.FC = () => {
   return (
@@ -51,6 +52,9 @@ const Contact: React.FC = () => {
 
               <p style={{ marginTop: 12 }}><strong>Your perfect look starts with a message.</strong></p>
             </div>
+
+            {/* Booking form inserted here */}
+            <BookingForm />
           </div>
         </section>
       </main>
