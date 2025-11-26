@@ -10,7 +10,7 @@ const root = ReactDOM.createRoot(
 
 // set page title and favicon to match site branding
 document.title = 'Ruaa Beauty';
-// prefer public/logo.svg (wordmark) for favicon; fallback to favicon.ico handled by index.html
+// prefer public/logo192.png (wordmark) for favicon; fallback to favicon.ico handled by index.html
 const setFavicon = (url: string) => {
   let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
   if (!link) {
@@ -20,7 +20,8 @@ const setFavicon = (url: string) => {
   }
   link.href = url;
 };
-setFavicon('/logo.svg');
+// use the packaged png so browsers (and iOS home screen) pick it up
+setFavicon('/logo192.png');
 
 root.render(
   <React.StrictMode>
