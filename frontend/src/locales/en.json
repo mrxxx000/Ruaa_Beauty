@@ -1,0 +1,64 @@
+{
+  "nav": {
+    "home": "Home",
+    "lashes": "Lashes",
+    "makeup": "Makeup",
+    "mehendi": "Mehendi",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Ruaa Beauty",
+    "subtitle": "Where Elegance Meets Artistry",
+    "description": "From luxurious lash extensions and lash lifts to brow lifts, professional makeup, facial threading, and intricate Mehendi (Henna) designs, we bring your beauty dreams to life. Perfect for weddings, parties, or any special occasion in our studio or right at your home. All the beauty you need, all in one place.",
+    "bookButton": "Book Appointment"
+  },
+  "home": {
+    "lashesTitle": "Lashes",
+    "mehendiTitle": "Mehendi",
+    "ctaTitle": "Ready to Glow?",
+    "ctaDescription": "Browse our collection of premium beauty products and find your perfect match."
+  },
+  "contact": {
+    "title": "Contact Us",
+    "lead": "Whatever you need — we're here to help!",
+    "generalBookingsTitle": "General beauty bookings (lashes, makeup, threading)",
+    "generalBookingsDescription": "If you want to order lashes or book lash lifts, brow lifts, professional makeup, or facial threading, contact us on:",
+    "mehendiBookingsTitle": "Mehendi bookings",
+    "mehendiBookingsDescription": "If you want to book Mehendi, contact us on:",
+    "whatsapp": "WhatsApp",
+    "bothServices": "If you want to book both beauty services + Mehendi, feel free to reach out on either number or message us on Instagram — we'll take care of everything!",
+    "perfectLook": "Your perfect look starts with a message."
+  },
+  "bookingForm": {
+    "title": "Booking Request",
+    "nameLabel": "Name",
+    "namePlaceholder": "Your name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "your@email.com",
+    "phoneLabel": "Phone",
+    "phonePlaceholder": "+46 ...",
+    "serviceLabel": "Service",
+    "servicePlaceholder": "e.g. Lashes, Makeup, Mehendi...",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Tell us more about your booking...",
+    "submitButton": "Send Request",
+    "sending": "Sending...",
+    "success": "Request sent! We'll contact you soon.",
+    "error": "Something went wrong. Please try again or contact us directly."
+  },
+  "mehendi": {
+    "heroTitle": "Exquisite Mehendi Designs for Every Occasion",
+    "heroDescription": "Celebrate your special moments with our intricate Mehendi artistry. From weddings and engagements to festive gatherings, we create stunning hand and arm designs that are as unique as you. Beautiful, detailed, and crafted with love.",
+    "showSetA": "Show Set A",
+    "showSetB": "Show Set B",
+    "moreDesigns": "More designs"
+  },
+  "pages": {
+    "comingSoon": "Coming soon",
+    "backHome": "Back to Home"
+  },
+  "footer": {
+    "copyright": "© {{year}} Ruaa Beauty. All rights reserved."
+  }
+}

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/App.css';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const slideA = process.env.PUBLIC_URL + '/assets/SnapInsta.to_448241189_1815301755622097_667881131947720916_n.jpg';
 const slideB = process.env.PUBLIC_URL + '/assets/SnapInsta.to_448396960_432194449635910_11943437998895029_n.jpg';
@@ -16,6 +18,7 @@ const more5 = process.env.PUBLIC_URL + '/assets/SnapInsta.to_125829760_423863109
 const Mehendi: React.FC = () => {
 	const [active, setActive] = useState<'a' | 'b'>('a');
 	const location = useLocation();
+	const { t } = useTranslation();
 
 	useEffect(() => {
 		const t = setInterval(() => setActive((p) => (p === 'a' ? 'b' : 'a')), 3500);
@@ -33,12 +36,13 @@ const Mehendi: React.FC = () => {
 						<span className="brand-title">Ruaa Beauty</span>
 					</div>
 					<nav className="nav">
-						<Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-                        <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>Lashes</Link>
-						<Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>Makeup</Link>
-                        <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>Mehendi</Link>
-                        <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>About</Link>
-                        <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>Contact</Link>
+						<Link to="/" className={location.pathname === '/' ? 'active' : ''}>{t('nav.home')}</Link>
+                        <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>{t('nav.lashes')}</Link>
+						<Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>{t('nav.makeup')}</Link>
+                        <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>{t('nav.mehendi')}</Link>
+                        <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>{t('nav.about')}</Link>
+                        <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
+						<LanguageSwitcher />
 					</nav>
 				</div>
 			</header>
@@ -51,11 +55,9 @@ const Mehendi: React.FC = () => {
 					<div className="mehendi-hero-overlay" />
 					<div className="container mehendi-hero-inner">
 						<div className="mehendi-text">
-							<h2 className="mehendi-title">Exquisite Mehendi Designs for Every Occasion</h2>
+							<h2 className="mehendi-title">{t('mehendi.heroTitle')}</h2>
 							<p className="mehendi-desc">
-								Celebrate your special moments with our intricate Mehendi artistry. From weddings and engagements to
-								festive gatherings, we create stunning hand and arm designs that are as unique as you. Beautiful,
-								detailed, and crafted with love.
+								{t('mehendi.heroDescription')}
 							</p>
 						</div>
 					</div>
@@ -71,12 +73,12 @@ const Mehendi: React.FC = () => {
 					</div>
 
 					<div style={{ marginTop: 12, textAlign: 'center' }} className="mehendi-thumbs">
-						<button className="secondary-btn" onClick={() => setActive('a')}>Show Set A</button>
-						<button className="secondary-btn" onClick={() => setActive('b')}>Show Set B</button>
+						<button className="secondary-btn" onClick={() => setActive('a')}>{t('mehendi.showSetA')}</button>
+						<button className="secondary-btn" onClick={() => setActive('b')}>{t('mehendi.showSetB')}</button>
 					</div>
 
 					<div style={{ marginTop: 28 }}>
-						<h3>More designs</h3>
+						<h3>{t('mehendi.moreDesigns')}</h3>
 						<div className="more-designs-grid" style={{ marginTop: 12 }}>
 							<div className="single-wrap">
 								<img src={singleImg} alt="Mehendi single" className="single-img" />
@@ -103,7 +105,7 @@ const Mehendi: React.FC = () => {
 
 			<footer className="site-footer">
 				<div className="container text-center">
-					<p>© {new Date().getFullYear()} Ruaa Beauty. All rights reserved.</p>
+					<p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
 				</div>
 			</footer>
 		</div>

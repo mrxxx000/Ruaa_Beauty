@@ -1,0 +1,64 @@
+{
+  "nav": {
+    "home": "Hem",
+    "lashes": "Fransar",
+    "makeup": "Smink",
+    "mehendi": "Mehendi",
+    "about": "Om oss",
+    "contact": "Kontakt"
+  },
+  "hero": {
+    "title": "Ruaa Beauty",
+    "subtitle": "Där Elegans Möter Konst",
+    "description": "Från lyxiga fransförlängningar och franslyfter till brynlyfter, professionellt smink, ansiktstråding och intrikata Mehendi (Henna)-design, förverkligar vi dina skönhetsdrömmar. Perfekt för bröllop, fester eller något speciellt tillfälle i vår studio eller hemma hos dig. All den skönhet du behöver, allt på ett ställe.",
+    "bookButton": "Boka Tid"
+  },
+  "home": {
+    "lashesTitle": "Fransar",
+    "mehendiTitle": "Mehendi",
+    "ctaTitle": "Redo att Lysa?",
+    "ctaDescription": "Bläddra i vår samling av premium skönhetsprodukter och hitta din perfekta match."
+  },
+  "contact": {
+    "title": "Kontakta Oss",
+    "lead": "Vad du än behöver — vi är här för att hjälpa!",
+    "generalBookingsTitle": "Allmänna skönhetsbokningar (fransar, smink, tråding)",
+    "generalBookingsDescription": "Om du vill beställa fransar eller boka franslyfter, brynlyfter, professionellt smink eller ansiktstråding, kontakta oss på:",
+    "mehendiBookingsTitle": "Mehendi-bokningar",
+    "mehendiBookingsDescription": "Om du vill boka Mehendi, kontakta oss på:",
+    "whatsapp": "WhatsApp",
+    "bothServices": "Om du vill boka både skönhetstjänster + Mehendi, är du välkommen att höra av dig på något av numren eller skicka ett meddelande till oss på Instagram — vi tar hand om allt!",
+    "perfectLook": "Din perfekta look börjar med ett meddelande."
+  },
+  "bookingForm": {
+    "title": "Bokningsförfrågan",
+    "nameLabel": "Namn",
+    "namePlaceholder": "Ditt namn",
+    "emailLabel": "E-post",
+    "emailPlaceholder": "din@email.se",
+    "phoneLabel": "Telefon",
+    "phonePlaceholder": "+46 ...",
+    "serviceLabel": "Tjänst",
+    "servicePlaceholder": "t.ex. Fransar, Smink, Mehendi...",
+    "messageLabel": "Meddelande",
+    "messagePlaceholder": "Berätta mer om din bokning...",
+    "submitButton": "Skicka Förfrågan",
+    "sending": "Skickar...",
+    "success": "Förfrågan skickad! Vi kontaktar dig snart.",
+    "error": "Något gick fel. Försök igen eller kontakta oss direkt."
+  },
+  "mehendi": {
+    "heroTitle": "Utsökta Mehendi-designer för Alla Tillfällen",
+    "heroDescription": "Fira dina speciella stunder med vår intrikata Mehendi-konst. Från bröllop och förlovningar till festliga sammankomster, vi skapar fantastiska hand- och armdesigner som är lika unika som du. Vackra, detaljerade och skapade med kärlek.",
+    "showSetA": "Visa Set A",
+    "showSetB": "Visa Set B",
+    "moreDesigns": "Fler designer"
+  },
+  "pages": {
+    "comingSoon": "Kommer snart",
+    "backHome": "Tillbaka till Hem"
+  },
+  "footer": {
+    "copyright": "© {{year}} Ruaa Beauty. Alla rättigheter förbehållna."
+  }
+}

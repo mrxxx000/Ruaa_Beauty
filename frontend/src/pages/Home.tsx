@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import Hero from '../components/Hero';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
   // If caller provides videos prop, use it; otherwise use the default lashes shorts
@@ -105,6 +107,7 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
 
 const Home: React.FC = () => {
   const location = useLocation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (location.hash) {
@@ -128,12 +131,13 @@ const Home: React.FC = () => {
             <span className="brand-title">Ruaa Beauty</span>
           </div>
           <nav className="nav">
-            <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-            <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>Lashes</Link>
-            <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>Makeup</Link>
-            <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>Mehendi</Link>
-            <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>About</Link>
-            <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>Contact</Link>
+            <Link to="/" className={location.pathname === '/' ? 'active' : ''}>{t('nav.home')}</Link>
+            <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>{t('nav.lashes')}</Link>
+            <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>{t('nav.makeup')}</Link>
+            <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>{t('nav.mehendi')}</Link>
+            <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>{t('nav.about')}</Link>
+            <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
+            <LanguageSwitcher />
           </nav>
         </div>
       </header>
@@ -143,13 +147,13 @@ const Home: React.FC = () => {
 
         {/* Lashes video grid: 2 videos per row. Place your short video files in public/assets and update the `videos` array in VideoGrid. */}
         <section className="videos container" id="Lashes">
-          <h2 style={{ marginBottom: 18 }}>Lashes</h2>
+          <h2 style={{ marginBottom: 18 }}>{t('home.lashesTitle')}</h2>
           <VideoGrid />
         </section>
 
         {/* Mehendi shorts - same layout as Lashes, using specific mehendi videos */}
         <section className="videos container" id="mehendi-shorts">
-          <h2 style={{ marginBottom: 18 }}>Mehendi</h2>
+          <h2 style={{ marginBottom: 18 }}>{t('home.mehendiTitle')}</h2>
           <VideoGrid
             videos={[
               process.env.PUBLIC_URL + '/assets/mehendi1.mp4',
@@ -160,8 +164,8 @@ const Home: React.FC = () => {
 
         <section className="cta">
           <div className="container text-center">
-            <h2>Ready to Glow?</h2>
-            <p>Browse our collection of premium beauty products and find your perfect match.</p>
+            <h2>{t('home.ctaTitle')}</h2>
+            <p>{t('home.ctaDescription')}</p>
           </div>
         </section>
       </main>
@@ -170,7 +174,7 @@ const Home: React.FC = () => {
 
       <footer className="site-footer">
         <div className="container text-center">
-          <p>© {new Date().getFullYear()} Ruaa Beauty. All rights reserved.</p>
+          <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
         </div>
       </footer>
     </div>

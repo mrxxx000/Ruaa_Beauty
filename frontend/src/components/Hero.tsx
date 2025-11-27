@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import '../styles/App.css';
 
 // Serve the image from the public folder so CRA can include it in builds.
@@ -7,6 +8,8 @@ import '../styles/App.css';
 const heroImage = process.env.PUBLIC_URL + '/assets/hero-lashes.png';
 
 const Hero: React.FC = () => {
+  const { t } = useTranslation();
+  
   return (
     <section
       className="hero"
@@ -30,21 +33,18 @@ const Hero: React.FC = () => {
       <div className="container hero-inner" style={{ position: 'relative', zIndex: 2 }}>
         <div className="hero-text">
           <h1 className="hero-title" style={{ color: '#f108b7ff' }}>
-            Ruaa Beauty
+            {t('hero.title')}
           </h1>
           <p className="hero-sub" style={{ color: 'rgba(209, 27, 27, 0.95)', marginTop: 6 }}>
-            Where Elegance Meets Artistry
+            {t('hero.subtitle')}
           </p>
           <p style={{ color: 'rgba(255,255,255,0.95)', marginTop: 12, maxWidth: 680 }}>
-            From luxurious lash extensions and lash lifts to brow lifts, professional makeup, facial threading, and intricate 
-            Mehendi (Henna) designs, we bring your beauty dreams to life. Perfect for weddings, parties, or any special occasion 
-            in our studio or right at your home. All the beauty you need, all in one place.
-
+            {t('hero.description')}
           </p>
 
           <div style={{ marginTop: 18 }}>
             <Link className="primary-btn" to="/contact">
-              Book Appointment
+              {t('hero.bookButton')}
             </Link>
           </div>
         </div>
