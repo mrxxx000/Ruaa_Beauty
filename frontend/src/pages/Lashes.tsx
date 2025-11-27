@@ -1,9 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 
 const Lashes: React.FC = () => {
+  const location = useLocation();
+  
   return (
     <div className="page-coming-soon">
       <header className="site-header">
@@ -15,11 +17,12 @@ const Lashes: React.FC = () => {
             <span className="brand-title">Ruaa Beauty</span>
           </div>
           <nav className="nav">
-            <Link to="/">Home</Link>
-            <Link to="/makeup">Makeup</Link>
-            <Link to="/mehendi">Mehendi</Link>
-            <Link to="/about">About</Link>
-            <Link to="/contact">Contact</Link>
+            <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
+            <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>Lashes</Link>
+            <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>Makeup</Link>
+            <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>Mehendi</Link>
+            <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>About</Link>
+            <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>Contact</Link>
           </nav>
         </div>
       </header>

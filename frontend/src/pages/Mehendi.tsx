@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/App.css';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 
 const slideA = process.env.PUBLIC_URL + '/assets/SnapInsta.to_448241189_1815301755622097_667881131947720916_n.jpg';
@@ -15,6 +15,7 @@ const more5 = process.env.PUBLIC_URL + '/assets/SnapInsta.to_125829760_423863109
 
 const Mehendi: React.FC = () => {
 	const [active, setActive] = useState<'a' | 'b'>('a');
+	const location = useLocation();
 
 	useEffect(() => {
 		const t = setInterval(() => setActive((p) => (p === 'a' ? 'b' : 'a')), 3500);
@@ -32,11 +33,12 @@ const Mehendi: React.FC = () => {
 						<span className="brand-title">Ruaa Beauty</span>
 					</div>
 					<nav className="nav">
-						<Link to="/">Home</Link>
-                        <Link to="/lashes">Lashes</Link>
-                        <Link to="/makeup">Makeup</Link>
-                        <Link to="/about">About</Link>
-                        <Link to="/contact">Contact</Link>
+						<Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
+                        <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>Lashes</Link>
+						<Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>Makeup</Link>
+                        <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>Mehendi</Link>
+                        <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>About</Link>
+                        <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>Contact</Link>
 					</nav>
 				</div>
 			</header>

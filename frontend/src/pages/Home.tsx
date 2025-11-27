@@ -128,11 +128,12 @@ const Home: React.FC = () => {
             <span className="brand-title">Ruaa Beauty</span>
           </div>
           <nav className="nav">
-            <Link to="/lashes">Lashes</Link>
-            <Link to="/makeup">Makeup</Link>
-            <Link to="/mehendi">Mehendi</Link>
-            <Link to="/about">About</Link>
-            <Link to="/contact">Contact</Link>
+            <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
+            <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>Lashes</Link>
+            <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>Makeup</Link>
+            <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>Mehendi</Link>
+            <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>About</Link>
+            <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>Contact</Link>
           </nav>
         </div>
       </header>
