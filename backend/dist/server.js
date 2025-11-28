@@ -9,6 +9,8 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const supabase_js_1 = require("@supabase/supabase-js");
 const crypto_1 = require("crypto");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const SibApiV3Sdk = require('sib-api-v3-sdk');
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT ? Number(process.env.PORT) : 5000;
@@ -48,7 +50,7 @@ app.post('/api/booking', async (req, res) => {
             console.error('Supabase insert error:', dbError);
             return res.status(500).json({ message: 'Database error', details: dbError.message });
         }
-        // --- Email logic ---
+        // --- Email logic using Brevo SMTP ---
         const smtpPort = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587;
         const secure = process.env.SMTP_SECURE === 'true' ? true : false;
         const smtpConfigured = !!(process.env.SMTP_HOST && process.env.SMTP_USER);
@@ -86,14 +88,12 @@ app.post('/api/booking', async (req, res) => {
         const adminEmail = process.env.ADMIN_EMAIL || 'akmal123@gmail.com';
         const siteUrl = process.env.SITE_URL || 'https://ruaa-beauty.vercel.app';
         // Send emails asynchronously (don't block the response)
-        // Skip verification and send directly
         const sendEmails = async () => {
             try {
                 // eslint-disable-next-line no-console
-                console.log('Attempting to send emails...');
-                const emailTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Email sending timeout after 15 seconds')), 15000));
+                console.log('Attempting to send emails via Brevo SMTP...');
                 // Email to admin
-                const adminEmailPromise = transporter.sendMail({
+                await transporter.sendMail({
                     from: process.env.SMTP_FROM || process.env.SMTP_USER,
                     to: adminEmail,
                     subject: `New Booking from ${name}`,
@@ -110,11 +110,10 @@ app.post('/api/booking', async (req, res) => {
             <p><strong>Notes:</strong> ${notes}</p>
           `,
                 });
-                await Promise.race([adminEmailPromise, emailTimeout]);
                 // eslint-disable-next-line no-console
                 console.log('✓ Admin email sent to:', adminEmail);
                 // Email to user
-                const userEmailPromise = transporter.sendMail({
+                await transporter.sendMail({
                     from: process.env.SMTP_FROM || process.env.SMTP_USER,
                     to: email,
                     subject: 'Booking Confirmation',
@@ -133,7 +132,6 @@ app.post('/api/booking', async (req, res) => {
             <p><strong>Need to cancel?</strong> <a href="${siteUrl}/unbook?token=${cancelToken}">Click here to cancel your booking</a></p>
           `,
                 });
-                await Promise.race([userEmailPromise, emailTimeout]);
                 // eslint-disable-next-line no-console
                 console.log('✓ User email sent to:', email);
             }
