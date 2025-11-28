@@ -72,56 +72,61 @@ app.post('/api/booking', async (req, res) => {
                 : undefined,
             tls: { rejectUnauthorized: process.env.SMTP_TLS_REJECT_UNAUTHORIZED !== 'false' },
         });
-        // Verify transporter configuration early
-        try {
-            await transporter.verify();
-        }
-        catch (verifyErr) {
-            // eslint-disable-next-line no-console
-            console.error('SMTP transporter verification failed', verifyErr);
-            return res.status(500).json({ message: 'SMTP configuration invalid. Check environment variables.' });
-        }
         const adminEmail = process.env.ADMIN_EMAIL || 'akmal123@gmail.com';
-        const siteUrl = process.env.SITE_URL;
-        // Email to admin
-        await transporter.sendMail({
-            from: process.env.SMTP_FROM || process.env.SMTP_USER,
-            to: adminEmail,
-            subject: `New Booking from ${name}`,
-            html: `
-        <h3>New Booking Request</h3>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Phone:</strong> ${phone}</p>
-        <p><strong>Service:</strong> ${service}</p>
-        <p><strong>Date:</strong> ${date}</p>
-        <p><strong>Time:</strong> ${time}</p>
-        <p><strong>Location:</strong> ${location}</p>
-        <p><strong>Address:</strong> ${address || 'N/A'}</p>
-        <p><strong>Notes:</strong> ${notes}</p>
-      `,
+        const siteUrl = process.env.SITE_URL || 'https://ruaa-beauty.vercel.app';
+        // Send emails asynchronously (don't block the response)
+        transporter.verify()
+            .then(() => {
+            // Email to admin
+            transporter.sendMail({
+                from: process.env.SMTP_FROM || process.env.SMTP_USER,
+                to: adminEmail,
+                subject: `New Booking from ${name}`,
+                html: `
+            <h3>New Booking Request</h3>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Phone:</strong> ${phone}</p>
+            <p><strong>Service:</strong> ${service}</p>
+            <p><strong>Date:</strong> ${date}</p>
+            <p><strong>Time:</strong> ${time}</p>
+            <p><strong>Location:</strong> ${location}</p>
+            <p><strong>Address:</strong> ${address || 'N/A'}</p>
+            <p><strong>Notes:</strong> ${notes}</p>
+          `,
+            }).catch((err) => {
+                // eslint-disable-next-line no-console
+                console.error('Failed to send admin email:', err);
+            });
+            // Email to user
+            transporter.sendMail({
+                from: process.env.SMTP_FROM || process.env.SMTP_USER,
+                to: email,
+                subject: 'Booking Confirmation',
+                html: `
+            <h3>Hi ${name},</h3>
+            <p>Thank you for booking with us! Here are your appointment details:</p>
+            <ul>
+              <li><strong>Service:</strong> ${service}</li>
+              <li><strong>Date:</strong> ${date}</li>
+              <li><strong>Time:</strong> ${time}</li>
+              <li><strong>Location:</strong> ${location}</li>
+              <li><strong>Address:</strong> ${address || 'N/A'}</li>
+            </ul>
+            <p>We will contact you shortly to confirm.</p>
+            <hr>
+            <p><strong>Need to cancel?</strong> <a href="${siteUrl}/unbook?token=${cancelToken}">Click here to cancel your booking</a></p>
+          `,
+            }).catch((err) => {
+                // eslint-disable-next-line no-console
+                console.error('Failed to send user email:', err);
+            });
+        })
+            .catch((verifyErr) => {
+            // eslint-disable-next-line no-console
+            console.error('SMTP verification failed, emails will not be sent:', verifyErr);
         });
-        // Email to user
-        await transporter.sendMail({
-            from: process.env.SMTP_FROM || process.env.SMTP_USER,
-            to: email,
-            subject: 'Booking Confirmation',
-            html: `
-        <h3>Hi ${name},</h3>
-        <p>Thank you for booking with us! Here are your appointment details:</p>
-        <ul>
-          <li><strong>Service:</strong> ${service}</li>
-          <li><strong>Date:</strong> ${date}</li>
-          <li><strong>Time:</strong> ${time}</li>
-          <li><strong>Location:</strong> ${location}</li>
-          <li><strong>Address:</strong> ${address || 'N/A'}</li>
-        </ul>
-        <p>We will contact you shortly to confirm.</p>
-        <hr>
-        <p><strong>Need to cancel?</strong> <a href="${siteUrl}/unbook?token=${cancelToken}">Click here to cancel your booking</a></p>
-      `,
-        });
-        res.status(200).json({ message: 'Booking saved & emails sent successfully', cancelToken });
+        res.status(200).json({ message: 'Booking saved successfully. Confirmation email will be sent shortly.', cancelToken });
     }
     catch (err) {
         // eslint-disable-next-line no-console
