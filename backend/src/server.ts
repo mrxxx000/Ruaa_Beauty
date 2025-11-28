@@ -389,6 +389,86 @@ app.post('/api/unbook', async (req, res) => {
   }
 });
 
+// GET /api/available-times - get available time slots for a specific date and services
+app.get('/api/available-times', async (req, res) => {
+  const { date, services } = req.query;
+
+  if (!date || !services) {
+    return res.status(400).json({ message: 'Date and services are required' });
+  }
+
+  try {
+    const supabase = createClient(
+      process.env.SUPABASE_URL || '',
+      process.env.SUPABASE_SERVICE_ROLE || ''
+    );
+
+    // Get all bookings for this date
+    const { data: bookings, error: fetchError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('date', date);
+
+    if (fetchError) {
+      // eslint-disable-next-line no-console
+      console.error('Fetch error:', fetchError);
+      return res.status(500).json({ message: 'Error fetching bookings' });
+    }
+
+    // Define all available hours
+    const allHours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+    const unavailableHours = new Set<number>();
+
+    // Parse services array
+    const servicesArray: string[] = typeof services === 'string' 
+      ? services.split(',').map(s => s.trim()) 
+      : Array.isArray(services) ? (services as string[]) : [];
+
+    // Check each booking and mark unavailable hours based on service type
+    bookings?.forEach((booking: any) => {
+      const bookingTime = parseInt(booking.time.split(':')[0]); // Get hour from time
+      const bookingServices = booking.service.split(',').map((s: string) => s.trim());
+
+      bookingServices.forEach((bookedService: string) => {
+        if (bookedService === 'bridal-makeup') {
+          // Bridal makeup blocks entire day
+          allHours.forEach(h => unavailableHours.add(h));
+        } else if (bookedService === 'lash-lift' || bookedService === 'brow-lift' || bookedService === 'threading') {
+          // These services block 1 hour
+          unavailableHours.add(bookingTime);
+        } else if (bookedService === 'makeup') {
+          // Professional makeup blocks 3 hours
+          for (let i = 0; i < 3; i++) {
+            unavailableHours.add(bookingTime + i);
+          }
+        } else if (bookedService === 'mehendi') {
+          // Mehendi blocks hours based on booking duration
+          const mehendiHours = booking.mehendi_hours || 1;
+          for (let i = 0; i < mehendiHours; i++) {
+            unavailableHours.add(bookingTime + i);
+          }
+        }
+      });
+    });
+
+    // Filter available hours based on requested services
+    const availableHours = allHours.filter(hour => !unavailableHours.has(hour));
+
+    res.status(200).json({
+      date,
+      availableHours,
+      unavailableHours: Array.from(unavailableHours),
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Error fetching available times:', err);
+    res.status(500).json({
+      message: 'Error fetching available times',
+      details: err instanceof Error ? err.message : 'Unknown error',
+    });
+  }
+});
+
 app.listen(port, () => {
   // eslint-disable-next-line no-console
   console.log(`Server listening on http://localhost:${port}`);

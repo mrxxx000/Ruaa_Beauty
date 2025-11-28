@@ -43,6 +43,8 @@ const BookingForm: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string>('');
+  const [availableHours, setAvailableHours] = useState<number[]>([9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+  const [unavailableHours, setUnavailableHours] = useState<number[]>([]);
 
   // Calculate total price
   const calculateTotalPrice = (services: string[], mehendiHours: number = 0): number => {
@@ -56,6 +58,36 @@ const BookingForm: React.FC = () => {
   };
 
   const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours);
+
+  // Fetch available times when date or services change
+  const fetchAvailableTimes = async (date: string, services: string[]) => {
+    if (!date || services.length === 0) {
+      // Reset to all hours if no date or services
+      setAvailableHours([9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+      setUnavailableHours([]);
+      return;
+    }
+
+    try {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+      const servicesParam = services.join(',');
+      const url = `${backendUrl}/api/available-times?date=${date}&services=${servicesParam}`;
+      
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableHours(data.availableHours || [9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+        setUnavailableHours(data.unavailableHours || []);
+        // Clear selected time if it's no longer available
+        if (formData.time && !data.availableHours.includes(parseInt(formData.time.split(':')[0]))) {
+          setFormData(prev => ({ ...prev, time: '' }));
+        }
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching available times:', err);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -261,6 +293,10 @@ const BookingForm: React.FC = () => {
                     ? formData.services.filter((s) => s !== service.value)
                     : [...formData.services, service.value];
                   setFormData({ ...formData, services: updatedServices });
+                  // Fetch available times with updated services
+                  if (formData.date) {
+                    fetchAvailableTimes(formData.date, updatedServices);
+                  }
                 }}
               >
                 <div className="service-card-icon" style={{ fontSize: '3rem', marginBottom: '12px', textAlign: 'center' }}>{service.icon}</div>
@@ -524,6 +560,10 @@ const BookingForm: React.FC = () => {
                               ? [...formData.services, service.value]
                               : formData.services.filter((s) => s !== service.value);
                             setFormData({ ...formData, services: updatedServices });
+                            // Fetch available times with updated services
+                            if (formData.date) {
+                              fetchAvailableTimes(formData.date, updatedServices);
+                            }
                           }}
                           style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ff6fa3' }}
                         />
@@ -718,7 +758,10 @@ const BookingForm: React.FC = () => {
                     required
                     min={new Date().toISOString().split('T')[0]}
                     value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, date: e.target.value });
+                      fetchAvailableTimes(e.target.value, formData.services);
+                    }}
                     onFocus={() => setFocusedField('date')}
                     onBlur={() => setFocusedField('')}
                     onClick={(e) => {
@@ -752,16 +795,29 @@ const BookingForm: React.FC = () => {
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none appearance-none cursor-pointer ${focusedField === 'time' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   >
                     <option value="">{t('bookingForm.timePlaceholder')}</option>
-                    <option value="09:00">{t('bookingForm.time09')}</option>
-                    <option value="10:00">{t('bookingForm.time10')}</option>
-                    <option value="11:00">{t('bookingForm.time11')}</option>
-                    <option value="12:00">{t('bookingForm.time12')}</option>
-                    <option value="13:00">{t('bookingForm.time13')}</option>
-                    <option value="14:00">{t('bookingForm.time14')}</option>
-                    <option value="15:00">{t('bookingForm.time15')}</option>
-                    <option value="16:00">{t('bookingForm.time16')}</option>
-                    <option value="17:00">{t('bookingForm.time17')}</option>
-                    <option value="18:00">{t('bookingForm.time18')}</option>
+                    {[
+                      { value: '09:00', label: t('bookingForm.time09'), hour: 9 },
+                      { value: '10:00', label: t('bookingForm.time10'), hour: 10 },
+                      { value: '11:00', label: t('bookingForm.time11'), hour: 11 },
+                      { value: '12:00', label: t('bookingForm.time12'), hour: 12 },
+                      { value: '13:00', label: t('bookingForm.time13'), hour: 13 },
+                      { value: '14:00', label: t('bookingForm.time14'), hour: 14 },
+                      { value: '15:00', label: t('bookingForm.time15'), hour: 15 },
+                      { value: '16:00', label: t('bookingForm.time16'), hour: 16 },
+                      { value: '17:00', label: t('bookingForm.time17'), hour: 17 },
+                      { value: '18:00', label: t('bookingForm.time18'), hour: 18 },
+                    ].map((time) => {
+                      const isUnavailable = unavailableHours.includes(time.hour);
+                      return (
+                        <option 
+                          key={time.value} 
+                          value={time.value}
+                          disabled={isUnavailable}
+                        >
+                          {time.label} {isUnavailable ? '(Unavailable)' : ''}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
               </div>
