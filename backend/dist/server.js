@@ -86,16 +86,17 @@ app.post('/api/booking', async (req, res) => {
         const adminEmail = process.env.ADMIN_EMAIL || 'akmal123@gmail.com';
         const siteUrl = process.env.SITE_URL || 'https://ruaa-beauty.vercel.app';
         // Send emails asynchronously (don't block the response)
-        transporter.verify()
-            .then(() => {
-            // eslint-disable-next-line no-console
-            console.log('SMTP verification successful, sending emails...');
-            // Email to admin
-            transporter.sendMail({
-                from: process.env.SMTP_FROM || process.env.SMTP_USER,
-                to: adminEmail,
-                subject: `New Booking from ${name}`,
-                html: `
+        // Skip verification and send directly
+        const sendEmails = async () => {
+            try {
+                // eslint-disable-next-line no-console
+                console.log('Attempting to send emails...');
+                // Email to admin
+                await transporter.sendMail({
+                    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+                    to: adminEmail,
+                    subject: `New Booking from ${name}`,
+                    html: `
             <h3>New Booking Request</h3>
             <p><strong>Name:</strong> ${name}</p>
             <p><strong>Email:</strong> ${email}</p>
@@ -107,19 +108,15 @@ app.post('/api/booking', async (req, res) => {
             <p><strong>Address:</strong> ${address || 'N/A'}</p>
             <p><strong>Notes:</strong> ${notes}</p>
           `,
-            }).then(() => {
+                });
                 // eslint-disable-next-line no-console
-                console.log('Admin email sent successfully to:', adminEmail);
-            }).catch((err) => {
-                // eslint-disable-next-line no-console
-                console.error('Failed to send admin email:', err.message);
-            });
-            // Email to user
-            transporter.sendMail({
-                from: process.env.SMTP_FROM || process.env.SMTP_USER,
-                to: email,
-                subject: 'Booking Confirmation',
-                html: `
+                console.log('✓ Admin email sent to:', adminEmail);
+                // Email to user
+                await transporter.sendMail({
+                    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+                    to: email,
+                    subject: 'Booking Confirmation',
+                    html: `
             <h3>Hi ${name},</h3>
             <p>Thank you for booking with us! Here are your appointment details:</p>
             <ul>
@@ -133,18 +130,17 @@ app.post('/api/booking', async (req, res) => {
             <hr>
             <p><strong>Need to cancel?</strong> <a href="${siteUrl}/unbook?token=${cancelToken}">Click here to cancel your booking</a></p>
           `,
-            }).then(() => {
+                });
                 // eslint-disable-next-line no-console
-                console.log('User email sent successfully to:', email);
-            }).catch((err) => {
+                console.log('✓ User email sent to:', email);
+            }
+            catch (emailErr) {
                 // eslint-disable-next-line no-console
-                console.error('Failed to send user email:', err.message);
-            });
-        })
-            .catch((verifyErr) => {
-            // eslint-disable-next-line no-console
-            console.error('SMTP verification failed:', verifyErr.message);
-        });
+                console.error('Email sending failed:', emailErr.message);
+            }
+        };
+        // Send emails in background (don't wait for them)
+        sendEmails();
         res.status(200).json({ message: 'Booking saved successfully. Confirmation email will be sent shortly.', cancelToken });
     }
     catch (err) {
