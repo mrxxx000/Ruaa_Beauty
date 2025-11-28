@@ -87,6 +87,8 @@
     "addressPlaceholder": "اكتبي عنوانك الكامل للزيارة المنزلية",
     "notesLabel": "ملاحظات إضافية",
     "notesPlaceholder": "أي طلبات أو أسئلة؟",
+    "pricingSummary": "ملخص الأسعار",
+    "totalPrice": "السعر الإجمالي",
     "submitButton": "إرسال الطلب",
     "submitting": "جاري الإرسال...",
     "successTitle": "تم استلام طلبك! ✨",

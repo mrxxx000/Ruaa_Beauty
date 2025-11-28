@@ -88,6 +88,8 @@
     "addressPlaceholder": "Enter your full address for home service",
     "notesLabel": "Additional Notes",
     "notesPlaceholder": "Any special requests or questions?",
+    "pricingSummary": "Pricing Summary",
+    "totalPrice": "Total Price",
     "submitButton": "Request Appointment",
     "submitting": "Sending...",
     "successTitle": "Booking Request Received! ✨",

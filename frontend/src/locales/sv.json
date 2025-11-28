@@ -87,6 +87,8 @@
     "addressPlaceholder": "Ange din fullständiga adress för hembesök",
     "notesLabel": "Ytterligare Anteckningar",
     "notesPlaceholder": "Önskemål eller frågor?",
+    "pricingSummary": "Prissammanfattning",
+    "totalPrice": "Totalt Pris",
     "submitButton": "Skicka Bokningsförfrågan",
     "submitting": "Skickar...",
     "successTitle": "Bokningsförfrågan Mottagen! ✨",

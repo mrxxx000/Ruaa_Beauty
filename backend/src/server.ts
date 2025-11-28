@@ -19,7 +19,7 @@ app.get('/', (_req, res) => {
 
 // POST /api/booking - accepts booking data, saves to Supabase, and sends emails
 app.post('/api/booking', async (req, res) => {
-  const { name, email, phone, service, date, time, location, address, notes } = req.body;
+  const { name, email, phone, service, date, time, location, address, notes, totalPrice, servicePricing } = req.body;
 
   if (!name || !email) {
     return res.status(400).json({ message: 'Name and email are required' });
@@ -48,6 +48,8 @@ app.post('/api/booking', async (req, res) => {
         address,
         notes,
         cancel_token: cancelToken,
+        total_price: totalPrice || 0,
+        service_pricing: servicePricing || [],
       },
     ]);
 
@@ -102,6 +104,28 @@ app.post('/api/booking', async (req, res) => {
         // Email to admin
         // eslint-disable-next-line no-console
         console.log(`📤 Sending admin email to: ${adminEmail}`);
+        
+        // Build pricing details for admin email
+        const adminPricingRows = servicePricing && servicePricing.length > 0
+          ? servicePricing.map((item: any) => `
+              <tr>
+                <td style="padding: 8px; text-align: left;">${item.name}</td>
+                <td style="padding: 8px; text-align: right; font-weight: bold;">${item.price} kr</td>
+              </tr>
+            `).join('')
+          : '';
+        
+        const adminPricingSection = totalPrice && totalPrice > 0 ? `
+          <h4 style="color: #1f2937; margin-top: 20px; margin-bottom: 10px;">Pricing Summary:</h4>
+          <table style="width: 100%; border-collapse: collapse;">
+            ${adminPricingRows}
+            <tr style="border-top: 2px solid #ff6fa3; font-weight: bold;">
+              <td style="padding: 12px; text-align: left; font-size: 1.1em;">Total Price</td>
+              <td style="padding: 12px; text-align: right; font-size: 1.2em; color: #ff6fa3;">${totalPrice} kr</td>
+            </tr>
+          </table>
+        ` : '';
+        
         const adminEmailObj = new brevo.SendSmtpEmail();
         adminEmailObj.sender = { email: fromEmail, name: 'Ruaa Beauty Bookings' };
         adminEmailObj.to = [{ email: adminEmail }];
@@ -117,6 +141,7 @@ app.post('/api/booking', async (req, res) => {
           <p><strong>Location:</strong> ${location}</p>
           <p><strong>Address:</strong> ${address || 'N/A'}</p>
           <p><strong>Notes:</strong> ${notes || 'None'}</p>
+          ${adminPricingSection}
         `;
 
         const adminResult = await apiInstance.sendTransacEmail(adminEmailObj);
@@ -126,6 +151,29 @@ app.post('/api/booking', async (req, res) => {
         // Email to customer
         // eslint-disable-next-line no-console
         console.log(`📤 Sending confirmation email to: ${email}`);
+        
+        // Build pricing details for email
+        const pricingRows = servicePricing && servicePricing.length > 0
+          ? servicePricing.map((item: any) => `
+              <tr>
+                <td style="padding: 8px; text-align: left;">${item.name}</td>
+                <td style="padding: 8px; text-align: right; font-weight: bold;">${item.price} kr</td>
+              </tr>
+            `).join('')
+          : '';
+        
+        const pricingSection = totalPrice && totalPrice > 0 ? `
+          <hr>
+          <h4 style="color: #1f2937; margin-top: 20px; margin-bottom: 10px;">Pricing Summary:</h4>
+          <table style="width: 100%; border-collapse: collapse;">
+            ${pricingRows}
+            <tr style="border-top: 2px solid #ff6fa3; font-weight: bold;">
+              <td style="padding: 12px; text-align: left; font-size: 1.1em;">Total Price</td>
+              <td style="padding: 12px; text-align: right; font-size: 1.2em; color: #ff6fa3;">${totalPrice} kr</td>
+            </tr>
+          </table>
+        ` : '';
+
         const userEmailObj = new brevo.SendSmtpEmail();
         userEmailObj.sender = { email: fromEmail, name: 'Ruaa Beauty' };
         userEmailObj.to = [{ email: email }];
@@ -140,6 +188,7 @@ app.post('/api/booking', async (req, res) => {
             <li><strong>Location:</strong> ${location}</li>
             <li><strong>Address:</strong> ${address || 'N/A'}</li>
           </ul>
+          ${pricingSection}
           <p>We will contact you shortly to confirm your appointment.</p>
           <hr>
           <p><small>Need to cancel? <a href="${siteUrl}/unbook?token=${cancelToken}">Click here to cancel your booking</a></small></p>

@@ -26,12 +26,30 @@ const defaultData: FormData = {
   notes: '',
 };
 
+const SERVICES_PRICING: { [key: string]: number } = {
+  'lash-lift': 300,
+  'brow-lift': 300,
+  'makeup': 1000,
+  'bridal-makeup': 4000,
+  'mehendi': 400,
+  'threading': 200,
+};
+
 const BookingForm: React.FC = () => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>(defaultData);
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string>('');
+
+  // Calculate total price
+  const calculateTotalPrice = (services: string[]): number => {
+    return services.reduce((total, service) => {
+      return total + (SERVICES_PRICING[service] || 0);
+    }, 0);
+  };
+
+  const totalPrice = calculateTotalPrice(formData.services);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +78,11 @@ const BookingForm: React.FC = () => {
         location: formData.location,
         address: address,
         notes: formData.notes,
+        totalPrice: totalPrice,
+        servicePricing: formData.services.map(s => ({
+          name: s,
+          price: SERVICES_PRICING[s] || 0
+        })),
       };
 
       console.log('Submitting booking data:', bookingData);
@@ -423,6 +446,89 @@ const BookingForm: React.FC = () => {
                   <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '8px' }}>{t('bookingForm.servicePlaceholder')}</p>
                 )}
               </div>
+
+              {/* Pricing Box */}
+              {formData.services.length > 0 && (
+                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                  <div style={{
+                    background: 'linear-gradient(135deg, #fff6f8 0%, #fff1f3 100%)',
+                    border: '2px solid #ff6fa3',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    marginBottom: '24px'
+                  }}>
+                    <h4 style={{ 
+                      fontSize: '1.1rem', 
+                      fontWeight: '600', 
+                      color: '#1f2937', 
+                      marginBottom: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      💰 {t('bookingForm.pricingSummary') || 'Pricing Summary'}
+                    </h4>
+                    
+                    {formData.services.length > 0 && (
+                      <div style={{ marginBottom: '16px' }}>
+                        {formData.services.map((serviceValue) => {
+                          // Map service value to display name
+                          const serviceNames: { [key: string]: string } = {
+                            'lash-lift': t('bookingForm.serviceLashLift'),
+                            'brow-lift': t('bookingForm.serviceBrowLift'),
+                            'makeup': t('bookingForm.serviceMakeup'),
+                            'bridal-makeup': t('bookingForm.serviceBridalMakeup'),
+                            'mehendi': t('bookingForm.serviceMehendi'),
+                            'threading': t('bookingForm.serviceThreading'),
+                          };
+                          
+                          return (
+                            <div 
+                              key={serviceValue}
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '8px 0',
+                                borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
+                                fontSize: '0.95rem'
+                              }}
+                            >
+                              <span style={{ color: '#374151' }}>{serviceNames[serviceValue] || serviceValue}</span>
+                              <span style={{ fontWeight: '600', color: '#ff6fa3' }}>{SERVICES_PRICING[serviceValue] || 0} kr</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      paddingTop: '12px',
+                      borderTop: '2px solid #ff6fa3'
+                    }}>
+                      <span style={{ 
+                        fontSize: '1.1rem', 
+                        fontWeight: '700', 
+                        color: '#1f2937' 
+                      }}>
+                        {t('bookingForm.totalPrice') || 'Total Price'}:
+                      </span>
+                      <span style={{ 
+                        fontSize: '1.5rem', 
+                        fontWeight: '700', 
+                        background: 'linear-gradient(90deg, #ff6fa3 0%, #ff9ccf 100%)',
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        color: 'transparent'
+                      }}>
+                        {totalPrice} kr
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Date */}
               <div className="form-group">
