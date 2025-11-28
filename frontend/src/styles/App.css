@@ -612,7 +612,42 @@
   [dir="rtl"] .lang-switcher-container {
     justify-content: flex-end;
   }
+
+  
+/* RTL Mobile Fixes: ensure header stacks vertically like LTR on small screens */
+@media (max-width: 640px) {
+  [dir="rtl"] .header-inner {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+
+  [dir="rtl"] .nav {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  /* keep language switcher centered on mobile for RTL too */
+  [dir="rtl"] .lang-switcher-container {
+    justify-content: flex-end;
+    padding: 5px 10px;
+  }
+
+  /* maintain brand ordering visually consistent for RTL */
+  [dir="rtl"] .brand {
+    flex-direction: row-reverse;
+    align-items: center;
+  }
+
+  [dir="rtl"] .brand-title {
+    margin-right: 0;
+    margin-left: 6px;
+  }
 }
 
+}
 
 
