@@ -106,6 +106,14 @@ app.post('/api/booking', async (req, res) => {
             try {
                 // eslint-disable-next-line no-console
                 console.log('📧 Sending emails via Brevo API...');
+                // DEBUG: Check API key
+                // eslint-disable-next-line no-console
+                console.log('🔑 Debug API Key Info:', {
+                    keyExists: !!apiKey,
+                    keyLength: apiKey?.length,
+                    keyPrefix: apiKey?.substring(0, 15),
+                    keySuffix: apiKey?.substring(apiKey.length - 10),
+                });
                 const apiInstance = new brevo.TransactionalEmailsApi();
                 apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, apiKey);
                 // Email to admin
