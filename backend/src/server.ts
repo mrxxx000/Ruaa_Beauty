@@ -1,14 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import nodemailer from 'nodemailer';
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
+import * as brevo from '@getbrevo/brevo';
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT ? Number(process.env.PORT) : 5000;
+const port = process.env.PORT ? Number(process.env.PORT) : 10000;
 
 app.use(cors());
 app.use(express.json());
@@ -26,7 +26,7 @@ app.post('/api/booking', async (req, res) => {
   }
 
   try {
-    // --- Initialize Supabase client ---
+    // Initialize Supabase client
     const supabase = createClient(
       process.env.SUPABASE_URL || '',
       process.env.SUPABASE_SERVICE_ROLE || ''
@@ -57,135 +57,106 @@ app.post('/api/booking', async (req, res) => {
       return res.status(500).json({ message: 'Database error', details: dbError.message });
     }
 
-    // --- Email logic using Brevo SMTP ---
-    const smtpPort = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587;
-    const secure = process.env.SMTP_SECURE === 'true' ? true : false;
-
-    const smtpConfigured = !!(process.env.SMTP_HOST && process.env.SMTP_USER);
-    
     // eslint-disable-next-line no-console
-    console.log('SMTP Config Check:', {
-      SMTP_HOST: process.env.SMTP_HOST,
-      SMTP_PORT: smtpPort,
-      SMTP_SECURE: secure,
-      SMTP_USER: process.env.SMTP_USER ? 'SET' : 'NOT SET',
-      SMTP_PASS: process.env.SMTP_PASS ? 'SET' : 'NOT SET',
-      SMTP_FROM: process.env.SMTP_FROM,
-      ADMIN_EMAIL: process.env.ADMIN_EMAIL,
-      smtpConfigured,
-    });
+    console.log('✅ Booking saved to database');
 
-    if (!smtpConfigured) {
+    // Email configuration
+    const apiKey = process.env.BREVO_API_KEY;
+    const adminEmail = process.env.ADMIN_EMAIL || 'akmalsafi43@gmail.com';
+    const siteUrl = process.env.SITE_URL || 'https://ruaa-beauty.vercel.app';
+    const fromEmail = process.env.SMTP_FROM || 'akmalsafi43@gmail.com';
+
+    if (!apiKey) {
       // eslint-disable-next-line no-console
-      console.warn('SMTP not configured; booking saved to database but emails will not be sent.');
+      console.warn('⚠️ Brevo API key not configured');
       return res.status(200).json({
-        message: 'Booking saved to database (emails skipped - SMTP not configured)',
+        message: 'Booking saved to database (emails skipped - API key not configured)',
         cancelToken,
       });
     }
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: smtpPort,
-      secure: secure,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-      connectionUrl: `smtp${secure ? 's' : ''}://${process.env.SMTP_USER}:${process.env.SMTP_PASS}@${process.env.SMTP_HOST}:${smtpPort}`,
-      pool: {
-        maxConnections: 1,
-        maxMessages: Infinity,
-        rateDelta: 20000,
-        rateLimit: 5,
-      },
-    } as any);
+    // Send response immediately
+    res.status(200).json({
+      message: 'Booking saved successfully. Confirmation email will be sent shortly.',
+      cancelToken,
+    });
 
-    const adminEmail = process.env.ADMIN_EMAIL || 'akmal123@gmail.com';
-    const siteUrl = process.env.SITE_URL || 'https://ruaa-beauty.vercel.app';
-
-    // Send emails asynchronously (don't block the response)
+    // Send emails asynchronously
     const sendEmails = async () => {
       try {
         // eslint-disable-next-line no-console
-        console.log('Attempting to send emails via Brevo SMTP...');
-        
-        const sendWithRetry = async (mailOptions: any, retries = 3) => {
-          for (let attempt = 1; attempt <= retries; attempt++) {
-            try {
-              return await transporter.sendMail(mailOptions);
-            } catch (err) {
-              // eslint-disable-next-line no-console
-              console.error(`Attempt ${attempt}/${retries} failed:`, err instanceof Error ? err.message : String(err));
-              if (attempt < retries) {
-                await new Promise(resolve => setTimeout(resolve, 2000 * attempt)); // Wait 2s, 4s, 6s between attempts
-              } else {
-                throw err;
-              }
-            }
-          }
-        };
+        console.log('📧 Sending emails via Brevo API...');
+
+        const apiInstance = new brevo.TransactionalEmailsApi();
+        apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, apiKey);
 
         // Email to admin
-        await sendWithRetry({
-          from: process.env.SMTP_FROM || process.env.SMTP_USER,
-          to: adminEmail,
-          subject: `New Booking from ${name}`,
-          html: `
-            <h3>New Booking Request</h3>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Phone:</strong> ${phone}</p>
-            <p><strong>Service:</strong> ${service}</p>
-            <p><strong>Date:</strong> ${date}</p>
-            <p><strong>Time:</strong> ${time}</p>
-            <p><strong>Location:</strong> ${location}</p>
-            <p><strong>Address:</strong> ${address || 'N/A'}</p>
-            <p><strong>Notes:</strong> ${notes}</p>
-          `,
-        });
         // eslint-disable-next-line no-console
-        console.log('✓ Admin email sent to:', adminEmail);
+        console.log(`📤 Sending admin email to: ${adminEmail}`);
+        const adminEmailObj = new brevo.SendSmtpEmail();
+        adminEmailObj.sender = { email: fromEmail, name: 'Ruaa Beauty Bookings' };
+        adminEmailObj.to = [{ email: adminEmail }];
+        adminEmailObj.subject = `New Booking from ${name}`;
+        adminEmailObj.htmlContent = `
+          <h3>New Booking Request</h3>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Phone:</strong> ${phone}</p>
+          <p><strong>Service:</strong> ${service}</p>
+          <p><strong>Date:</strong> ${date}</p>
+          <p><strong>Time:</strong> ${time}</p>
+          <p><strong>Location:</strong> ${location}</p>
+          <p><strong>Address:</strong> ${address || 'N/A'}</p>
+          <p><strong>Notes:</strong> ${notes || 'None'}</p>
+        `;
 
-        // Email to user
-        await sendWithRetry({
-          from: process.env.SMTP_FROM || process.env.SMTP_USER,
-          to: email,
-          subject: 'Booking Confirmation',
-          html: `
-            <h3>Hi ${name},</h3>
-            <p>Thank you for booking with us! Here are your appointment details:</p>
-            <ul>
-              <li><strong>Service:</strong> ${service}</li>
-              <li><strong>Date:</strong> ${date}</li>
-              <li><strong>Time:</strong> ${time}</li>
-              <li><strong>Location:</strong> ${location}</li>
-              <li><strong>Address:</strong> ${address || 'N/A'}</li>
-            </ul>
-            <p>We will contact you shortly to confirm.</p>
-            <hr>
-            <p><strong>Need to cancel?</strong> <a href="${siteUrl}/unbook?token=${cancelToken}">Click here to cancel your booking</a></p>
-          `,
+        const adminResult = await apiInstance.sendTransacEmail(adminEmailObj);
+        // eslint-disable-next-line no-console
+        console.log('✅ Admin email sent:', adminResult);
+
+        // Email to customer
+        // eslint-disable-next-line no-console
+        console.log(`📤 Sending confirmation email to: ${email}`);
+        const userEmailObj = new brevo.SendSmtpEmail();
+        userEmailObj.sender = { email: fromEmail, name: 'Ruaa Beauty' };
+        userEmailObj.to = [{ email: email }];
+        userEmailObj.subject = 'Booking Confirmation - Ruaa Beauty';
+        userEmailObj.htmlContent = `
+          <h3>Hi ${name},</h3>
+          <p>Thank you for booking with Ruaa Beauty! Here are your appointment details:</p>
+          <ul>
+            <li><strong>Service:</strong> ${service}</li>
+            <li><strong>Date:</strong> ${date}</li>
+            <li><strong>Time:</strong> ${time}</li>
+            <li><strong>Location:</strong> ${location}</li>
+            <li><strong>Address:</strong> ${address || 'N/A'}</li>
+          </ul>
+          <p>We will contact you shortly to confirm your appointment.</p>
+          <hr>
+          <p><small>Need to cancel? <a href="${siteUrl}/unbook?token=${cancelToken}">Click here to cancel your booking</a></small></p>
+        `;
+
+        const userResult = await apiInstance.sendTransacEmail(userEmailObj);
+        // eslint-disable-next-line no-console
+        console.log('✅ Customer email sent:', userResult);
+      } catch (emailErr: any) {
+        // eslint-disable-next-line no-console
+        console.error('❌ Email sending failed:', {
+          message: emailErr.message,
+          body: emailErr.response?.body,
         });
-        // eslint-disable-next-line no-console
-        console.log('✓ User email sent to:', email);
-      } catch (emailErr) {
-        // eslint-disable-next-line no-console
-        console.error('Email sending failed after all retries:', emailErr instanceof Error ? emailErr.message : String(emailErr));
       }
     };
 
-    // Send emails in background (don't wait for them)
+    // Execute email sending in background
     sendEmails();
-
-    res.status(200).json({ message: 'Booking saved successfully. Confirmation email will be sent shortly.', cancelToken });
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error('Error processing booking:', err);
-    res.status(500).json({ message: 'Error processing booking', details: err instanceof Error ? err.message : 'Unknown error' });
+    console.error('❌ Error processing booking:', err);
+    res.status(500).json({
+      message: 'Error processing booking',
+      details: err instanceof Error ? err.message : 'Unknown error',
+    });
   }
 });
 
@@ -240,7 +211,10 @@ app.post('/api/unbook', async (req, res) => {
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('Error processing cancellation:', err);
-    res.status(500).json({ message: 'Error processing cancellation', details: err instanceof Error ? err.message : 'Unknown error' });
+    res.status(500).json({
+      message: 'Error processing cancellation',
+      details: err instanceof Error ? err.message : 'Unknown error',
+    });
   }
 });
 
