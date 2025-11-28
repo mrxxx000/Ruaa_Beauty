@@ -94,7 +94,7 @@ app.post('/api/booking', async (req, res) => {
     }
 
     const adminEmail = process.env.ADMIN_EMAIL || 'akmal123@gmail.com';
-    const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+    const siteUrl = process.env.SITE_URL;
 
     // Email to admin
     await transporter.sendMail({
