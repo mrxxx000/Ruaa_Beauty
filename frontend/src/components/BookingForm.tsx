@@ -64,11 +64,11 @@ const BookingForm: React.FC = () => {
 
       console.log('Submitting booking data:', bookingData);
 
-      // Use an explicit API base that can be configured via REACT_APP_API_URL.
-      // In production (Vercel) set REACT_APP_API_URL to your backend base (https://api.example.com)
-      // When not set, fall back to a relative '/api' so the frontend can be proxied/rewritten by the host.
-      const apiBase = process.env.REACT_APP_API_URL || '/api';
-      const url = `${apiBase}/booking`;
+      // Backend URL - configure via REACT_APP_BACKEND_URL environment variable
+      // Local development: http://localhost:5000
+      // Production (Render): https://your-backend-url.onrender.com
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+      const url = `${backendUrl}/api/booking`;
       console.log('Sending request to:', url);
       
       const resp = await fetch(url, {
