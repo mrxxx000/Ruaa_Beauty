@@ -500,35 +500,110 @@ const BookingForm: React.FC = () => {
                     { value: 'mehendi', label: t('bookingForm.serviceMehendi') },
                     { value: 'threading', label: t('bookingForm.serviceThreading') },
                   ].map((service) => (
-                    <label
-                      key={service.value}
-                      className={`service-checkbox ${formData.services.includes(service.value) ? 'selected' : ''}`}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        padding: '12px 16px',
-                        border: '2px solid',
-                        borderColor: formData.services.includes(service.value) ? '#ff6fa3' : '#e5e7eb',
-                        borderRadius: '12px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s',
-                        backgroundColor: formData.services.includes(service.value) ? '#fff6f8' : 'white',
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.services.includes(service.value)}
-                        onChange={(e) => {
-                          const updatedServices = e.target.checked
-                            ? [...formData.services, service.value]
-                            : formData.services.filter((s) => s !== service.value);
-                          setFormData({ ...formData, services: updatedServices });
+                    <div key={service.value}>
+                      <label
+                        className={`service-checkbox ${formData.services.includes(service.value) ? 'selected' : ''}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '12px 16px',
+                          border: '2px solid',
+                          borderColor: formData.services.includes(service.value) ? '#ff6fa3' : '#e5e7eb',
+                          borderRadius: '12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s',
+                          backgroundColor: formData.services.includes(service.value) ? '#fff6f8' : 'white',
                         }}
-                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ff6fa3' }}
-                      />
-                      <span style={{ fontSize: '1rem', userSelect: 'none' }}>{service.label}</span>
-                    </label>
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.services.includes(service.value)}
+                          onChange={(e) => {
+                            const updatedServices = e.target.checked
+                              ? [...formData.services, service.value]
+                              : formData.services.filter((s) => s !== service.value);
+                            setFormData({ ...formData, services: updatedServices });
+                          }}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ff6fa3' }}
+                        />
+                        <span style={{ fontSize: '1rem', userSelect: 'none' }}>{service.label}</span>
+                      </label>
+
+                      {/* Hours selector for Mehendi in checkbox */}
+                      {service.value === 'mehendi' && formData.services.includes('mehendi') && (
+                        <div style={{
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: '#fff6f8',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
+                        }}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (formData.mehendiHours > 1) {
+                                setFormData({ ...formData, mehendiHours: formData.mehendiHours - 1 });
+                              }
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '2px solid #ff6fa3',
+                              background: 'white',
+                              color: '#ff6fa3',
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            −
+                          </button>
+                          <div style={{
+                            minWidth: '45px',
+                            textAlign: 'center',
+                            fontSize: '0.95rem',
+                            fontWeight: '600',
+                            color: '#ff6fa3'
+                          }}>
+                            {formData.mehendiHours}h
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setFormData({ ...formData, mehendiHours: formData.mehendiHours + 1 });
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '2px solid #ff6fa3',
+                              background: '#ff6fa3',
+                              color: 'white',
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
                 {formData.services.length === 0 && (
