@@ -152,7 +152,7 @@ app.post('/api/booking', async (req, res) => {
         console.log('✓ User email sent to:', email);
       } catch (emailErr) {
         // eslint-disable-next-line no-console
-        console.error('Email sending failed:', emailErr.message);
+        console.error('Email sending failed:', emailErr instanceof Error ? emailErr.message : String(emailErr));
       }
     };
 
