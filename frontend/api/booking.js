@@ -14,6 +14,7 @@ module.exports = async (req, res) => {
     date,
     time,
     location,
+    address,
     notes,
   } = req.body || {};
 
@@ -28,7 +29,7 @@ module.exports = async (req, res) => {
     const smtpConfigured = !!(process.env.SMTP_HOST || process.env.SMTP_USER || process.env.SMTP_FROM);
     if (!smtpConfigured) {
       console.warn('SMTP not configured; skipping email send. Booking will be accepted but emails will not be sent.');
-      console.log('Booking details:', { name, email, phone, service, date, time, location, notes });
+      console.log('Booking details:', { name, email, phone, service, date, time, location, address, notes });
       return res.status(200).json({ message: 'Booking received (emails skipped - SMTP not configured)' });
     }
 
@@ -69,6 +70,7 @@ module.exports = async (req, res) => {
         <p><strong>Date:</strong> ${date}</p>
         <p><strong>Time:</strong> ${time}</p>
         <p><strong>Location:</strong> ${location}</p>
+        <p><strong>Address:</strong> ${address || 'N/A'}</p>
         <p><strong>Notes:</strong> ${notes}</p>
       `,
     });
@@ -86,6 +88,7 @@ module.exports = async (req, res) => {
           <li><strong>Date:</strong> ${date}</li>
           <li><strong>Time:</strong> ${time}</li>
           <li><strong>Location:</strong> ${location}</li>
+          <li><strong>Address:</strong> ${address || 'N/A'}</li>
         </ul>
         <p>We will contact you shortly to confirm.</p>
       `,

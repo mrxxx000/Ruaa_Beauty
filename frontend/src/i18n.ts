@@ -4,6 +4,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import translationEN from './locales/en.json';
 import translationSV from './locales/sv.json';
+import translationAR from './locales/arb.json';
 
 const resources = {
   en: {
@@ -11,6 +12,9 @@ const resources = {
   },
   sv: {
     translation: translationSV
+  },
+  ar: {
+    translation: translationAR
   }
 };
 
@@ -29,5 +33,17 @@ i18n
       caches: ['localStorage']
     }
   });
+
+// Handle RTL for Arabic
+i18n.on('languageChanged', (lng) => {
+  const dir = lng === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.dir = dir;
+  document.documentElement.lang = lng;
+});
+
+// Set initial direction
+const currentLang = i18n.language || 'en';
+document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+document.documentElement.lang = currentLang;
 
 export default i18n;

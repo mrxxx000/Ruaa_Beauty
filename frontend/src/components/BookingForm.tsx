@@ -10,6 +10,7 @@ type FormData = {
   date: string;
   time: string;
   location: string;
+  customAddress: string;
   notes: string;
 };
 
@@ -21,6 +22,7 @@ const defaultData: FormData = {
   date: '',
   time: '',
   location: '',
+  customAddress: '',
   notes: '',
 };
 
@@ -33,28 +35,48 @@ const BookingForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Determine the address based on location choice
+      const address = formData.location === 'studio' 
+        ? 'Serenagatan 123, Malmö 21000'
+        : formData.customAddress;
+
+      // Prepare booking data with address
+      const bookingData = {
+        ...formData,
+        address
+      };
+
+      console.log('Submitting booking data:', bookingData);
+
       // Use an explicit API base that can be configured via REACT_APP_API_URL.
       // In production (Vercel) set REACT_APP_API_URL to your backend base (https://api.example.com)
       // When not set, fall back to a relative '/api' so the frontend can be proxied/rewritten by the host.
       const apiBase = process.env.REACT_APP_API_URL || '/api';
-      const resp = await fetch(`${apiBase}/booking`, {
+      const url = `${apiBase}/booking`;
+      console.log('Sending request to:', url);
+      
+      const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(bookingData),
       });
 
+      console.log('Response status:', resp.status);
+
       if (resp.ok) {
+        const responseData = await resp.json();
+        console.log('Success response:', responseData);
         setSubmitted(true);
         setFormData(defaultData);
         setTimeout(() => setSubmitted(false), 5000);
       } else {
         const data = await resp.json().catch(() => null);
-        console.error('Booking api error', data);
+        console.error('Booking api error - Status:', resp.status, 'Data:', data);
         alert((data && data.message) || 'Failed to send booking request. Please try again.');
       }
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error('Booking submit error', err);
+      console.error('Booking submit error:', err);
       alert('An error occurred while sending booking request. Please try again later.');
     }
   };
@@ -260,6 +282,47 @@ const BookingForm: React.FC = () => {
                 </select>
               </div>
             </div>
+
+            {/* Studio Address Display - Shows when At Our Place is selected */}
+            {formData.location === 'studio' && (
+              <div className="form-group">
+                <label className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  {t('bookingForm.addressLabel')}
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    readOnly
+                    value="Serenagatan 123, Malmö 21000"
+                    className="w-full px-6 py-4 text-lg bg-background border-2 border-border rounded-2xl outline-none cursor-default text-foreground"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Custom Address - Shows only when Home Service is selected */}
+            {formData.location === 'home' && (
+              <div className="form-group">
+                <label htmlFor="bf-address" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  {t('bookingForm.addressLabel')} *
+                </label>
+                <div className="relative">
+                  <input
+                    id="bf-address"
+                    type="text"
+                    required
+                    value={formData.customAddress}
+                    onChange={(e) => setFormData({ ...formData, customAddress: e.target.value })}
+                    onFocus={() => setFocusedField('address')}
+                    onBlur={() => setFocusedField('')}
+                    placeholder={t('bookingForm.addressPlaceholder')}
+                    className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'address' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Notes */}
             <div className="form-group">

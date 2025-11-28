@@ -5,19 +5,30 @@ import '../styles/App.css';
 const LanguageSwitcher: React.FC = () => {
   const { i18n } = useTranslation();
 
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'sv' : 'en';
-    i18n.changeLanguage(newLang);
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    i18n.changeLanguage(e.target.value);
+  };
+
+  const getLanguageLabel = (lang: string) => {
+    switch(lang) {
+      case 'en': return '🇬🇧 English';
+      case 'sv': return '🇸🇪 Svenska';
+      case 'ar': return '🇸🇦 العربية';
+      default: return lang;
+    }
   };
 
   return (
-    <button 
-      className="lang-switcher" 
-      onClick={toggleLanguage}
-      aria-label="Switch language"
+    <select 
+      className="lang-switcher-dropdown" 
+      value={i18n.language}
+      onChange={handleLanguageChange}
+      aria-label="Select language"
     >
-      {i18n.language === 'en' ? 'Svenska' : 'English'}
-    </button>
+      <option value="en">English</option>
+      <option value="sv">Svenska</option>
+      <option value="ar">العربية</option>
+    </select>
   );
 };
 

@@ -49,13 +49,13 @@ const Contact: React.FC = () => {
               <p>
                 {t('contact.generalBookingsDescription')}
               </p>
-              <p>📱 {t('contact.whatsapp')}: <a href="https://wa.me/46704679469" target="_blank" rel="noreferrer">+46 70 467 94 69</a> or DM us on Instagram <a href="https://www.instagram.com/ruaa5r/" target="_blank" rel="noreferrer">@ruaa5r</a></p>
+              <p>📱 {t('contact.whatsapp')}: <a href="https://wa.me/46704679469" target="_blank" rel="noreferrer">+46 70 467 94 69</a> {t('contact.orDmInstagram')} <a href="https://www.instagram.com/ruaa5r/" target="_blank" rel="noreferrer">@ruaa5r</a></p>
 
               <h3 style={{ marginTop: 18 }}>{t('contact.mehendiBookingsTitle')}</h3>
               <p>
                 {t('contact.mehendiBookingsDescription')}
               </p>
-              <p>📱 {t('contact.whatsapp')}: <a href="https://wa.me/46720030442" target="_blank" rel="noreferrer">+46 72 00 30 442</a> or DM us on Instagram <a href="https://www.instagram.com/glamourmehendi/" target="_blank" rel="noreferrer">@glamourmehendi</a></p>
+              <p>📱 {t('contact.whatsapp')}: <a href="https://wa.me/46720030442" target="_blank" rel="noreferrer">+46 72 00 30 442</a> {t('contact.orDmInstagram')} <a href="https://www.instagram.com/glamourmehendi/" target="_blank" rel="noreferrer">@glamourmehendi</a></p>
 
               <p style={{ marginTop: 18 }}>
                 {t('contact.bothServices')}

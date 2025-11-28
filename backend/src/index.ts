@@ -17,7 +17,7 @@ app.get('/', (_req, res) => {
 
 // POST /api/booking - accepts booking data and sends email to admin and user
 app.post('/api/booking', async (req, res) => {
-  const { name, email, phone, service, date, time, location, notes } = req.body;
+  const { name, email, phone, service, date, time, location, address, notes } = req.body;
 
   if (!name || !email) {
     return res.status(400).json({ message: 'Name and email are required' });
@@ -35,7 +35,7 @@ app.post('/api/booking', async (req, res) => {
       console.warn('SMTP not configured; skipping email send. Booking will be accepted but emails will not be sent.');
       // Log the booking payload so developer can inspect it in dev.
       // eslint-disable-next-line no-console
-      console.log('Booking details:', { name, email, phone, service, date, time, location, notes });
+      console.log('Booking details:', { name, email, phone, service, date, time, location, address, notes });
       return res.status(200).json({ message: 'Booking received (emails skipped - SMTP not configured)' });
     }
 
@@ -79,6 +79,7 @@ app.post('/api/booking', async (req, res) => {
         <p><strong>Date:</strong> ${date}</p>
         <p><strong>Time:</strong> ${time}</p>
         <p><strong>Location:</strong> ${location}</p>
+        <p><strong>Address:</strong> ${address || 'N/A'}</p>
         <p><strong>Notes:</strong> ${notes}</p>
       `,
     });
@@ -96,6 +97,7 @@ app.post('/api/booking', async (req, res) => {
           <li><strong>Date:</strong> ${date}</li>
           <li><strong>Time:</strong> ${time}</li>
           <li><strong>Location:</strong> ${location}</li>
+          <li><strong>Address:</strong> ${address || 'N/A'}</li>
         </ul>
         <p>We will contact you shortly to confirm.</p>
       `,
