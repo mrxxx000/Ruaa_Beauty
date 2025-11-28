@@ -107,6 +107,27 @@
     "backHome": "Tillbaka till Hem"
   },
 
+  "cancelBooking": {
+    "loading": "Laddar bokningsinformation...",
+    "confirmTitle": "Vill du avboka?",
+    "confirmMessage": "Är du säker på att du vill avboka din tid? Denna åtgärd kan inte ångras.",
+    "yesCancel": "Ja, avboka",
+    "noKeep": "Nej, behåll bokningen",
+    "processing": "Bearbetar avbokning...",
+    "successTitle": "Bokning Avbokad",
+    "successMessage": "Din bokning har avbokats.",
+    "emailsSent": "Bekräftelsemejl har skickats till dig och till vårt administatörsgrupp.",
+    "name": "Namn",
+    "email": "E-post",
+    "service": "Tjänst",
+    "date": "Datum",
+    "backHome": "Tillbaka till Hem",
+    "errorTitle": "Avbokning Misslyckades",
+    "errorMessage": "Ett fel uppstod när vi försökte avboka din tid.",
+    "notFoundTitle": "Bokningen Hittades Inte",
+    "notFoundMessage": "Avbokningslänken är ogiltig eller har upphört att gälla."
+  },
+
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. Alla rättigheter förbehållna."
   }
