@@ -1,4 +1,6 @@
+const { createClient } = require('@supabase/supabase-js');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -23,14 +25,44 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // --- Initialize Supabase client ---
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE // use SERVICE ROLE key for serverless functions
+    );
+
+    // Generate cancel token
+    const cancelToken = crypto.randomUUID();
+
+    // Save booking to database
+    const { error: dbError } = await supabase.from('bookings').insert([
+      {
+        name,
+        email,
+        phone,
+        service,
+        date,
+        time,
+        location,
+        address,
+        notes,
+        cancel_token: cancelToken,
+      },
+    ]);
+
+    if (dbError) {
+      console.error('Supabase insert error:', dbError);
+      return res.status(500).json({ message: 'Database error', details: dbError.message });
+    }
+
+    // --- Email logic (unchanged) ---
     const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined;
     const secure = typeof process.env.SMTP_SECURE !== 'undefined' ? process.env.SMTP_SECURE === 'true' : port === 465;
 
     const smtpConfigured = !!(process.env.SMTP_HOST || process.env.SMTP_USER || process.env.SMTP_FROM);
     if (!smtpConfigured) {
-      console.warn('SMTP not configured; skipping email send. Booking will be accepted but emails will not be sent.');
-      console.log('Booking details:', { name, email, phone, service, date, time, location, address, notes });
-      return res.status(200).json({ message: 'Booking received (emails skipped - SMTP not configured)' });
+      console.warn('SMTP not configured; booking saved to database but emails will not be sent.');
+      return res.status(200).json({ message: 'Booking saved to database (emails skipped - SMTP not configured)' });
     }
 
     const transporter = nodemailer.createTransport({
@@ -91,12 +123,14 @@ module.exports = async (req, res) => {
           <li><strong>Address:</strong> ${address || 'N/A'}</li>
         </ul>
         <p>We will contact you shortly to confirm.</p>
+        <hr>
+        <p><strong>Need to cancel?</strong> <a href="${process.env.SITE_URL || 'https://your-site.com'}/unbook?token=${cancelToken}">Click here to cancel your booking</a></p>
       `,
     });
 
-    return res.status(200).json({ message: 'Emails sent successfully' });
+    return res.status(200).json({ message: 'Booking saved & emails sent successfully' });
   } catch (err) {
-    console.error('Error sending booking emails', err);
-    return res.status(500).json({ message: 'Error sending emails' });
+    console.error('Error processing booking:', err);
+    return res.status(500).json({ message: 'Error processing booking', details: err.message });
   }
 };
