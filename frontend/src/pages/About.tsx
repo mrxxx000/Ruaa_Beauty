@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
+import BookingForm from '../components/BookingForm';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const About: React.FC = () => {
@@ -10,7 +11,7 @@ const About: React.FC = () => {
   const { t } = useTranslation();
   
   return (
-    <div className="page-coming-soon">
+    <div className="book-page">
       <header className="site-header">
         <div className="container header-inner">
           <div className="brand">
@@ -24,7 +25,7 @@ const About: React.FC = () => {
                      <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>{t('nav.lashes')}</Link>
                      <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>{t('nav.makeup')}</Link>
                      <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>{t('nav.mehendi')}</Link>
-                     <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>{t('nav.about')}</Link>
+                     <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>{t('nav.book')}</Link>
                      <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
                    </nav>
         </div>
@@ -36,10 +37,8 @@ const About: React.FC = () => {
       </div>
 
       <main>
-        <section className="container" style={{ padding: '80px 0', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '2rem', marginBottom: 12 }}>{t('nav.about')} — {t('pages.comingSoon')}</h1>
-          <p style={{ color: '#666' }}>We're updating our About page. We'll share our story, team and values soon.</p>
-        </section>
+        {/* Booking form */}
+        <BookingForm />
       </main>
 
       <footer className="site-footer">
