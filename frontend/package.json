@@ -11,7 +11,7 @@
     "@types/node": "^16.18.126",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
-    "i18next": "^25.6.3",
+    "i18next": "^23.15.1",
     "i18next-browser-languagedetector": "^8.2.0",
     "lucide-react": "^0.268.0",
     "nodemailer": "^6.9.4",
