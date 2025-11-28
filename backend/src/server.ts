@@ -58,10 +58,10 @@ app.post('/api/booking', async (req, res) => {
     }
 
     // --- Email logic ---
-    const smtpPort = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined;
-    const secure = typeof process.env.SMTP_SECURE !== 'undefined' ? process.env.SMTP_SECURE === 'true' : smtpPort === 465;
+    const smtpPort = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587;
+    const secure = process.env.SMTP_SECURE === 'true' ? true : false;
 
-    const smtpConfigured = !!(process.env.SMTP_HOST || process.env.SMTP_USER || process.env.SMTP_FROM);
+    const smtpConfigured = !!(process.env.SMTP_HOST && process.env.SMTP_USER);
     
     // eslint-disable-next-line no-console
     console.log('SMTP Config Check:', {
@@ -85,16 +85,16 @@ app.post('/api/booking', async (req, res) => {
     }
 
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || undefined,
+      host: process.env.SMTP_HOST,
       port: smtpPort,
-      secure,
-      auth: process.env.SMTP_USER
-        ? {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          }
-        : undefined,
-      tls: { rejectUnauthorized: process.env.SMTP_TLS_REJECT_UNAUTHORIZED !== 'false' },
+      secure: secure,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
     });
 
     const adminEmail = process.env.ADMIN_EMAIL || 'akmal123@gmail.com';
