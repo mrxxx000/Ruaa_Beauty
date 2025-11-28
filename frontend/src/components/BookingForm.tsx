@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Sparkles, Calendar, Clock, MapPin, MessageSquare, User, Mail, Phone } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 type FormData = {
   name: string;
   email: string;
   phone: string;
-  service: string;
+  services: string[];
   date: string;
   time: string;
   location: string;
+  customAddress: string;
   notes: string;
 };
 
@@ -16,44 +18,78 @@ const defaultData: FormData = {
   name: '',
   email: '',
   phone: '',
-  service: '',
+  services: [],
   date: '',
   time: '',
   location: '',
+  customAddress: '',
   notes: '',
 };
 
 const BookingForm: React.FC = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>(defaultData);
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate at least one service is selected
+    if (formData.services.length === 0) {
+      alert(t('bookingForm.selectAtLeastOneService') || 'Please select at least one service');
+      return;
+    }
+    
+    setIsLoading(true);
     try {
+      // Determine the address based on location choice
+      const address = formData.location === 'studio' 
+        ? 'Serenagatan 123, Malmö 21000'
+        : formData.customAddress;
+
+      // Prepare booking data with address and services as comma-separated string
+      const bookingData = {
+        ...formData,
+        service: formData.services.join(', '), // Convert array to string for backend compatibility
+        address
+      };
+
+      console.log('Submitting booking data:', bookingData);
+
       // Use an explicit API base that can be configured via REACT_APP_API_URL.
       // In production (Vercel) set REACT_APP_API_URL to your backend base (https://api.example.com)
       // When not set, fall back to a relative '/api' so the frontend can be proxied/rewritten by the host.
       const apiBase = process.env.REACT_APP_API_URL || '/api';
-      const resp = await fetch(`${apiBase}/booking`, {
+      const url = `${apiBase}/booking`;
+      console.log('Sending request to:', url);
+      
+      const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(bookingData),
       });
 
+      console.log('Response status:', resp.status);
+
       if (resp.ok) {
+        const responseData = await resp.json();
+        console.log('Success response:', responseData);
         setSubmitted(true);
         setFormData(defaultData);
         setTimeout(() => setSubmitted(false), 5000);
       } else {
         const data = await resp.json().catch(() => null);
-        console.error('Booking api error', data);
+        console.error('Booking api error - Status:', resp.status, 'Data:', data);
         alert((data && data.message) || 'Failed to send booking request. Please try again.');
       }
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error('Booking submit error', err);
+      console.error('Booking submit error:', err);
       alert('An error occurred while sending booking request. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -72,7 +108,7 @@ const BookingForm: React.FC = () => {
         <div className="text-center mb-12 animate-fade-in">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-card rounded-full shadow-rose">
             <Sparkles className="w-5 h-5 text-primary animate-glow-pulse" />
-            <span className="text-sm font-medium bg-gradient-primary bg-clip-text text-transparent">Book Your Transformation</span>
+            <span className="text-sm font-medium bg-gradient-primary bg-clip-text text-transparent">{t('bookingForm.badge')}</span>
           </div>
           <h2
             className="text-6xl md:text-7xl font-bold mb-4"
@@ -83,9 +119,153 @@ const BookingForm: React.FC = () => {
               color: 'transparent',
             }}
           >
-            Reserve Your Appointment
+            {t('bookingForm.title')}
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Fill out the form below and we'll contact you within 24 hours to confirm your booking</p>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t('bookingForm.subtitle')}</p>
+        </div>
+
+        {/* Pricing Section */}
+        <div className="pricing-section" style={{ marginBottom: '48px' }}>
+          <h3 
+            className="text-3xl md:text-4xl font-bold text-center mb-8"
+            style={{
+              background: 'linear-gradient(90deg, #ff4d4f 0%, #ff85a1 100%)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+            }}
+          >
+            {t('bookingForm.pricingTitle') || 'Our Services & Pricing'}
+          </h3>
+          <style>{`
+            .pricing-grid {
+              display: grid;
+              gap: 20px;
+              margin-bottom: 32px;
+            }
+            
+            /* Desktop: 3-4 cards per row */
+            @media (min-width: 769px) {
+              .pricing-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+              }
+            }
+            
+            /* Mobile: 2 cards per row with smaller sizing */
+            @media (max-width: 768px) {
+              .pricing-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+              }
+              .service-card {
+                padding: 16px !important;
+              }
+              .service-card-icon {
+                font-size: 2rem !important;
+                margin-bottom: 8px !important;
+              }
+              .service-card-name {
+                font-size: 1rem !important;
+                margin-bottom: 6px !important;
+              }
+              .service-card-price {
+                font-size: 1.1rem !important;
+                margin-bottom: 8px !important;
+              }
+              .service-card-description {
+                font-size: 0.8rem !important;
+                margin-bottom: 12px !important;
+                min-height: 32px !important;
+              }
+              .service-card-button {
+                padding: 8px !important;
+                font-size: 0.85rem !important;
+              }
+            }
+          `}</style>
+          <div className="pricing-grid">
+            {[
+              { icon: '💫', name: t('bookingForm.serviceLashExtensions'), price: '500 kr', value: 'lash-extensions', description: t('bookingForm.priceLashExtensions') || 'Beautiful, voluminous lashes' },
+              { icon: '🌸', name: t('bookingForm.serviceLashLift'), price: '300 kr', value: 'lash-lift', description: t('bookingForm.priceLashLift') || 'Natural lift and curl' },
+              { icon: '✨', name: t('bookingForm.serviceBrowLift'), price: '300 kr', value: 'brow-lift', description: t('bookingForm.priceBrowLift') || 'Perfectly shaped brows' },
+              { icon: '💄', name: t('bookingForm.serviceMakeup'), price: '1000 kr', value: 'makeup', description: t('bookingForm.priceMakeup') || 'Professional makeup artistry' },
+              { icon: '👰', name: t('bookingForm.serviceBridalMakeup'), price: '4000 kr', value: 'bridal-makeup', description: t('bookingForm.priceBridalMakeup') || 'Your special day, perfected' },
+              { icon: '🎨', name: t('bookingForm.serviceMehendi'), price: '400 kr/hr', value: 'mehendi', description: t('bookingForm.priceMehendi') || 'Intricate henna designs' },
+              { icon: '🧵', name: t('bookingForm.serviceThreading'), price: '200 kr', value: 'threading', description: t('bookingForm.priceThreading') || 'Precise facial threading' },
+            ].map((service) => (
+              <div
+                key={service.value}
+                className="service-card"
+                style={{
+                  background: 'white',
+                  borderRadius: '12px',
+                  padding: '24px',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                  border: formData.services.includes(service.value) ? '2px solid #ff6fa3' : '2px solid transparent',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(255, 111, 163, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                }}
+                onClick={() => {
+                  const isSelected = formData.services.includes(service.value);
+                  const updatedServices = isSelected
+                    ? formData.services.filter((s) => s !== service.value)
+                    : [...formData.services, service.value];
+                  setFormData({ ...formData, services: updatedServices });
+                }}
+              >
+                <div className="service-card-icon" style={{ fontSize: '3rem', marginBottom: '12px', textAlign: 'center' }}>{service.icon}</div>
+                <h4 className="service-card-name" style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '8px', textAlign: 'center', color: '#1f2937' }}>
+                  {service.name}
+                </h4>
+                <p className="service-card-price" style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ff6fa3', marginBottom: '12px', textAlign: 'center' }}>
+                  {service.price}
+                </p>
+                <p className="service-card-description" style={{ fontSize: '0.95rem', color: '#6b7280', marginBottom: '16px', textAlign: 'center', minHeight: '40px' }}>
+                  {service.description}
+                </p>
+                <button
+                  type="button"
+                  className="service-card-button"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: formData.services.includes(service.value) 
+                      ? 'linear-gradient(90deg, #ff6fa3 0%, #ff9ccf 100%)'
+                      : '#f3f4f6',
+                    color: formData.services.includes(service.value) ? 'white' : '#6b7280',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!formData.services.includes(service.value)) {
+                      e.currentTarget.style.background = '#e5e7eb';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!formData.services.includes(service.value)) {
+                      e.currentTarget.style.background = '#f3f4f6';
+                    }
+                  }}
+                >
+                  {formData.services.includes(service.value) 
+                    ? `✓ ${t('bookingForm.selected') || 'Selected'}`
+                    : t('bookingForm.selectService') || 'Select Service'}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Form Card */}
@@ -98,7 +278,7 @@ const BookingForm: React.FC = () => {
               <div className="form-group">
                 <label htmlFor="bf-name" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                   <User className="w-4 h-4 text-primary" />
-                  Full Name *
+                  {t('bookingForm.nameLabel')} *
                 </label>
                 <div className="relative">
                   <input
@@ -108,7 +288,7 @@ const BookingForm: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     onFocus={() => setFocusedField('name')}
                     onBlur={() => setFocusedField('')}
-                    placeholder="Enter your name"
+                    placeholder={t('bookingForm.namePlaceholder')}
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'name' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   />
                 </div>
@@ -118,7 +298,7 @@ const BookingForm: React.FC = () => {
               <div className="form-group">
                 <label htmlFor="bf-email" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                   <Mail className="w-4 h-4 text-primary" />
-                  Email Address *
+                  {t('bookingForm.emailLabel')} *
                 </label>
                 <div className="relative">
                   <input
@@ -129,7 +309,7 @@ const BookingForm: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     onFocus={() => setFocusedField('email')}
                     onBlur={() => setFocusedField('')}
-                    placeholder="your@email.com"
+                    placeholder={t('bookingForm.emailPlaceholder')}
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'email' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   />
                 </div>
@@ -139,7 +319,7 @@ const BookingForm: React.FC = () => {
               <div className="form-group">
                 <label htmlFor="bf-phone" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                   <Phone className="w-4 h-4 text-primary" />
-                  Phone Number *
+                  {t('bookingForm.phoneLabel')} *
                 </label>
                 <div className="relative">
                   <input
@@ -150,55 +330,121 @@ const BookingForm: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     onFocus={() => setFocusedField('phone')}
                     onBlur={() => setFocusedField('')}
-                    placeholder="(123) 456-7890"
+                    placeholder={t('bookingForm.phonePlaceholder')}
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'phone' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   />
                 </div>
               </div>
 
-              {/* Service */}
-              <div className="form-group">
-                <label htmlFor="bf-service" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+              {/* Services - Multiple Selection */}
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <style>{`
+                  .services-grid {
+                    display: grid;
+                    gap: 12px;
+                  }
+                  
+                  /* Desktop: auto-fit layout */
+                  @media (min-width: 769px) {
+                    .services-grid {
+                      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    }
+                  }
+                  
+                  /* Mobile: 2 columns with smaller sizing */
+                  @media (max-width: 768px) {
+                    .services-grid {
+                      grid-template-columns: repeat(2, 1fr);
+                      gap: 8px;
+                    }
+                    .service-checkbox {
+                      padding: 8px 12px !important;
+                      gap: 8px !important;
+                    }
+                    .service-checkbox input[type="checkbox"] {
+                      width: 16px !important;
+                      height: 16px !important;
+                    }
+                    .service-checkbox span {
+                      font-size: 0.85rem !important;
+                    }
+                  }
+                `}</style>
+                <label className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                   <Sparkles className="w-4 h-4 text-primary" />
-                  Select Service *
+                  {t('bookingForm.serviceLabel')} * <span style={{ fontSize: '0.9rem', fontWeight: 'normal', color: '#666' }}>({t('bookingForm.selectMultiple') || 'Select one or more'})</span>
                 </label>
-                <div className="relative">
-                  <select
-                    id="bf-service"
-                    required
-                    value={formData.service}
-                    onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                    onFocus={() => setFocusedField('service')}
-                    onBlur={() => setFocusedField('')}
-                    className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none appearance-none cursor-pointer ${focusedField === 'service' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
-                  >
-                    <option value="">Choose a service</option>
-                    <option value="lash-extensions">💫 Lash Extensions</option>
-                    <option value="lash-lift">✨ Lash Lift</option>
-                    <option value="brow-lift">🌟 Brow Lift</option>
-                    <option value="makeup">💄 Professional Makeup</option>
-                    <option value="bridal-makeup">👰 Bridal Makeup</option>
-                    <option value="mehendi">🎨 Mehendi (Henna)</option>
-                    <option value="threading">🧵 Facial Threading</option>
-                  </select>
+                <div className="services-grid">
+                  {[
+                    { value: 'lash-extensions', label: t('bookingForm.serviceLashExtensions') },
+                    { value: 'lash-lift', label: t('bookingForm.serviceLashLift') },
+                    { value: 'brow-lift', label: t('bookingForm.serviceBrowLift') },
+                    { value: 'makeup', label: t('bookingForm.serviceMakeup') },
+                    { value: 'bridal-makeup', label: t('bookingForm.serviceBridalMakeup') },
+                    { value: 'mehendi', label: t('bookingForm.serviceMehendi') },
+                    { value: 'threading', label: t('bookingForm.serviceThreading') },
+                  ].map((service) => (
+                    <label
+                      key={service.value}
+                      className={`service-checkbox ${formData.services.includes(service.value) ? 'selected' : ''}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '12px 16px',
+                        border: '2px solid',
+                        borderColor: formData.services.includes(service.value) ? '#ff6fa3' : '#e5e7eb',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s',
+                        backgroundColor: formData.services.includes(service.value) ? '#fff6f8' : 'white',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.services.includes(service.value)}
+                        onChange={(e) => {
+                          const updatedServices = e.target.checked
+                            ? [...formData.services, service.value]
+                            : formData.services.filter((s) => s !== service.value);
+                          setFormData({ ...formData, services: updatedServices });
+                        }}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ff6fa3' }}
+                      />
+                      <span style={{ fontSize: '1rem', userSelect: 'none' }}>{service.label}</span>
+                    </label>
+                  ))}
                 </div>
+                {formData.services.length === 0 && (
+                  <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '8px' }}>{t('bookingForm.servicePlaceholder')}</p>
+                )}
               </div>
 
               {/* Date */}
               <div className="form-group">
                 <label htmlFor="bf-date" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                   <Calendar className="w-4 h-4 text-primary" />
-                  Preferred Date *
+                  {t('bookingForm.dateLabel')} *
                 </label>
                 <div className="relative">
                   <input
                     id="bf-date"
                     type="date"
                     required
+                    min={new Date().toISOString().split('T')[0]}
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                     onFocus={() => setFocusedField('date')}
                     onBlur={() => setFocusedField('')}
+                    onClick={(e) => {
+                      const input = e.currentTarget;
+                      if (!input.showPicker) return;
+                      try {
+                        input.showPicker();
+                      } catch (err) {
+                        // showPicker not supported in some browsers, fallback to default behavior
+                      }
+                    }}
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none cursor-pointer ${focusedField === 'date' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   />
                 </div>
@@ -208,7 +454,7 @@ const BookingForm: React.FC = () => {
               <div className="form-group">
                 <label htmlFor="bf-time" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                   <Clock className="w-4 h-4 text-primary" />
-                  Preferred Time *
+                  {t('bookingForm.timeLabel')} *
                 </label>
                 <div className="relative">
                   <select
@@ -220,17 +466,17 @@ const BookingForm: React.FC = () => {
                     onBlur={() => setFocusedField('')}
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none appearance-none cursor-pointer ${focusedField === 'time' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   >
-                    <option value="">Select time</option>
-                    <option value="09:00">🌅 9:00 AM</option>
-                    <option value="10:00">☀️ 10:00 AM</option>
-                    <option value="11:00">☀️ 11:00 AM</option>
-                    <option value="12:00">☀️ 12:00 PM</option>
-                    <option value="13:00">🌤️ 1:00 PM</option>
-                    <option value="14:00">🌤️ 2:00 PM</option>
-                    <option value="15:00">🌤️ 3:00 PM</option>
-                    <option value="16:00">🌅  4:00 PM</option>
-                    <option value="17:00">🌅 5:00 PM</option>
-                    <option value="18:00">🌆 6:00 PM</option>
+                    <option value="">{t('bookingForm.timePlaceholder')}</option>
+                    <option value="09:00">{t('bookingForm.time09')}</option>
+                    <option value="10:00">{t('bookingForm.time10')}</option>
+                    <option value="11:00">{t('bookingForm.time11')}</option>
+                    <option value="12:00">{t('bookingForm.time12')}</option>
+                    <option value="13:00">{t('bookingForm.time13')}</option>
+                    <option value="14:00">{t('bookingForm.time14')}</option>
+                    <option value="15:00">{t('bookingForm.time15')}</option>
+                    <option value="16:00">{t('bookingForm.time16')}</option>
+                    <option value="17:00">{t('bookingForm.time17')}</option>
+                    <option value="18:00">{t('bookingForm.time18')}</option>
                   </select>
                 </div>
               </div>
@@ -240,7 +486,7 @@ const BookingForm: React.FC = () => {
             <div className="form-group">
               <label htmlFor="bf-location" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                 <MapPin className="w-4 h-4 text-primary" />
-                Preferred Location *
+                {t('bookingForm.locationLabel')} *
               </label>
               <div className="relative">
                 <select
@@ -252,18 +498,59 @@ const BookingForm: React.FC = () => {
                   onBlur={() => setFocusedField('')}
                   className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none appearance-none cursor-pointer ${focusedField === 'location' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                 >
-                  <option value="">Choose location</option>
-                  <option value="studio">🏢 Studio Visit</option>
-                  <option value="home">🏠 Home Service</option>
+                  <option value="">{t('bookingForm.locationPlaceholder')}</option>
+                  <option value="studio">{t('bookingForm.locationStudio')}</option>
+                  <option value="home">{t('bookingForm.locationHome')}</option>
                 </select>
               </div>
             </div>
+
+            {/* Studio Address Display - Shows when At Our Place is selected */}
+            {formData.location === 'studio' && (
+              <div className="form-group">
+                <label className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  {t('bookingForm.addressLabel')}
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    readOnly
+                    value="Serenagatan 123, Malmö 21000"
+                    className="w-full px-6 py-4 text-lg bg-background border-2 border-border rounded-2xl outline-none cursor-default text-foreground"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Custom Address - Shows only when Home Service is selected */}
+            {formData.location === 'home' && (
+              <div className="form-group">
+                <label htmlFor="bf-address" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  {t('bookingForm.addressLabel')} *
+                </label>
+                <div className="relative">
+                  <input
+                    id="bf-address"
+                    type="text"
+                    required
+                    value={formData.customAddress}
+                    onChange={(e) => setFormData({ ...formData, customAddress: e.target.value })}
+                    onFocus={() => setFocusedField('address')}
+                    onBlur={() => setFocusedField('')}
+                    placeholder={t('bookingForm.addressPlaceholder')}
+                    className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'address' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Notes */}
             <div className="form-group">
               <label htmlFor="bf-notes" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                 <MessageSquare className="w-4 h-4 text-primary" />
-                Additional Notes
+                {t('bookingForm.notesLabel')}
               </label>
               <div className="relative">
                 <textarea
@@ -272,7 +559,7 @@ const BookingForm: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   onFocus={() => setFocusedField('notes')}
                   onBlur={() => setFocusedField('')}
-                  placeholder="Any special requests or questions?"
+                  placeholder={t('bookingForm.notesPlaceholder')}
                   rows={4}
                   className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none resize-none placeholder:text-muted-foreground/50 ${focusedField === 'notes' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                 />
@@ -282,11 +569,22 @@ const BookingForm: React.FC = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-4 px-8 bg-gradient-primary text-primary-foreground rounded-2xl font-bold text-lg shadow-rose transition-all duration-300 hover:shadow-lavender hover:scale-[1.02] hover:brightness-110 active:scale-[0.98] flex items-center justify-center gap-3 group"
+              disabled={isLoading}
+              className={`w-full py-4 px-8 bg-gradient-primary text-primary-foreground rounded-2xl font-bold text-lg shadow-rose transition-all duration-300 flex items-center justify-center gap-3 group ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-lavender hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]'}`}
             >
-              <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-              Request Appointment
-              <Sparkles className="w-5 h-5 group-hover:-rotate-12 transition-transform" />
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>{t('bookingForm.submitting') || 'Sending...'}</span>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                  {t('bookingForm.submitButton')}
+                  <Sparkles className="w-5 h-5 group-hover:-rotate-12 transition-transform" />
+                </>
+              )}
             </button>
 
             {/* Success Message */}
@@ -297,15 +595,15 @@ const BookingForm: React.FC = () => {
                     <Sparkles className="w-4 h-4 text-primary-foreground" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-foreground text-lg mb-1">Booking Request Received! ✨</h3>
-                    <p className="text-muted-foreground">We'll contact you shortly to confirm your appointment and answer any questions.</p>
+                    <h3 className="font-bold text-foreground text-lg mb-1">{t('bookingForm.successTitle')}</h3>
+                    <p className="text-muted-foreground">{t('bookingForm.successMessage')}</p>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Footer Note */}
-            <p className="text-sm text-muted-foreground text-center pt-4 border-t border-border/50">💖 We'll contact you within 24 hours to confirm your booking</p>
+            <p className="text-sm text-muted-foreground text-center pt-4 border-t border-border/50">{t('bookingForm.footerNote')}</p>
             </form>
           </div>
         </div>

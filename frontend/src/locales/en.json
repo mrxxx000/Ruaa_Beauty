@@ -1,0 +1,111 @@
+{
+  "nav": {
+    "home": "Home",
+    "lashes": "Lashes",
+    "makeup": "Makeup",
+    "mehendi": "Mehendi",
+    "book": "Book",
+    "contact": "Contact"
+  },
+  "hero": {
+  "title": "Ruaa Beauty",
+  "subtitle": "Where Elegance Meets Craftsmanship",
+  "description": "We offer premium lash extensions, lash lifts, brow lifts, professional makeup, facial threading, and stunning Mehendi (Henna) designs. Whether it's for a wedding, a celebration, or any special occasion — in our studio or in the comfort of your home — all the beauty you need is right here in one place.",
+  "bookButton": "Book Appointment"
+  },
+  "home": {
+    "lashesTitle": "Lashes",
+    "mehendiTitle": "Mehendi",
+    "ctaTitle": "Ready to Glow?",
+    "ctaDescription": "Browse our collection of premium beauty products and find your perfect match."
+  },
+  "Lashes": {
+  },
+
+
+  "contact": {
+    "title": "Contact Us",
+    "lead": "Whatever you need — we're here to help!",
+    "generalBookingsTitle": "General beauty bookings (lashes, makeup, threading)",
+    "generalBookingsDescription": "If you want to order lashes or book lash lifts, brow lifts, professional makeup, or facial threading, contact us on:",
+    "mehendiBookingsTitle": "Mehendi bookings",
+    "mehendiBookingsDescription": "If you want to book Mehendi, contact us on:",
+    "whatsapp": "WhatsApp",
+    "orDmInstagram": "or DM us on Instagram",
+    "bothServices": "If you want to book both beauty services + Mehendi, feel free to reach out on either number or message us on Instagram — we'll take care of everything!",
+    "perfectLook": "Your perfect look starts with a message."
+  },
+  "bookingForm": {
+    "badge": "Book Your Transformation",
+    "title": "Reserve Your Appointment",
+    "pricingTitle": "Our Services & Prices",
+    "selected": "Selected",
+    "selectService": "Choose a Service",
+    "priceLashExtensions": "Full, beautiful, and glamorous lashes",
+    "priceLashLift": "Natural lift, curl, and defined lashes",
+    "priceBrowLift": "Perfectly shaped, lifted, and defined brows",
+    "priceMakeup": "Professional, elegant, and long-lasting makeup",
+    "priceBridalMakeup": "Bridal makeup for your special day, elegant and radiant",
+    "priceMehendi": "Intricate, unique, and beautiful henna designs",
+    "priceThreading": "Precise, gentle, and professional facial threading",
+
+    "subtitle": "Fill out the form below and we'll contact you within 24 hours to confirm your booking",
+    "nameLabel": "Full Name",
+    "namePlaceholder": "Enter your name",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "your@email.com",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "(123) 456-7890",
+    "serviceLabel": "Select Services",
+    "selectMultiple": "Select one or more",
+    "selectAtLeastOneService": "Please select at least one service",
+    "servicePlaceholder": "Choose at least one service",
+    "serviceLashExtensions": "💫 Lash Extensions",
+    "serviceLashLift": "✨ Lash Lift",
+    "serviceBrowLift": "🌟 Brow Lift",
+    "serviceMakeup": "💄 Professional Makeup",
+    "serviceBridalMakeup": "👰 Bridal Makeup",
+    "serviceMehendi": "🎨 Mehendi (Henna)",
+    "serviceThreading": "🧵 Facial Threading",
+    "dateLabel": "Preferred Date",
+    "timeLabel": "Preferred Time",
+    "timePlaceholder": "Select time",
+    "time09": "🌅 9:00 AM",
+    "time10": "☀️ 10:00 AM",
+    "time11": "☀️ 11:00 AM",
+    "time12": "☀️ 12:00 PM",
+    "time13": "🌤️ 1:00 PM",
+    "time14": "🌤️ 2:00 PM",
+    "time15": "🌤️ 3:00 PM",
+    "time16": "🌅 4:00 PM",
+    "time17": "🌅 5:00 PM",
+    "time18": "🌆 6:00 PM",
+    "locationLabel": "Preferred Location",
+    "locationPlaceholder": "Choose location",
+    "locationStudio": "🏢 At Our Place",
+    "locationHome": "🏠 Home Service",
+    "addressLabel": "Your Address",
+    "addressPlaceholder": "Enter your full address for home service",
+    "notesLabel": "Additional Notes",
+    "notesPlaceholder": "Any special requests or questions?",
+    "submitButton": "Request Appointment",
+    "submitting": "Sending...",
+    "successTitle": "Booking Request Received! ✨",
+    "successMessage": "We'll contact you shortly to confirm your appointment and answer any questions.",
+    "footerNote": "💖 We'll contact you within 24 hours to confirm your booking"
+  },
+  "mehendi": {
+    "heroTitle": "Exquisite Mehendi Designs for Every Occasion",
+    "heroDescription": "Celebrate your special moments with our intricate Mehendi artistry. From weddings and engagements to festive gatherings, we create stunning hand and arm designs that are as unique as you. Beautiful, detailed, and crafted with love.",
+    "showSetA": "Show Set A",
+    "showSetB": "Show Set B",
+    "moreDesigns": "More designs"
+  },
+  "pages": {
+    "comingSoon": "Coming soon",
+    "backHome": "Back to Home"
+  },
+  "footer": {
+    "copyright": "© {{year}} Ruaa Beauty. All rights reserved."
+  }
+}
