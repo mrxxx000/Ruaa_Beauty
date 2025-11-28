@@ -62,6 +62,19 @@ app.post('/api/booking', async (req, res) => {
     const secure = typeof process.env.SMTP_SECURE !== 'undefined' ? process.env.SMTP_SECURE === 'true' : smtpPort === 465;
 
     const smtpConfigured = !!(process.env.SMTP_HOST || process.env.SMTP_USER || process.env.SMTP_FROM);
+    
+    // eslint-disable-next-line no-console
+    console.log('SMTP Config Check:', {
+      SMTP_HOST: process.env.SMTP_HOST,
+      SMTP_PORT: smtpPort,
+      SMTP_SECURE: secure,
+      SMTP_USER: process.env.SMTP_USER ? 'SET' : 'NOT SET',
+      SMTP_PASS: process.env.SMTP_PASS ? 'SET' : 'NOT SET',
+      SMTP_FROM: process.env.SMTP_FROM,
+      ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+      smtpConfigured,
+    });
+
     if (!smtpConfigured) {
       // eslint-disable-next-line no-console
       console.warn('SMTP not configured; booking saved to database but emails will not be sent.');
@@ -90,6 +103,9 @@ app.post('/api/booking', async (req, res) => {
     // Send emails asynchronously (don't block the response)
     transporter.verify()
       .then(() => {
+        // eslint-disable-next-line no-console
+        console.log('SMTP verification successful, sending emails...');
+        
         // Email to admin
         transporter.sendMail({
           from: process.env.SMTP_FROM || process.env.SMTP_USER,
@@ -107,9 +123,12 @@ app.post('/api/booking', async (req, res) => {
             <p><strong>Address:</strong> ${address || 'N/A'}</p>
             <p><strong>Notes:</strong> ${notes}</p>
           `,
+        }).then(() => {
+          // eslint-disable-next-line no-console
+          console.log('Admin email sent successfully to:', adminEmail);
         }).catch((err) => {
           // eslint-disable-next-line no-console
-          console.error('Failed to send admin email:', err);
+          console.error('Failed to send admin email:', err.message);
         });
 
         // Email to user
@@ -131,14 +150,17 @@ app.post('/api/booking', async (req, res) => {
             <hr>
             <p><strong>Need to cancel?</strong> <a href="${siteUrl}/unbook?token=${cancelToken}">Click here to cancel your booking</a></p>
           `,
+        }).then(() => {
+          // eslint-disable-next-line no-console
+          console.log('User email sent successfully to:', email);
         }).catch((err) => {
           // eslint-disable-next-line no-console
-          console.error('Failed to send user email:', err);
+          console.error('Failed to send user email:', err.message);
         });
       })
       .catch((verifyErr) => {
         // eslint-disable-next-line no-console
-        console.error('SMTP verification failed, emails will not be sent:', verifyErr);
+        console.error('SMTP verification failed:', verifyErr.message);
       });
 
     res.status(200).json({ message: 'Booking saved successfully. Confirmation email will be sent shortly.', cancelToken });
