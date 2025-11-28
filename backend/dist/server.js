@@ -82,10 +82,6 @@ app.post('/api/booking', async (req, res) => {
             tls: {
                 rejectUnauthorized: false,
             },
-            connectionTimeout: 10000,
-            socketTimeout: 10000,
-            maxConnections: 5,
-            maxMessages: 100,
         });
         const adminEmail = process.env.ADMIN_EMAIL || 'akmal123@gmail.com';
         const siteUrl = process.env.SITE_URL || 'https://ruaa-beauty.vercel.app';
