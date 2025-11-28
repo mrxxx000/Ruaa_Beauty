@@ -7,6 +7,7 @@ type FormData = {
   email: string;
   phone: string;
   services: string[];
+  mehendiHours: number; // Hours for Mehendi service
   date: string;
   time: string;
   location: string;
@@ -19,11 +20,21 @@ const defaultData: FormData = {
   email: '',
   phone: '',
   services: [],
+  mehendiHours: 0,
   date: '',
   time: '',
   location: '',
   customAddress: '',
   notes: '',
+};
+
+const SERVICES_PRICING: { [key: string]: number } = {
+  'lash-lift': 300,
+  'brow-lift': 300,
+  'makeup': 1000,
+  'bridal-makeup': 4000,
+  'mehendi': 400,
+  'threading': 200,
 };
 
 const BookingForm: React.FC = () => {
@@ -32,6 +43,51 @@ const BookingForm: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string>('');
+  const [availableHours, setAvailableHours] = useState<number[]>([9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+  const [unavailableHours, setUnavailableHours] = useState<number[]>([]);
+
+  // Calculate total price
+  const calculateTotalPrice = (services: string[], mehendiHours: number = 0): number => {
+    return services.reduce((total, service) => {
+      if (service === 'mehendi' && mehendiHours > 0) {
+        // Mehendi is priced per hour (400 kr/hour)
+        return total + (SERVICES_PRICING[service] * mehendiHours);
+      }
+      return total + (SERVICES_PRICING[service] || 0);
+    }, 0);
+  };
+
+  const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours);
+
+  // Fetch available times when date or services change
+  const fetchAvailableTimes = async (date: string, services: string[]) => {
+    if (!date || services.length === 0) {
+      // Reset to all hours if no date or services
+      setAvailableHours([9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+      setUnavailableHours([]);
+      return;
+    }
+
+    try {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+      const servicesParam = services.join(',');
+      const url = `${backendUrl}/api/available-times?date=${date}&services=${servicesParam}`;
+      
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableHours(data.availableHours || [9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+        setUnavailableHours(data.unavailableHours || []);
+        // Clear selected time if it's no longer available
+        if (formData.time && !data.availableHours.includes(parseInt(formData.time.split(':')[0]))) {
+          setFormData(prev => ({ ...prev, time: '' }));
+        }
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching available times:', err);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +95,12 @@ const BookingForm: React.FC = () => {
     // Validate at least one service is selected
     if (formData.services.length === 0) {
       alert(t('bookingForm.selectAtLeastOneService') || 'Please select at least one service');
+      return;
+    }
+
+    // Validate Mehendi hours if Mehendi is selected
+    if (formData.services.includes('mehendi') && formData.mehendiHours === 0) {
+      alert(t('bookingForm.selectMehendiHours') || 'Please select hours for Mehendi service');
       return;
     }
     
@@ -60,6 +122,13 @@ const BookingForm: React.FC = () => {
         location: formData.location,
         address: address,
         notes: formData.notes,
+        mehendiHours: formData.mehendiHours,
+        totalPrice: totalPrice,
+        servicePricing: formData.services.map(s => ({
+          name: s,
+          price: s === 'mehendi' ? (SERVICES_PRICING[s] * formData.mehendiHours) : (SERVICES_PRICING[s] || 0),
+          hours: s === 'mehendi' ? formData.mehendiHours : undefined
+        })),
       };
 
       console.log('Submitting booking data:', bookingData);
@@ -191,7 +260,6 @@ const BookingForm: React.FC = () => {
           `}</style>
           <div className="pricing-grid">
             {[
-              { icon: '💫', name: t('bookingForm.serviceLashExtensions'), price: '500 kr', value: 'lash-extensions', description: t('bookingForm.priceLashExtensions') || 'Beautiful, voluminous lashes' },
               { icon: '🌸', name: t('bookingForm.serviceLashLift'), price: '300 kr', value: 'lash-lift', description: t('bookingForm.priceLashLift') || 'Natural lift and curl' },
               { icon: '✨', name: t('bookingForm.serviceBrowLift'), price: '300 kr', value: 'brow-lift', description: t('bookingForm.priceBrowLift') || 'Perfectly shaped brows' },
               { icon: '💄', name: t('bookingForm.serviceMakeup'), price: '1000 kr', value: 'makeup', description: t('bookingForm.priceMakeup') || 'Professional makeup artistry' },
@@ -225,6 +293,10 @@ const BookingForm: React.FC = () => {
                     ? formData.services.filter((s) => s !== service.value)
                     : [...formData.services, service.value];
                   setFormData({ ...formData, services: updatedServices });
+                  // Fetch available times with updated services
+                  if (formData.date) {
+                    fetchAvailableTimes(formData.date, updatedServices);
+                  }
                 }}
               >
                 <div className="service-card-icon" style={{ fontSize: '3rem', marginBottom: '12px', textAlign: 'center' }}>{service.icon}</div>
@@ -237,6 +309,81 @@ const BookingForm: React.FC = () => {
                 <p className="service-card-description" style={{ fontSize: '0.95rem', color: '#6b7280', marginBottom: '16px', textAlign: 'center', minHeight: '40px' }}>
                   {service.description}
                 </p>
+
+                {/* Hours selector for Mehendi */}
+                {service.value === 'mehendi' && formData.services.includes('mehendi') && (
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    backgroundColor: '#fff6f8',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (formData.mehendiHours > 1) {
+                          setFormData({ ...formData, mehendiHours: formData.mehendiHours - 1 });
+                        }
+                      }}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '6px',
+                        border: '2px solid #ff6fa3',
+                        background: 'white',
+                        color: '#ff6fa3',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      −
+                    </button>
+                    <div style={{
+                      minWidth: '50px',
+                      textAlign: 'center',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      color: '#ff6fa3'
+                    }}>
+                      {formData.mehendiHours}h
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData({ ...formData, mehendiHours: formData.mehendiHours + 1 });
+                      }}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '6px',
+                        border: '2px solid #ff6fa3',
+                        background: '#ff6fa3',
+                        color: 'white',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+
                 <button
                   type="button"
                   className="service-card-button"
@@ -382,7 +529,6 @@ const BookingForm: React.FC = () => {
                 </label>
                 <div className="services-grid">
                   {[
-                    { value: 'lash-extensions', label: t('bookingForm.serviceLashExtensions') },
                     { value: 'lash-lift', label: t('bookingForm.serviceLashLift') },
                     { value: 'brow-lift', label: t('bookingForm.serviceBrowLift') },
                     { value: 'makeup', label: t('bookingForm.serviceMakeup') },
@@ -390,41 +536,214 @@ const BookingForm: React.FC = () => {
                     { value: 'mehendi', label: t('bookingForm.serviceMehendi') },
                     { value: 'threading', label: t('bookingForm.serviceThreading') },
                   ].map((service) => (
-                    <label
-                      key={service.value}
-                      className={`service-checkbox ${formData.services.includes(service.value) ? 'selected' : ''}`}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        padding: '12px 16px',
-                        border: '2px solid',
-                        borderColor: formData.services.includes(service.value) ? '#ff6fa3' : '#e5e7eb',
-                        borderRadius: '12px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s',
-                        backgroundColor: formData.services.includes(service.value) ? '#fff6f8' : 'white',
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.services.includes(service.value)}
-                        onChange={(e) => {
-                          const updatedServices = e.target.checked
-                            ? [...formData.services, service.value]
-                            : formData.services.filter((s) => s !== service.value);
-                          setFormData({ ...formData, services: updatedServices });
+                    <div key={service.value}>
+                      <label
+                        className={`service-checkbox ${formData.services.includes(service.value) ? 'selected' : ''}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '12px 16px',
+                          border: '2px solid',
+                          borderColor: formData.services.includes(service.value) ? '#ff6fa3' : '#e5e7eb',
+                          borderRadius: '12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s',
+                          backgroundColor: formData.services.includes(service.value) ? '#fff6f8' : 'white',
                         }}
-                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ff6fa3' }}
-                      />
-                      <span style={{ fontSize: '1rem', userSelect: 'none' }}>{service.label}</span>
-                    </label>
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.services.includes(service.value)}
+                          onChange={(e) => {
+                            const updatedServices = e.target.checked
+                              ? [...formData.services, service.value]
+                              : formData.services.filter((s) => s !== service.value);
+                            setFormData({ ...formData, services: updatedServices });
+                            // Fetch available times with updated services
+                            if (formData.date) {
+                              fetchAvailableTimes(formData.date, updatedServices);
+                            }
+                          }}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ff6fa3' }}
+                        />
+                        <span style={{ fontSize: '1rem', userSelect: 'none' }}>{service.label}</span>
+                      </label>
+
+                      {/* Hours selector for Mehendi in checkbox */}
+                      {service.value === 'mehendi' && formData.services.includes('mehendi') && (
+                        <div style={{
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: '#fff6f8',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
+                        }}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (formData.mehendiHours > 1) {
+                                setFormData({ ...formData, mehendiHours: formData.mehendiHours - 1 });
+                              }
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '2px solid #ff6fa3',
+                              background: 'white',
+                              color: '#ff6fa3',
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            −
+                          </button>
+                          <div style={{
+                            minWidth: '45px',
+                            textAlign: 'center',
+                            fontSize: '0.95rem',
+                            fontWeight: '600',
+                            color: '#ff6fa3'
+                          }}>
+                            {formData.mehendiHours}h
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setFormData({ ...formData, mehendiHours: formData.mehendiHours + 1 });
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '2px solid #ff6fa3',
+                              background: '#ff6fa3',
+                              color: 'white',
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
                 {formData.services.length === 0 && (
                   <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '8px' }}>{t('bookingForm.servicePlaceholder')}</p>
                 )}
               </div>
+
+              {/* Pricing Box */}
+              {formData.services.length > 0 && (
+                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                  <div style={{
+                    background: 'linear-gradient(135deg, #fff6f8 0%, #fff1f3 100%)',
+                    border: '2px solid #ff6fa3',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    marginBottom: '24px'
+                  }}>
+                    <h4 style={{ 
+                      fontSize: '1.1rem', 
+                      fontWeight: '600', 
+                      color: '#1f2937', 
+                      marginBottom: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      💰 {t('bookingForm.pricingSummary') || 'Pricing Summary'}
+                    </h4>
+                    
+                    {formData.services.length > 0 && (
+                      <div style={{ marginBottom: '16px' }}>
+                        {formData.services.map((serviceValue) => {
+                          // Map service value to display name
+                          const serviceNames: { [key: string]: string } = {
+                            'lash-lift': t('bookingForm.serviceLashLift'),
+                            'brow-lift': t('bookingForm.serviceBrowLift'),
+                            'makeup': t('bookingForm.serviceMakeup'),
+                            'bridal-makeup': t('bookingForm.serviceBridalMakeup'),
+                            'mehendi': t('bookingForm.serviceMehendi'),
+                            'threading': t('bookingForm.serviceThreading'),
+                          };
+
+                          // Calculate price for this service
+                          let servicePrice = SERVICES_PRICING[serviceValue] || 0;
+                          let priceLabel = `${servicePrice} kr`;
+                          
+                          if (serviceValue === 'mehendi' && formData.mehendiHours > 0) {
+                            servicePrice = SERVICES_PRICING[serviceValue] * formData.mehendiHours;
+                            priceLabel = `${SERVICES_PRICING[serviceValue]} kr × ${formData.mehendiHours}h = ${servicePrice} kr`;
+                          }
+                          
+                          return (
+                            <div 
+                              key={serviceValue}
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '8px 0',
+                                borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
+                                fontSize: '0.95rem',
+                                flexWrap: 'wrap',
+                                gap: '8px'
+                              }}
+                            >
+                              <span style={{ color: '#374151' }}>{serviceNames[serviceValue] || serviceValue}</span>
+                              <span style={{ fontWeight: '600', color: '#ff6fa3' }}>{priceLabel}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      paddingTop: '12px',
+                      borderTop: '2px solid #ff6fa3'
+                    }}>
+                      <span style={{ 
+                        fontSize: '1.1rem', 
+                        fontWeight: '700', 
+                        color: '#1f2937' 
+                      }}>
+                        {t('bookingForm.totalPrice') || 'Total Price'}:
+                      </span>
+                      <span style={{ 
+                        fontSize: '1.5rem', 
+                        fontWeight: '700', 
+                        background: 'linear-gradient(90deg, #ff6fa3 0%, #ff9ccf 100%)',
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        color: 'transparent'
+                      }}>
+                        {totalPrice} kr
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Date */}
               <div className="form-group">
@@ -439,7 +758,10 @@ const BookingForm: React.FC = () => {
                     required
                     min={new Date().toISOString().split('T')[0]}
                     value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, date: e.target.value });
+                      fetchAvailableTimes(e.target.value, formData.services);
+                    }}
                     onFocus={() => setFocusedField('date')}
                     onBlur={() => setFocusedField('')}
                     onClick={(e) => {
@@ -473,16 +795,29 @@ const BookingForm: React.FC = () => {
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none appearance-none cursor-pointer ${focusedField === 'time' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   >
                     <option value="">{t('bookingForm.timePlaceholder')}</option>
-                    <option value="09:00">{t('bookingForm.time09')}</option>
-                    <option value="10:00">{t('bookingForm.time10')}</option>
-                    <option value="11:00">{t('bookingForm.time11')}</option>
-                    <option value="12:00">{t('bookingForm.time12')}</option>
-                    <option value="13:00">{t('bookingForm.time13')}</option>
-                    <option value="14:00">{t('bookingForm.time14')}</option>
-                    <option value="15:00">{t('bookingForm.time15')}</option>
-                    <option value="16:00">{t('bookingForm.time16')}</option>
-                    <option value="17:00">{t('bookingForm.time17')}</option>
-                    <option value="18:00">{t('bookingForm.time18')}</option>
+                    {[
+                      { value: '09:00', label: t('bookingForm.time09'), hour: 9 },
+                      { value: '10:00', label: t('bookingForm.time10'), hour: 10 },
+                      { value: '11:00', label: t('bookingForm.time11'), hour: 11 },
+                      { value: '12:00', label: t('bookingForm.time12'), hour: 12 },
+                      { value: '13:00', label: t('bookingForm.time13'), hour: 13 },
+                      { value: '14:00', label: t('bookingForm.time14'), hour: 14 },
+                      { value: '15:00', label: t('bookingForm.time15'), hour: 15 },
+                      { value: '16:00', label: t('bookingForm.time16'), hour: 16 },
+                      { value: '17:00', label: t('bookingForm.time17'), hour: 17 },
+                      { value: '18:00', label: t('bookingForm.time18'), hour: 18 },
+                    ].map((time) => {
+                      const isUnavailable = unavailableHours.includes(time.hour);
+                      return (
+                        <option 
+                          key={time.value} 
+                          value={time.value}
+                          disabled={isUnavailable}
+                        >
+                          {time.label} {isUnavailable ? '(Unavailable)' : ''}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
               </div>

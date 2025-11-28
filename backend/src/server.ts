@@ -19,7 +19,7 @@ app.get('/', (_req, res) => {
 
 // POST /api/booking - accepts booking data, saves to Supabase, and sends emails
 app.post('/api/booking', async (req, res) => {
-  const { name, email, phone, service, date, time, location, address, notes } = req.body;
+  const { name, email, phone, service, date, time, location, address, notes, totalPrice, servicePricing, mehendiHours } = req.body;
 
   if (!name || !email) {
     return res.status(400).json({ message: 'Name and email are required' });
@@ -48,6 +48,9 @@ app.post('/api/booking', async (req, res) => {
         address,
         notes,
         cancel_token: cancelToken,
+        total_price: totalPrice || 0,
+        service_pricing: servicePricing || [],
+        mehendi_hours: mehendiHours || 0,
       },
     ]);
 
@@ -102,6 +105,39 @@ app.post('/api/booking', async (req, res) => {
         // Email to admin
         // eslint-disable-next-line no-console
         console.log(`📤 Sending admin email to: ${adminEmail}`);
+        
+        // Build pricing details for admin email
+        const adminPricingRows = servicePricing && servicePricing.length > 0
+          ? servicePricing.map((item: any) => {
+              // For Mehendi, show hours breakdown
+              if (item.name === 'mehendi' && item.hours) {
+                return `
+                  <tr>
+                    <td style="padding: 8px; text-align: left;">${item.name} (${item.hours}h)</td>
+                    <td style="padding: 8px; text-align: right; font-weight: bold;">${item.price} kr</td>
+                  </tr>
+                `;
+              }
+              return `
+                <tr>
+                  <td style="padding: 8px; text-align: left;">${item.name}</td>
+                  <td style="padding: 8px; text-align: right; font-weight: bold;">${item.price} kr</td>
+                </tr>
+              `;
+            }).join('')
+          : '';
+        
+        const adminPricingSection = totalPrice && totalPrice > 0 ? `
+          <h4 style="color: #1f2937; margin-top: 20px; margin-bottom: 10px;">Pricing Summary:</h4>
+          <table style="width: 100%; border-collapse: collapse;">
+            ${adminPricingRows}
+            <tr style="border-top: 2px solid #ff6fa3; font-weight: bold;">
+              <td style="padding: 12px; text-align: left; font-size: 1.1em;">Total Price</td>
+              <td style="padding: 12px; text-align: right; font-size: 1.2em; color: #ff6fa3;">${totalPrice} kr</td>
+            </tr>
+          </table>
+        ` : '';
+        
         const adminEmailObj = new brevo.SendSmtpEmail();
         adminEmailObj.sender = { email: fromEmail, name: 'Ruaa Beauty Bookings' };
         adminEmailObj.to = [{ email: adminEmail }];
@@ -117,6 +153,7 @@ app.post('/api/booking', async (req, res) => {
           <p><strong>Location:</strong> ${location}</p>
           <p><strong>Address:</strong> ${address || 'N/A'}</p>
           <p><strong>Notes:</strong> ${notes || 'None'}</p>
+          ${adminPricingSection}
         `;
 
         const adminResult = await apiInstance.sendTransacEmail(adminEmailObj);
@@ -126,6 +163,40 @@ app.post('/api/booking', async (req, res) => {
         // Email to customer
         // eslint-disable-next-line no-console
         console.log(`📤 Sending confirmation email to: ${email}`);
+        
+        // Build pricing details for email
+        const pricingRows = servicePricing && servicePricing.length > 0
+          ? servicePricing.map((item: any) => {
+              // For Mehendi, show hours breakdown
+              if (item.name === 'mehendi' && item.hours) {
+                return `
+                  <tr>
+                    <td style="padding: 8px; text-align: left;">${item.name} (${item.hours}h)</td>
+                    <td style="padding: 8px; text-align: right; font-weight: bold;">${item.price} kr</td>
+                  </tr>
+                `;
+              }
+              return `
+                <tr>
+                  <td style="padding: 8px; text-align: left;">${item.name}</td>
+                  <td style="padding: 8px; text-align: right; font-weight: bold;">${item.price} kr</td>
+                </tr>
+              `;
+            }).join('')
+          : '';
+        
+        const pricingSection = totalPrice && totalPrice > 0 ? `
+          <hr>
+          <h4 style="color: #1f2937; margin-top: 20px; margin-bottom: 10px;">Pricing Summary:</h4>
+          <table style="width: 100%; border-collapse: collapse;">
+            ${pricingRows}
+            <tr style="border-top: 2px solid #ff6fa3; font-weight: bold;">
+              <td style="padding: 12px; text-align: left; font-size: 1.1em;">Total Price</td>
+              <td style="padding: 12px; text-align: right; font-size: 1.2em; color: #ff6fa3;">${totalPrice} kr</td>
+            </tr>
+          </table>
+        ` : '';
+
         const userEmailObj = new brevo.SendSmtpEmail();
         userEmailObj.sender = { email: fromEmail, name: 'Ruaa Beauty' };
         userEmailObj.to = [{ email: email }];
@@ -140,6 +211,7 @@ app.post('/api/booking', async (req, res) => {
             <li><strong>Location:</strong> ${location}</li>
             <li><strong>Address:</strong> ${address || 'N/A'}</li>
           </ul>
+          ${pricingSection}
           <p>We will contact you shortly to confirm your appointment.</p>
           <hr>
           <p><small>Need to cancel? <a href="${siteUrl}/unbook?token=${cancelToken}">Click here to cancel your booking</a></small></p>
@@ -312,6 +384,86 @@ app.post('/api/unbook', async (req, res) => {
     console.error('Error processing cancellation:', err);
     res.status(500).json({
       message: 'Error processing cancellation',
+      details: err instanceof Error ? err.message : 'Unknown error',
+    });
+  }
+});
+
+// GET /api/available-times - get available time slots for a specific date and services
+app.get('/api/available-times', async (req, res) => {
+  const { date, services } = req.query;
+
+  if (!date || !services) {
+    return res.status(400).json({ message: 'Date and services are required' });
+  }
+
+  try {
+    const supabase = createClient(
+      process.env.SUPABASE_URL || '',
+      process.env.SUPABASE_SERVICE_ROLE || ''
+    );
+
+    // Get all bookings for this date
+    const { data: bookings, error: fetchError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('date', date);
+
+    if (fetchError) {
+      // eslint-disable-next-line no-console
+      console.error('Fetch error:', fetchError);
+      return res.status(500).json({ message: 'Error fetching bookings' });
+    }
+
+    // Define all available hours
+    const allHours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+    const unavailableHours = new Set<number>();
+
+    // Parse services array
+    const servicesArray: string[] = typeof services === 'string' 
+      ? services.split(',').map(s => s.trim()) 
+      : Array.isArray(services) ? (services as string[]) : [];
+
+    // Check each booking and mark unavailable hours based on service type
+    bookings?.forEach((booking: any) => {
+      const bookingTime = parseInt(booking.time.split(':')[0]); // Get hour from time
+      const bookingServices = booking.service.split(',').map((s: string) => s.trim());
+
+      bookingServices.forEach((bookedService: string) => {
+        if (bookedService === 'bridal-makeup') {
+          // Bridal makeup blocks entire day
+          allHours.forEach(h => unavailableHours.add(h));
+        } else if (bookedService === 'lash-lift' || bookedService === 'brow-lift' || bookedService === 'threading') {
+          // These services block 1 hour
+          unavailableHours.add(bookingTime);
+        } else if (bookedService === 'makeup') {
+          // Professional makeup blocks 3 hours
+          for (let i = 0; i < 3; i++) {
+            unavailableHours.add(bookingTime + i);
+          }
+        } else if (bookedService === 'mehendi') {
+          // Mehendi blocks hours based on booking duration
+          const mehendiHours = booking.mehendi_hours || 1;
+          for (let i = 0; i < mehendiHours; i++) {
+            unavailableHours.add(bookingTime + i);
+          }
+        }
+      });
+    });
+
+    // Filter available hours based on requested services
+    const availableHours = allHours.filter(hour => !unavailableHours.has(hour));
+
+    res.status(200).json({
+      date,
+      availableHours,
+      unavailableHours: Array.from(unavailableHours),
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Error fetching available times:', err);
+    res.status(500).json({
+      message: 'Error fetching available times',
       details: err instanceof Error ? err.message : 'Unknown error',
     });
   }
