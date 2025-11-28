@@ -191,7 +191,6 @@ const BookingForm: React.FC = () => {
           `}</style>
           <div className="pricing-grid">
             {[
-              { icon: '💫', name: t('bookingForm.serviceLashExtensions'), price: '500 kr', value: 'lash-extensions', description: t('bookingForm.priceLashExtensions') || 'Beautiful, voluminous lashes' },
               { icon: '🌸', name: t('bookingForm.serviceLashLift'), price: '300 kr', value: 'lash-lift', description: t('bookingForm.priceLashLift') || 'Natural lift and curl' },
               { icon: '✨', name: t('bookingForm.serviceBrowLift'), price: '300 kr', value: 'brow-lift', description: t('bookingForm.priceBrowLift') || 'Perfectly shaped brows' },
               { icon: '💄', name: t('bookingForm.serviceMakeup'), price: '1000 kr', value: 'makeup', description: t('bookingForm.priceMakeup') || 'Professional makeup artistry' },
@@ -382,7 +381,6 @@ const BookingForm: React.FC = () => {
                 </label>
                 <div className="services-grid">
                   {[
-                    { value: 'lash-extensions', label: t('bookingForm.serviceLashExtensions') },
                     { value: 'lash-lift', label: t('bookingForm.serviceLashLift') },
                     { value: 'brow-lift', label: t('bookingForm.serviceBrowLift') },
                     { value: 'makeup', label: t('bookingForm.serviceMakeup') },
