@@ -9,8 +9,6 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const supabase_js_1 = require("@supabase/supabase-js");
 const crypto_1 = require("crypto");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const SibApiV3Sdk = require('sib-api-v3-sdk');
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT ? Number(process.env.PORT) : 5000;
@@ -84,6 +82,13 @@ app.post('/api/booking', async (req, res) => {
             tls: {
                 rejectUnauthorized: false,
             },
+            connectionUrl: `smtp${secure ? 's' : ''}://${process.env.SMTP_USER}:${process.env.SMTP_PASS}@${process.env.SMTP_HOST}:${smtpPort}`,
+            pool: {
+                maxConnections: 1,
+                maxMessages: Infinity,
+                rateDelta: 20000,
+                rateLimit: 5,
+            },
         });
         const adminEmail = process.env.ADMIN_EMAIL || 'akmal123@gmail.com';
         const siteUrl = process.env.SITE_URL || 'https://ruaa-beauty.vercel.app';
@@ -92,8 +97,25 @@ app.post('/api/booking', async (req, res) => {
             try {
                 // eslint-disable-next-line no-console
                 console.log('Attempting to send emails via Brevo SMTP...');
+                const sendWithRetry = async (mailOptions, retries = 3) => {
+                    for (let attempt = 1; attempt <= retries; attempt++) {
+                        try {
+                            return await transporter.sendMail(mailOptions);
+                        }
+                        catch (err) {
+                            // eslint-disable-next-line no-console
+                            console.error(`Attempt ${attempt}/${retries} failed:`, err instanceof Error ? err.message : String(err));
+                            if (attempt < retries) {
+                                await new Promise(resolve => setTimeout(resolve, 2000 * attempt)); // Wait 2s, 4s, 6s between attempts
+                            }
+                            else {
+                                throw err;
+                            }
+                        }
+                    }
+                };
                 // Email to admin
-                await transporter.sendMail({
+                await sendWithRetry({
                     from: process.env.SMTP_FROM || process.env.SMTP_USER,
                     to: adminEmail,
                     subject: `New Booking from ${name}`,
@@ -113,7 +135,7 @@ app.post('/api/booking', async (req, res) => {
                 // eslint-disable-next-line no-console
                 console.log('✓ Admin email sent to:', adminEmail);
                 // Email to user
-                await transporter.sendMail({
+                await sendWithRetry({
                     from: process.env.SMTP_FROM || process.env.SMTP_USER,
                     to: email,
                     subject: 'Booking Confirmation',
@@ -137,7 +159,7 @@ app.post('/api/booking', async (req, res) => {
             }
             catch (emailErr) {
                 // eslint-disable-next-line no-console
-                console.error('Email sending failed:', emailErr instanceof Error ? emailErr.message : String(emailErr));
+                console.error('Email sending failed after all retries:', emailErr instanceof Error ? emailErr.message : String(emailErr));
             }
         };
         // Send emails in background (don't wait for them)
