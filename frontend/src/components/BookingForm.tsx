@@ -201,7 +201,6 @@ const BookingForm: React.FC = () => {
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none appearance-none cursor-pointer ${focusedField === 'service' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   >
                     <option value="">{t('bookingForm.servicePlaceholder')}</option>
-                    <option value="lash-extensions">{t('bookingForm.serviceLashExtensions')}</option>
                     <option value="lash-lift">{t('bookingForm.serviceLashLift')}</option>
                     <option value="brow-lift">{t('bookingForm.serviceBrowLift')}</option>
                     <option value="makeup">{t('bookingForm.serviceMakeup')}</option>
@@ -223,10 +222,20 @@ const BookingForm: React.FC = () => {
                     id="bf-date"
                     type="date"
                     required
+                    min={new Date().toISOString().split('T')[0]}
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                     onFocus={() => setFocusedField('date')}
                     onBlur={() => setFocusedField('')}
+                    onClick={(e) => {
+                      const input = e.currentTarget;
+                      if (!input.showPicker) return;
+                      try {
+                        input.showPicker();
+                      } catch (err) {
+                        // showPicker not supported in some browsers, fallback to default behavior
+                      }
+                    }}
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none cursor-pointer ${focusedField === 'date' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   />
                 </div>
