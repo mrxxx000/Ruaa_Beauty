@@ -95,6 +95,10 @@ app.post('/api/booking', async (req, res) => {
       tls: {
         rejectUnauthorized: false,
       },
+      connectionTimeout: 10000,
+      socketTimeout: 10000,
+      maxConnections: 5,
+      maxMessages: 100,
     });
 
     const adminEmail = process.env.ADMIN_EMAIL || 'akmal123@gmail.com';
@@ -107,8 +111,12 @@ app.post('/api/booking', async (req, res) => {
         // eslint-disable-next-line no-console
         console.log('Attempting to send emails...');
         
+        const emailTimeout = new Promise<void>((_, reject) =>
+          setTimeout(() => reject(new Error('Email sending timeout after 15 seconds')), 15000)
+        );
+
         // Email to admin
-        await transporter.sendMail({
+        const adminEmailPromise = transporter.sendMail({
           from: process.env.SMTP_FROM || process.env.SMTP_USER,
           to: adminEmail,
           subject: `New Booking from ${name}`,
@@ -125,11 +133,13 @@ app.post('/api/booking', async (req, res) => {
             <p><strong>Notes:</strong> ${notes}</p>
           `,
         });
+
+        await Promise.race([adminEmailPromise, emailTimeout]);
         // eslint-disable-next-line no-console
         console.log('✓ Admin email sent to:', adminEmail);
 
         // Email to user
-        await transporter.sendMail({
+        const userEmailPromise = transporter.sendMail({
           from: process.env.SMTP_FROM || process.env.SMTP_USER,
           to: email,
           subject: 'Booking Confirmation',
@@ -148,6 +158,8 @@ app.post('/api/booking', async (req, res) => {
             <p><strong>Need to cancel?</strong> <a href="${siteUrl}/unbook?token=${cancelToken}">Click here to cancel your booking</a></p>
           `,
         });
+
+        await Promise.race([userEmailPromise, emailTimeout]);
         // eslint-disable-next-line no-console
         console.log('✓ User email sent to:', email);
       } catch (emailErr) {
