@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
+import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'crypto';
 
 dotenv.config();
 
@@ -15,7 +17,7 @@ app.get('/', (_req, res) => {
   res.send('Hello from backend');
 });
 
-// POST /api/booking - accepts booking data and sends email to admin and user
+// POST /api/booking - accepts booking data, saves to Supabase, and sends emails
 app.post('/api/booking', async (req, res) => {
   const { name, email, phone, service, date, time, location, address, notes } = req.body;
 
@@ -24,24 +26,54 @@ app.post('/api/booking', async (req, res) => {
   }
 
   try {
-    // Transporter configuration from environment variables (robust defaults)
-    const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined;
-    const secure = typeof process.env.SMTP_SECURE !== 'undefined' ? process.env.SMTP_SECURE === 'true' : port === 465;
+    // --- Initialize Supabase client ---
+    const supabase = createClient(
+      process.env.SUPABASE_URL || '',
+      process.env.SUPABASE_SERVICE_ROLE || ''
+    );
 
-    // If smtp-related env vars are not provided, assume development mode and skip sending emails.
+    // Generate cancel token
+    const cancelToken = randomUUID();
+
+    // Save booking to database
+    const { error: dbError } = await supabase.from('bookings').insert([
+      {
+        name,
+        email,
+        phone,
+        service,
+        date,
+        time,
+        location,
+        address,
+        notes,
+        cancel_token: cancelToken,
+      },
+    ]);
+
+    if (dbError) {
+      // eslint-disable-next-line no-console
+      console.error('Supabase insert error:', dbError);
+      return res.status(500).json({ message: 'Database error', details: dbError.message });
+    }
+
+    // --- Email logic ---
+    const smtpPort = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined;
+    const secure = typeof process.env.SMTP_SECURE !== 'undefined' ? process.env.SMTP_SECURE === 'true' : smtpPort === 465;
+
     const smtpConfigured = !!(process.env.SMTP_HOST || process.env.SMTP_USER || process.env.SMTP_FROM);
     if (!smtpConfigured) {
       // eslint-disable-next-line no-console
-      console.warn('SMTP not configured; skipping email send. Booking will be accepted but emails will not be sent.');
-      // Log the booking payload so developer can inspect it in dev.
-      // eslint-disable-next-line no-console
-      console.log('Booking details:', { name, email, phone, service, date, time, location, address, notes });
-      return res.status(200).json({ message: 'Booking received (emails skipped - SMTP not configured)' });
+      console.warn('SMTP not configured; booking saved to database but emails will not be sent.');
+      return res.status(200).json({
+        message: 'Booking saved to database (emails skipped - SMTP not configured)',
+        cancelToken,
+      });
     }
 
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || undefined,
-      port: port,
+      port: smtpPort,
       secure,
       auth: process.env.SMTP_USER
         ? {
@@ -52,10 +84,8 @@ app.post('/api/booking', async (req, res) => {
       tls: { rejectUnauthorized: process.env.SMTP_TLS_REJECT_UNAUTHORIZED !== 'false' },
     });
 
-    // Verify transporter configuration early to give a clear error
+    // Verify transporter configuration early
     try {
-      // this will throw if credentials/connection fail
-      // eslint-disable-next-line no-await-in-loop
       await transporter.verify();
     } catch (verifyErr) {
       // eslint-disable-next-line no-console
@@ -64,6 +94,7 @@ app.post('/api/booking', async (req, res) => {
     }
 
     const adminEmail = process.env.ADMIN_EMAIL || 'akmal123@gmail.com';
+    const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
 
     // Email to admin
     await transporter.sendMail({
@@ -100,14 +131,71 @@ app.post('/api/booking', async (req, res) => {
           <li><strong>Address:</strong> ${address || 'N/A'}</li>
         </ul>
         <p>We will contact you shortly to confirm.</p>
+        <hr>
+        <p><strong>Need to cancel?</strong> <a href="${siteUrl}/unbook?token=${cancelToken}">Click here to cancel your booking</a></p>
       `,
     });
 
-    res.status(200).json({ message: 'Emails sent successfully' });
+    res.status(200).json({ message: 'Booking saved & emails sent successfully', cancelToken });
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error('Error sending booking emails', err);
-    res.status(500).json({ message: 'Error sending emails' });
+    console.error('Error processing booking:', err);
+    res.status(500).json({ message: 'Error processing booking', details: err instanceof Error ? err.message : 'Unknown error' });
+  }
+});
+
+// POST /api/unbook - cancel booking by token
+app.post('/api/unbook', async (req, res) => {
+  const { token } = req.body || req.query || {};
+
+  if (!token) {
+    return res.status(400).json({ message: 'Cancel token is required' });
+  }
+
+  try {
+    const supabase = createClient(
+      process.env.SUPABASE_URL || '',
+      process.env.SUPABASE_SERVICE_ROLE || ''
+    );
+
+    // Find booking by cancel_token
+    const { data, error: fetchError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('cancel_token', token)
+      .single();
+
+    if (fetchError || !data) {
+      // eslint-disable-next-line no-console
+      console.error('Booking fetch error:', fetchError);
+      return res.status(404).json({ message: 'Booking not found or already cancelled' });
+    }
+
+    // Delete the booking
+    const { error: deleteError } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('id', data.id);
+
+    if (deleteError) {
+      // eslint-disable-next-line no-console
+      console.error('Delete error:', deleteError);
+      return res.status(500).json({ message: 'Error cancelling booking', details: deleteError.message });
+    }
+
+    res.status(200).json({
+      message: 'Booking cancelled successfully',
+      booking: {
+        name: data.name,
+        email: data.email,
+        service: data.service,
+        date: data.date,
+      },
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Error processing cancellation:', err);
+    res.status(500).json({ message: 'Error processing cancellation', details: err instanceof Error ? err.message : 'Unknown error' });
   }
 });
 

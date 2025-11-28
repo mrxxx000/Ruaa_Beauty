@@ -49,11 +49,17 @@ const BookingForm: React.FC = () => {
         ? 'Serenagatan 123, Malmö 21000'
         : formData.customAddress;
 
-      // Prepare booking data with address and services as comma-separated string
+      // Prepare booking data - only send fields the API expects
       const bookingData = {
-        ...formData,
-        service: formData.services.join(', '), // Convert array to string for backend compatibility
-        address
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service: formData.services.join(', '), // Convert array to comma-separated string
+        date: formData.date,
+        time: formData.time,
+        location: formData.location,
+        address: address,
+        notes: formData.notes,
       };
 
       console.log('Submitting booking data:', bookingData);
