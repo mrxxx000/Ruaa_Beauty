@@ -19,7 +19,7 @@ app.get('/', (_req, res) => {
 
 // POST /api/booking - accepts booking data, saves to Supabase, and sends emails
 app.post('/api/booking', async (req, res) => {
-  const { name, email, phone, service, date, time, location, address, notes, totalPrice, servicePricing } = req.body;
+  const { name, email, phone, service, date, time, location, address, notes, totalPrice, servicePricing, mehendiHours } = req.body;
 
   if (!name || !email) {
     return res.status(400).json({ message: 'Name and email are required' });
@@ -50,6 +50,7 @@ app.post('/api/booking', async (req, res) => {
         cancel_token: cancelToken,
         total_price: totalPrice || 0,
         service_pricing: servicePricing || [],
+        mehendi_hours: mehendiHours || 0,
       },
     ]);
 
@@ -107,12 +108,23 @@ app.post('/api/booking', async (req, res) => {
         
         // Build pricing details for admin email
         const adminPricingRows = servicePricing && servicePricing.length > 0
-          ? servicePricing.map((item: any) => `
-              <tr>
-                <td style="padding: 8px; text-align: left;">${item.name}</td>
-                <td style="padding: 8px; text-align: right; font-weight: bold;">${item.price} kr</td>
-              </tr>
-            `).join('')
+          ? servicePricing.map((item: any) => {
+              // For Mehendi, show hours breakdown
+              if (item.name === 'mehendi' && item.hours) {
+                return `
+                  <tr>
+                    <td style="padding: 8px; text-align: left;">${item.name} (${item.hours}h)</td>
+                    <td style="padding: 8px; text-align: right; font-weight: bold;">${item.price} kr</td>
+                  </tr>
+                `;
+              }
+              return `
+                <tr>
+                  <td style="padding: 8px; text-align: left;">${item.name}</td>
+                  <td style="padding: 8px; text-align: right; font-weight: bold;">${item.price} kr</td>
+                </tr>
+              `;
+            }).join('')
           : '';
         
         const adminPricingSection = totalPrice && totalPrice > 0 ? `
@@ -154,12 +166,23 @@ app.post('/api/booking', async (req, res) => {
         
         // Build pricing details for email
         const pricingRows = servicePricing && servicePricing.length > 0
-          ? servicePricing.map((item: any) => `
-              <tr>
-                <td style="padding: 8px; text-align: left;">${item.name}</td>
-                <td style="padding: 8px; text-align: right; font-weight: bold;">${item.price} kr</td>
-              </tr>
-            `).join('')
+          ? servicePricing.map((item: any) => {
+              // For Mehendi, show hours breakdown
+              if (item.name === 'mehendi' && item.hours) {
+                return `
+                  <tr>
+                    <td style="padding: 8px; text-align: left;">${item.name} (${item.hours}h)</td>
+                    <td style="padding: 8px; text-align: right; font-weight: bold;">${item.price} kr</td>
+                  </tr>
+                `;
+              }
+              return `
+                <tr>
+                  <td style="padding: 8px; text-align: left;">${item.name}</td>
+                  <td style="padding: 8px; text-align: right; font-weight: bold;">${item.price} kr</td>
+                </tr>
+              `;
+            }).join('')
           : '';
         
         const pricingSection = totalPrice && totalPrice > 0 ? `

@@ -7,6 +7,7 @@ type FormData = {
   email: string;
   phone: string;
   services: string[];
+  mehendiHours: number; // Hours for Mehendi service
   date: string;
   time: string;
   location: string;
@@ -19,6 +20,7 @@ const defaultData: FormData = {
   email: '',
   phone: '',
   services: [],
+  mehendiHours: 0,
   date: '',
   time: '',
   location: '',
@@ -43,13 +45,17 @@ const BookingForm: React.FC = () => {
   const [focusedField, setFocusedField] = useState<string>('');
 
   // Calculate total price
-  const calculateTotalPrice = (services: string[]): number => {
+  const calculateTotalPrice = (services: string[], mehendiHours: number = 0): number => {
     return services.reduce((total, service) => {
+      if (service === 'mehendi' && mehendiHours > 0) {
+        // Mehendi is priced per hour (400 kr/hour)
+        return total + (SERVICES_PRICING[service] * mehendiHours);
+      }
       return total + (SERVICES_PRICING[service] || 0);
     }, 0);
   };
 
-  const totalPrice = calculateTotalPrice(formData.services);
+  const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +63,12 @@ const BookingForm: React.FC = () => {
     // Validate at least one service is selected
     if (formData.services.length === 0) {
       alert(t('bookingForm.selectAtLeastOneService') || 'Please select at least one service');
+      return;
+    }
+
+    // Validate Mehendi hours if Mehendi is selected
+    if (formData.services.includes('mehendi') && formData.mehendiHours === 0) {
+      alert(t('bookingForm.selectMehendiHours') || 'Please select hours for Mehendi service');
       return;
     }
     
@@ -78,10 +90,12 @@ const BookingForm: React.FC = () => {
         location: formData.location,
         address: address,
         notes: formData.notes,
+        mehendiHours: formData.mehendiHours,
         totalPrice: totalPrice,
         servicePricing: formData.services.map(s => ({
           name: s,
-          price: SERVICES_PRICING[s] || 0
+          price: s === 'mehendi' ? (SERVICES_PRICING[s] * formData.mehendiHours) : (SERVICES_PRICING[s] || 0),
+          hours: s === 'mehendi' ? formData.mehendiHours : undefined
         })),
       };
 
@@ -259,6 +273,81 @@ const BookingForm: React.FC = () => {
                 <p className="service-card-description" style={{ fontSize: '0.95rem', color: '#6b7280', marginBottom: '16px', textAlign: 'center', minHeight: '40px' }}>
                   {service.description}
                 </p>
+
+                {/* Hours selector for Mehendi */}
+                {service.value === 'mehendi' && formData.services.includes('mehendi') && (
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    backgroundColor: '#fff6f8',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (formData.mehendiHours > 1) {
+                          setFormData({ ...formData, mehendiHours: formData.mehendiHours - 1 });
+                        }
+                      }}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '6px',
+                        border: '2px solid #ff6fa3',
+                        background: 'white',
+                        color: '#ff6fa3',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      −
+                    </button>
+                    <div style={{
+                      minWidth: '50px',
+                      textAlign: 'center',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      color: '#ff6fa3'
+                    }}>
+                      {formData.mehendiHours}h
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData({ ...formData, mehendiHours: formData.mehendiHours + 1 });
+                      }}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '6px',
+                        border: '2px solid #ff6fa3',
+                        background: '#ff6fa3',
+                        color: 'white',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+
                 <button
                   type="button"
                   className="service-card-button"
@@ -481,6 +570,15 @@ const BookingForm: React.FC = () => {
                             'mehendi': t('bookingForm.serviceMehendi'),
                             'threading': t('bookingForm.serviceThreading'),
                           };
+
+                          // Calculate price for this service
+                          let servicePrice = SERVICES_PRICING[serviceValue] || 0;
+                          let priceLabel = `${servicePrice} kr`;
+                          
+                          if (serviceValue === 'mehendi' && formData.mehendiHours > 0) {
+                            servicePrice = SERVICES_PRICING[serviceValue] * formData.mehendiHours;
+                            priceLabel = `${SERVICES_PRICING[serviceValue]} kr × ${formData.mehendiHours}h = ${servicePrice} kr`;
+                          }
                           
                           return (
                             <div 
@@ -490,11 +588,13 @@ const BookingForm: React.FC = () => {
                                 justifyContent: 'space-between',
                                 padding: '8px 0',
                                 borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
-                                fontSize: '0.95rem'
+                                fontSize: '0.95rem',
+                                flexWrap: 'wrap',
+                                gap: '8px'
                               }}
                             >
                               <span style={{ color: '#374151' }}>{serviceNames[serviceValue] || serviceValue}</span>
-                              <span style={{ fontWeight: '600', color: '#ff6fa3' }}>{SERVICES_PRICING[serviceValue] || 0} kr</span>
+                              <span style={{ fontWeight: '600', color: '#ff6fa3' }}>{priceLabel}</span>
                             </div>
                           );
                         })}
