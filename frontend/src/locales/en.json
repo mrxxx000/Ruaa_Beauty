@@ -76,6 +76,7 @@
     "notesLabel": "Additional Notes",
     "notesPlaceholder": "Any special requests or questions?",
     "submitButton": "Request Appointment",
+    "submitting": "Sending...",
     "successTitle": "Booking Request Received! ✨",
     "successMessage": "We'll contact you shortly to confirm your appointment and answer any questions.",
     "footerNote": "💖 We'll contact you within 24 hours to confirm your booking"

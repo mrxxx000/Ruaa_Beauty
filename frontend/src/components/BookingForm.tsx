@@ -30,10 +30,12 @@ const BookingForm: React.FC = () => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>(defaultData);
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       // Determine the address based on location choice
       const address = formData.location === 'studio' 
@@ -78,6 +80,8 @@ const BookingForm: React.FC = () => {
       // eslint-disable-next-line no-console
       console.error('Booking submit error:', err);
       alert('An error occurred while sending booking request. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -347,11 +351,22 @@ const BookingForm: React.FC = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-4 px-8 bg-gradient-primary text-primary-foreground rounded-2xl font-bold text-lg shadow-rose transition-all duration-300 hover:shadow-lavender hover:scale-[1.02] hover:brightness-110 active:scale-[0.98] flex items-center justify-center gap-3 group"
+              disabled={isLoading}
+              className={`w-full py-4 px-8 bg-gradient-primary text-primary-foreground rounded-2xl font-bold text-lg shadow-rose transition-all duration-300 flex items-center justify-center gap-3 group ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-lavender hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]'}`}
             >
-              <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-              {t('bookingForm.submitButton')}
-              <Sparkles className="w-5 h-5 group-hover:-rotate-12 transition-transform" />
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>{t('bookingForm.submitting') || 'Sending...'}</span>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                  {t('bookingForm.submitButton')}
+                  <Sparkles className="w-5 h-5 group-hover:-rotate-12 transition-transform" />
+                </>
+              )}
             </button>
 
             {/* Success Message */}
