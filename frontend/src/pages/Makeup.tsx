@@ -19,17 +19,21 @@ const Makeup: React.FC = () => {
             </Link>
             <span className="brand-title">Ruaa Beauty</span>
           </div>
-          <nav className="nav">
-            <Link to="/" className={location.pathname === '/' ? 'active' : ''}>{t('nav.home')}</Link>
-            <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>{t('nav.lashes')}</Link>
-            <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>{t('nav.mehendi')}</Link>
-            <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>{t('nav.makeup')}</Link>
-            <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>{t('nav.about')}</Link>
-            <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
-            <LanguageSwitcher />
-          </nav>
-        </div>
+           <nav className="nav">
+                      <Link to="/" className={location.pathname === '/' ? 'active' : ''}>{t('nav.home')}</Link>
+                      <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>{t('nav.lashes')}</Link>
+                      <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>{t('nav.makeup')}</Link>
+                      <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>{t('nav.mehendi')}</Link>
+                      <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>{t('nav.about')}</Link>
+                      <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
+                    </nav>
+                  </div>
       </header>
+
+      {/* Language Switcher - Below navbar, centered */}
+      <div className="lang-switcher-container">
+        <LanguageSwitcher />
+      </div>
 
       <main>
         <section className="container" style={{ padding: '80px 0', textAlign: 'center' }}>

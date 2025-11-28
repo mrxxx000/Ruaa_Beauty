@@ -16,7 +16,7 @@ const LanguageSwitcher: React.FC = () => {
       onClick={toggleLanguage}
       aria-label="Switch language"
     >
-      {i18n.language === 'en' ? '🇸🇪 SV' : '🇬🇧 EN'}
+      {i18n.language === 'en' ? 'Svenska' : 'English'}
     </button>
   );
 };

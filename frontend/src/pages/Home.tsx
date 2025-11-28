@@ -137,10 +137,14 @@ const Home: React.FC = () => {
             <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>{t('nav.mehendi')}</Link>
             <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>{t('nav.about')}</Link>
             <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
-            <LanguageSwitcher />
           </nav>
         </div>
       </header>
+
+      {/* Language Switcher - Below navbar, centered */}
+      <div className="lang-switcher-container">
+        <LanguageSwitcher />
+      </div>
 
       <main>
         <Hero />

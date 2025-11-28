@@ -7,57 +7,90 @@
     "about": "Om oss",
     "contact": "Kontakt"
   },
+
   "hero": {
     "title": "Ruaa Beauty",
-    "subtitle": "Där Elegans Möter Konst",
-    "description": "Från lyxiga fransförlängningar och franslyfter till brynlyfter, professionellt smink, ansiktstråding och intrikata Mehendi (Henna)-design, förverkligar vi dina skönhetsdrömmar. Perfekt för bröllop, fester eller något speciellt tillfälle i vår studio eller hemma hos dig. All den skönhet du behöver, allt på ett ställe.",
+    "subtitle": "Där elegans möter hantverk",
+    "description": "Vi erbjuder exklusiva fransförlängningar, lash lift, brow lift, professionell makeup, ansiktstrådning samt vackra Mehendi (Henna)-designer. Oavsett om det gäller bröllop, fest eller ett speciellt tillfälle – i vår studio eller hemma hos dig – hittar du all skönhet du behöver på ett och samma ställe.",
     "bookButton": "Boka Tid"
   },
+
   "home": {
     "lashesTitle": "Fransar",
     "mehendiTitle": "Mehendi",
     "ctaTitle": "Redo att Lysa?",
-    "ctaDescription": "Bläddra i vår samling av premium skönhetsprodukter och hitta din perfekta match."
+    "ctaDescription": "Utforska vårt utbud av exklusiva skönhetstjänster och hitta det som passar just dig."
   },
+
   "contact": {
     "title": "Kontakta Oss",
-    "lead": "Vad du än behöver — vi är här för att hjälpa!",
-    "generalBookingsTitle": "Allmänna skönhetsbokningar (fransar, smink, tråding)",
-    "generalBookingsDescription": "Om du vill beställa fransar eller boka franslyfter, brynlyfter, professionellt smink eller ansiktstråding, kontakta oss på:",
+    "lead": "Vad du än behöver – vi finns här för att hjälpa!",
+    "generalBookingsTitle": "Bokningar för skönhetstjänster",
+    "generalBookingsDescription": "För fransförlängningar, lash lift, brow lift, professionellt smink eller ansiktstrådning, kontakta oss på:",
     "mehendiBookingsTitle": "Mehendi-bokningar",
-    "mehendiBookingsDescription": "Om du vill boka Mehendi, kontakta oss på:",
+    "mehendiBookingsDescription": "För bokning av Mehendi, nå oss gärna på:",
     "whatsapp": "WhatsApp",
-    "bothServices": "Om du vill boka både skönhetstjänster + Mehendi, är du välkommen att höra av dig på något av numren eller skicka ett meddelande till oss på Instagram — vi tar hand om allt!",
-    "perfectLook": "Din perfekta look börjar med ett meddelande."
+    "bothServices": "Vill du boka både skönhetstjänster och Mehendi? Hör av dig via något av numren eller skicka ett DM på Instagram – vi tar hand om allt!",
+    "perfectLook": "Din skönhetsresa börjar med ett meddelande."
   },
+
   "bookingForm": {
-    "title": "Bokningsförfrågan",
-    "nameLabel": "Namn",
-    "namePlaceholder": "Ditt namn",
-    "emailLabel": "E-post",
+    "badge": "Boka Din Transformation",
+    "title": "Reservera Din Tid",
+    "subtitle": "Fyll i formuläret nedan så återkommer vi inom 24 timmar för att bekräfta din bokning.",
+    "nameLabel": "Fullständigt Namn",
+    "namePlaceholder": "Ange ditt namn",
+    "emailLabel": "E-postadress",
     "emailPlaceholder": "din@email.se",
-    "phoneLabel": "Telefon",
-    "phonePlaceholder": "+46 ...",
-    "serviceLabel": "Tjänst",
-    "servicePlaceholder": "t.ex. Fransar, Smink, Mehendi...",
-    "messageLabel": "Meddelande",
-    "messagePlaceholder": "Berätta mer om din bokning...",
-    "submitButton": "Skicka Förfrågan",
-    "sending": "Skickar...",
-    "success": "Förfrågan skickad! Vi kontaktar dig snart.",
-    "error": "Något gick fel. Försök igen eller kontakta oss direkt."
+    "phoneLabel": "Telefonnummer",
+    "phonePlaceholder": "(123) 456-7890",
+    "serviceLabel": "Välj Tjänst",
+    "servicePlaceholder": "Välj en tjänst",
+    "serviceLashExtensions": "💫 Fransförlängning",
+    "serviceLashLift": "✨ Lash Lift",
+    "serviceBrowLift": "🌟 Brow Lift",
+    "serviceMakeup": "💄 Professionellt Smink",
+    "serviceBridalMakeup": "👰 Brudsmink",
+    "serviceMehendi": "🎨 Mehendi (Henna)",
+    "serviceThreading": "🧵 Ansiktstrådning",
+    "dateLabel": "Önskat Datum",
+    "timeLabel": "Önskad Tid",
+    "timePlaceholder": "Välj tid",
+    "time09": "🌅 09:00",
+    "time10": "☀️ 10:00",
+    "time11": "☀️ 11:00",
+    "time12": "☀️ 12:00",
+    "time13": "🌤️ 13:00",
+    "time14": "🌤️ 14:00",
+    "time15": "🌤️ 15:00",
+    "time16": "🌅 16:00",
+    "time17": "🌅 17:00",
+    "time18": "🌆 18:00",
+    "locationLabel": "Plats",
+    "locationPlaceholder": "Välj plats",
+    "locationStudio": "🏢 Studio",
+    "locationHome": "🏠 Hembesök",
+    "notesLabel": "Ytterligare Anteckningar",
+    "notesPlaceholder": "Önskemål eller frågor?",
+    "submitButton": "Skicka Bokningsförfrågan",
+    "successTitle": "Bokningsförfrågan Mottagen! ✨",
+    "successMessage": "Vi kontaktar dig inom kort för att bekräfta din tid och svara på eventuella frågor.",
+    "footerNote": "💖 Vi återkommer inom 24 timmar med en bekräftelse."
   },
+
   "mehendi": {
     "heroTitle": "Utsökta Mehendi-designer för Alla Tillfällen",
-    "heroDescription": "Fira dina speciella stunder med vår intrikata Mehendi-konst. Från bröllop och förlovningar till festliga sammankomster, vi skapar fantastiska hand- och armdesigner som är lika unika som du. Vackra, detaljerade och skapade med kärlek.",
+    "heroDescription": "Fira livets speciella stunder med vår konstnärliga Mehendi. Från bröllop och förlovningar till festliga tillställningar – vi skapar hand- och armdesigner som är lika unika som du.",
     "showSetA": "Visa Set A",
     "showSetB": "Visa Set B",
     "moreDesigns": "Fler designer"
   },
+
   "pages": {
     "comingSoon": "Kommer snart",
     "backHome": "Tillbaka till Hem"
   },
+
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. Alla rättigheter förbehållna."
   }

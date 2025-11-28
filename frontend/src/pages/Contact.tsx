@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import BookingForm from '../components/BookingForm';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const Contact: React.FC = () => {
   const location = useLocation();
+  const { t } = useTranslation();
   
   return (
     <div className="contact-page">
@@ -17,43 +20,48 @@ const Contact: React.FC = () => {
             </Link>
             <span className="brand-title">Ruaa Beauty</span>
           </div>
-          <nav className="nav">
-            <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-            <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>Lashes</Link>
-            <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>Makeup</Link>
-            <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>Mehendi</Link>
-            <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>About</Link>
-            <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>Contact</Link>
-          </nav>
+           <nav className="nav">
+                      <Link to="/" className={location.pathname === '/' ? 'active' : ''}>{t('nav.home')}</Link>
+                      <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>{t('nav.lashes')}</Link>
+                      <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>{t('nav.makeup')}</Link>
+                      <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>{t('nav.mehendi')}</Link>
+                      <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>{t('nav.about')}</Link>
+                      <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
+                    </nav>
         </div>
       </header>
+
+      {/* Language Switcher - Below navbar, centered */}
+      <div className="lang-switcher-container">
+        <LanguageSwitcher />
+      </div>
 
       <main>
         <section className="container contact-main">
           <div className="contact-inner">
-            <h1 className="contact-title">Contact Us</h1>
+            <h1 className="contact-title">{t('contact.title')}</h1>
             <p className="contact-lead">
-              Whatever you need — we’re here to help!
+              {t('contact.lead')}
             </p>
 
             <div className="contact-block">
-              <h3>General beauty bookings (lashes, makeup, threading)</h3>
+              <h3>{t('contact.generalBookingsTitle')}</h3>
               <p>
-                If you want to order lashes or book lash lifts, brow lifts, professional makeup, or facial threading, contact us on:
+                {t('contact.generalBookingsDescription')}
               </p>
-              <p>📱 WhatsApp: <a href="https://wa.me/46704679469" target="_blank" rel="noreferrer">+46 70 467 94 69</a> or DM us on Instagram <a href="https://www.instagram.com/ruaa5r/" target="_blank" rel="noreferrer">@ruaa5r</a></p>
+              <p>📱 {t('contact.whatsapp')}: <a href="https://wa.me/46704679469" target="_blank" rel="noreferrer">+46 70 467 94 69</a> or DM us on Instagram <a href="https://www.instagram.com/ruaa5r/" target="_blank" rel="noreferrer">@ruaa5r</a></p>
 
-              <h3 style={{ marginTop: 18 }}>Mehendi bookings</h3>
+              <h3 style={{ marginTop: 18 }}>{t('contact.mehendiBookingsTitle')}</h3>
               <p>
-                If you want to book Mehendi, contact us on:
+                {t('contact.mehendiBookingsDescription')}
               </p>
-              <p>📱 WhatsApp: <a href="https://wa.me/467200030442" target="_blank" rel="noreferrer">+46 72 000 30 442</a> or DM us on Instagram <a href="https://www.instagram.com/glamourmehendi/" target="_blank" rel="noreferrer">@glamourmehendi</a></p>
+              <p>📱 {t('contact.whatsapp')}: <a href="https://wa.me/46720030442" target="_blank" rel="noreferrer">+46 72 00 30 442</a> or DM us on Instagram <a href="https://www.instagram.com/glamourmehendi/" target="_blank" rel="noreferrer">@glamourmehendi</a></p>
 
               <p style={{ marginTop: 18 }}>
-                If you want to book both beauty services + Mehendi, feel free to reach out on either number or message us on Instagram — we’ll take care of everything!
+                {t('contact.bothServices')}
               </p>
 
-              <p style={{ marginTop: 12 }}><strong>Your perfect look starts with a message.</strong></p>
+              <p style={{ marginTop: 12 }}><strong>{t('contact.perfectLook')}</strong></p>
             </div>
 
             {/* Booking form inserted here */}
@@ -64,7 +72,7 @@ const Contact: React.FC = () => {
 
       <footer className="site-footer">
         <div className="container text-center">
-          <p>© {new Date().getFullYear()} Ruaa Beauty. All rights reserved.</p>
+          <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
         </div>
       </footer>
     </div>

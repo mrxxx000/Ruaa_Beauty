@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, Calendar, Clock, MapPin, MessageSquare, User, Mail, Phone } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 type FormData = {
   name: string;
@@ -24,6 +25,7 @@ const defaultData: FormData = {
 };
 
 const BookingForm: React.FC = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>(defaultData);
   const [submitted, setSubmitted] = useState(false);
   const [focusedField, setFocusedField] = useState<string>('');
@@ -72,7 +74,7 @@ const BookingForm: React.FC = () => {
         <div className="text-center mb-12 animate-fade-in">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-card rounded-full shadow-rose">
             <Sparkles className="w-5 h-5 text-primary animate-glow-pulse" />
-            <span className="text-sm font-medium bg-gradient-primary bg-clip-text text-transparent">Book Your Transformation</span>
+            <span className="text-sm font-medium bg-gradient-primary bg-clip-text text-transparent">{t('bookingForm.badge')}</span>
           </div>
           <h2
             className="text-6xl md:text-7xl font-bold mb-4"
@@ -83,9 +85,9 @@ const BookingForm: React.FC = () => {
               color: 'transparent',
             }}
           >
-            Reserve Your Appointment
+            {t('bookingForm.title')}
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Fill out the form below and we'll contact you within 24 hours to confirm your booking</p>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t('bookingForm.subtitle')}</p>
         </div>
 
         {/* Form Card */}
@@ -98,7 +100,7 @@ const BookingForm: React.FC = () => {
               <div className="form-group">
                 <label htmlFor="bf-name" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                   <User className="w-4 h-4 text-primary" />
-                  Full Name *
+                  {t('bookingForm.nameLabel')} *
                 </label>
                 <div className="relative">
                   <input
@@ -108,7 +110,7 @@ const BookingForm: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     onFocus={() => setFocusedField('name')}
                     onBlur={() => setFocusedField('')}
-                    placeholder="Enter your name"
+                    placeholder={t('bookingForm.namePlaceholder')}
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'name' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   />
                 </div>
@@ -118,7 +120,7 @@ const BookingForm: React.FC = () => {
               <div className="form-group">
                 <label htmlFor="bf-email" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                   <Mail className="w-4 h-4 text-primary" />
-                  Email Address *
+                  {t('bookingForm.emailLabel')} *
                 </label>
                 <div className="relative">
                   <input
@@ -129,7 +131,7 @@ const BookingForm: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     onFocus={() => setFocusedField('email')}
                     onBlur={() => setFocusedField('')}
-                    placeholder="your@email.com"
+                    placeholder={t('bookingForm.emailPlaceholder')}
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'email' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   />
                 </div>
@@ -139,7 +141,7 @@ const BookingForm: React.FC = () => {
               <div className="form-group">
                 <label htmlFor="bf-phone" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                   <Phone className="w-4 h-4 text-primary" />
-                  Phone Number *
+                  {t('bookingForm.phoneLabel')} *
                 </label>
                 <div className="relative">
                   <input
@@ -150,7 +152,7 @@ const BookingForm: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     onFocus={() => setFocusedField('phone')}
                     onBlur={() => setFocusedField('')}
-                    placeholder="(123) 456-7890"
+                    placeholder={t('bookingForm.phonePlaceholder')}
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'phone' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   />
                 </div>
@@ -160,7 +162,7 @@ const BookingForm: React.FC = () => {
               <div className="form-group">
                 <label htmlFor="bf-service" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                   <Sparkles className="w-4 h-4 text-primary" />
-                  Select Service *
+                  {t('bookingForm.serviceLabel')} *
                 </label>
                 <div className="relative">
                   <select
@@ -172,14 +174,14 @@ const BookingForm: React.FC = () => {
                     onBlur={() => setFocusedField('')}
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none appearance-none cursor-pointer ${focusedField === 'service' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   >
-                    <option value="">Choose a service</option>
-                    <option value="lash-extensions">💫 Lash Extensions</option>
-                    <option value="lash-lift">✨ Lash Lift</option>
-                    <option value="brow-lift">🌟 Brow Lift</option>
-                    <option value="makeup">💄 Professional Makeup</option>
-                    <option value="bridal-makeup">👰 Bridal Makeup</option>
-                    <option value="mehendi">🎨 Mehendi (Henna)</option>
-                    <option value="threading">🧵 Facial Threading</option>
+                    <option value="">{t('bookingForm.servicePlaceholder')}</option>
+                    <option value="lash-extensions">{t('bookingForm.serviceLashExtensions')}</option>
+                    <option value="lash-lift">{t('bookingForm.serviceLashLift')}</option>
+                    <option value="brow-lift">{t('bookingForm.serviceBrowLift')}</option>
+                    <option value="makeup">{t('bookingForm.serviceMakeup')}</option>
+                    <option value="bridal-makeup">{t('bookingForm.serviceBridalMakeup')}</option>
+                    <option value="mehendi">{t('bookingForm.serviceMehendi')}</option>
+                    <option value="threading">{t('bookingForm.serviceThreading')}</option>
                   </select>
                 </div>
               </div>
@@ -188,7 +190,7 @@ const BookingForm: React.FC = () => {
               <div className="form-group">
                 <label htmlFor="bf-date" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                   <Calendar className="w-4 h-4 text-primary" />
-                  Preferred Date *
+                  {t('bookingForm.dateLabel')} *
                 </label>
                 <div className="relative">
                   <input
@@ -208,7 +210,7 @@ const BookingForm: React.FC = () => {
               <div className="form-group">
                 <label htmlFor="bf-time" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                   <Clock className="w-4 h-4 text-primary" />
-                  Preferred Time *
+                  {t('bookingForm.timeLabel')} *
                 </label>
                 <div className="relative">
                   <select
@@ -220,17 +222,17 @@ const BookingForm: React.FC = () => {
                     onBlur={() => setFocusedField('')}
                     className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none appearance-none cursor-pointer ${focusedField === 'time' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                   >
-                    <option value="">Select time</option>
-                    <option value="09:00">🌅 9:00 AM</option>
-                    <option value="10:00">☀️ 10:00 AM</option>
-                    <option value="11:00">☀️ 11:00 AM</option>
-                    <option value="12:00">☀️ 12:00 PM</option>
-                    <option value="13:00">🌤️ 1:00 PM</option>
-                    <option value="14:00">🌤️ 2:00 PM</option>
-                    <option value="15:00">🌤️ 3:00 PM</option>
-                    <option value="16:00">🌅  4:00 PM</option>
-                    <option value="17:00">🌅 5:00 PM</option>
-                    <option value="18:00">🌆 6:00 PM</option>
+                    <option value="">{t('bookingForm.timePlaceholder')}</option>
+                    <option value="09:00">{t('bookingForm.time09')}</option>
+                    <option value="10:00">{t('bookingForm.time10')}</option>
+                    <option value="11:00">{t('bookingForm.time11')}</option>
+                    <option value="12:00">{t('bookingForm.time12')}</option>
+                    <option value="13:00">{t('bookingForm.time13')}</option>
+                    <option value="14:00">{t('bookingForm.time14')}</option>
+                    <option value="15:00">{t('bookingForm.time15')}</option>
+                    <option value="16:00">{t('bookingForm.time16')}</option>
+                    <option value="17:00">{t('bookingForm.time17')}</option>
+                    <option value="18:00">{t('bookingForm.time18')}</option>
                   </select>
                 </div>
               </div>
@@ -240,7 +242,7 @@ const BookingForm: React.FC = () => {
             <div className="form-group">
               <label htmlFor="bf-location" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                 <MapPin className="w-4 h-4 text-primary" />
-                Preferred Location *
+                {t('bookingForm.locationLabel')} *
               </label>
               <div className="relative">
                 <select
@@ -252,9 +254,9 @@ const BookingForm: React.FC = () => {
                   onBlur={() => setFocusedField('')}
                   className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none appearance-none cursor-pointer ${focusedField === 'location' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                 >
-                  <option value="">Choose location</option>
-                  <option value="studio">🏢 Studio Visit</option>
-                  <option value="home">🏠 Home Service</option>
+                  <option value="">{t('bookingForm.locationPlaceholder')}</option>
+                  <option value="studio">{t('bookingForm.locationStudio')}</option>
+                  <option value="home">{t('bookingForm.locationHome')}</option>
                 </select>
               </div>
             </div>
@@ -263,7 +265,7 @@ const BookingForm: React.FC = () => {
             <div className="form-group">
               <label htmlFor="bf-notes" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
                 <MessageSquare className="w-4 h-4 text-primary" />
-                Additional Notes
+                {t('bookingForm.notesLabel')}
               </label>
               <div className="relative">
                 <textarea
@@ -272,7 +274,7 @@ const BookingForm: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   onFocus={() => setFocusedField('notes')}
                   onBlur={() => setFocusedField('')}
-                  placeholder="Any special requests or questions?"
+                  placeholder={t('bookingForm.notesPlaceholder')}
                   rows={4}
                   className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none resize-none placeholder:text-muted-foreground/50 ${focusedField === 'notes' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                 />
@@ -285,7 +287,7 @@ const BookingForm: React.FC = () => {
               className="w-full py-4 px-8 bg-gradient-primary text-primary-foreground rounded-2xl font-bold text-lg shadow-rose transition-all duration-300 hover:shadow-lavender hover:scale-[1.02] hover:brightness-110 active:scale-[0.98] flex items-center justify-center gap-3 group"
             >
               <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-              Request Appointment
+              {t('bookingForm.submitButton')}
               <Sparkles className="w-5 h-5 group-hover:-rotate-12 transition-transform" />
             </button>
 
@@ -297,15 +299,15 @@ const BookingForm: React.FC = () => {
                     <Sparkles className="w-4 h-4 text-primary-foreground" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-foreground text-lg mb-1">Booking Request Received! ✨</h3>
-                    <p className="text-muted-foreground">We'll contact you shortly to confirm your appointment and answer any questions.</p>
+                    <h3 className="font-bold text-foreground text-lg mb-1">{t('bookingForm.successTitle')}</h3>
+                    <p className="text-muted-foreground">{t('bookingForm.successMessage')}</p>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Footer Note */}
-            <p className="text-sm text-muted-foreground text-center pt-4 border-t border-border/50">💖 We'll contact you within 24 hours to confirm your booking</p>
+            <p className="text-sm text-muted-foreground text-center pt-4 border-t border-border/50">{t('bookingForm.footerNote')}</p>
             </form>
           </div>
         </div>

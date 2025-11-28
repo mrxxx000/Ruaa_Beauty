@@ -480,6 +480,14 @@
   .booking-inner-card { padding: 28px; }
 }
 
+/* Language Switcher Container - Below navbar */
+.lang-switcher-container {
+  display: flex;
+  justify-content: flex-start; /* Left side for desktop */
+  padding: 12px 20px;
+  background-color: #fff;
+}
+
 /* Language Switcher Button */
 .lang-switcher {
   background: linear-gradient(90deg, #ff9ccf, #ff6fa3);
@@ -497,6 +505,7 @@
   gap: 6px;
 }
 
+
 .lang-switcher:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 111, 163, 0.5);
@@ -505,4 +514,18 @@
 .lang-switcher:active {
   transform: translateY(0);
 }
+
+/* Mobile: Make language switcher smaller and left-aligned */
+@media (max-width: 640px) {
+  .lang-switcher-container {
+    justify-content: flex-start; /* Left side on mobile too */
+    padding: 5px 10px;
+  }
+  
+  .lang-switcher {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+}
+
 
