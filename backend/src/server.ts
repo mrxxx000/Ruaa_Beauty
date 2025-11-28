@@ -208,6 +208,7 @@ app.post('/api/unbook', async (req, res) => {
       return res.status(500).json({ message: 'Error cancelling booking', details: deleteError.message });
     }
 
+    // Send response immediately
     res.status(200).json({
       message: 'Booking cancelled successfully',
       booking: {
@@ -217,6 +218,95 @@ app.post('/api/unbook', async (req, res) => {
         date: data.date,
       },
     });
+
+    // Send cancellation emails asynchronously
+    const sendCancellationEmails = async () => {
+      try {
+        const apiKey = process.env.BREVO_API_KEY;
+        const adminEmail = process.env.ADMIN_EMAIL || 'akmalsafi43@gmail.com';
+        const fromEmail = process.env.SMTP_FROM || 'akmalsafi43@gmail.com';
+
+        if (!apiKey) {
+          // eslint-disable-next-line no-console
+          console.warn('⚠️ Brevo API key not configured for cancellation emails');
+          return;
+        }
+
+        // eslint-disable-next-line no-console
+        console.log('📧 Sending cancellation emails via Brevo API...');
+
+        const apiInstance = new brevo.TransactionalEmailsApi();
+        apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, apiKey);
+
+        // Email to admin - Cancellation Notification
+        // eslint-disable-next-line no-console
+        console.log(`📤 Sending cancellation notification to admin: ${adminEmail}`);
+        const adminCancelEmailObj = new brevo.SendSmtpEmail();
+        adminCancelEmailObj.sender = { email: fromEmail, name: 'Ruaa Beauty Bookings' };
+        adminCancelEmailObj.to = [{ email: adminEmail }];
+        adminCancelEmailObj.subject = `Booking Cancelled - ${data.name}`;
+        adminCancelEmailObj.htmlContent = `
+          <h3>Booking Cancellation Notification</h3>
+          <p>A booking has been cancelled by the customer.</p>
+          <hr>
+          <h4>Booking Details:</h4>
+          <ul>
+            <li><strong>Name:</strong> ${data.name}</li>
+            <li><strong>Email:</strong> ${data.email}</li>
+            <li><strong>Phone:</strong> ${data.phone}</li>
+            <li><strong>Service:</strong> ${data.service}</li>
+            <li><strong>Date:</strong> ${data.date}</li>
+            <li><strong>Time:</strong> ${data.time}</li>
+            <li><strong>Location:</strong> ${data.location}</li>
+            <li><strong>Address:</strong> ${data.address || 'N/A'}</li>
+          </ul>
+          <hr>
+          <p><small>This booking has been automatically removed from the system.</small></p>
+        `;
+
+        const adminResult = await apiInstance.sendTransacEmail(adminCancelEmailObj);
+        // eslint-disable-next-line no-console
+        console.log('✅ Admin cancellation email sent:', adminResult);
+
+        // Email to customer - Cancellation Confirmation
+        // eslint-disable-next-line no-console
+        console.log(`📤 Sending cancellation confirmation to customer: ${data.email}`);
+        const userCancelEmailObj = new brevo.SendSmtpEmail();
+        userCancelEmailObj.sender = { email: fromEmail, name: 'Ruaa Beauty' };
+        userCancelEmailObj.to = [{ email: data.email }];
+        userCancelEmailObj.subject = 'Booking Cancelled - Ruaa Beauty';
+        userCancelEmailObj.htmlContent = `
+          <h3>Hi ${data.name},</h3>
+          <p>Your booking with Ruaa Beauty has been successfully cancelled.</p>
+          <hr>
+          <h4>Cancelled Booking Details:</h4>
+          <ul>
+            <li><strong>Service:</strong> ${data.service}</li>
+            <li><strong>Date:</strong> ${data.date}</li>
+            <li><strong>Time:</strong> ${data.time}</li>
+            <li><strong>Location:</strong> ${data.location}</li>
+          </ul>
+          <hr>
+          <p>If you have any questions or would like to rebook, please feel free to contact us.</p>
+          <p>Thank you for your understanding.</p>
+          <hr>
+          <p><small>© Ruaa Beauty - Your beauty, our passion</small></p>
+        `;
+
+        const userResult = await apiInstance.sendTransacEmail(userCancelEmailObj);
+        // eslint-disable-next-line no-console
+        console.log('✅ Customer cancellation email sent:', userResult);
+      } catch (emailErr: any) {
+        // eslint-disable-next-line no-console
+        console.error('❌ Cancellation email sending failed:', {
+          message: emailErr.message,
+          body: emailErr.response?.body,
+        });
+      }
+    };
+
+    // Execute email sending in background
+    sendCancellationEmails();
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('Error processing cancellation:', err);

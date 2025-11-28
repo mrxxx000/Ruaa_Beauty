@@ -105,6 +105,26 @@
     "comingSoon": "Coming soon",
     "backHome": "Back to Home"
   },
+  "cancelBooking": {
+    "loading": "Loading booking information...",
+    "confirmTitle": "Cancel Your Booking?",
+    "confirmMessage": "Are you sure you want to cancel your booking? This action cannot be undone.",
+    "yesCancel": "Yes, Cancel Booking",
+    "noKeep": "No, Keep Booking",
+    "processing": "Processing cancellation...",
+    "successTitle": "Booking Cancelled",
+    "successMessage": "Your booking has been successfully cancelled.",
+    "emailsSent": "Confirmation emails have been sent to you and our admin team.",
+    "name": "Name",
+    "email": "Email",
+    "service": "Service",
+    "date": "Date",
+    "backHome": "Back to Home",
+    "errorTitle": "Cancellation Failed",
+    "errorMessage": "An error occurred while cancelling your booking.",
+    "notFoundTitle": "Booking Not Found",
+    "notFoundMessage": "The cancellation link is invalid or has expired."
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. All rights reserved."
   }

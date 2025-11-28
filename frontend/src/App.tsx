@@ -7,12 +7,14 @@ import Contact from './pages/Contact';
 import Makeup from './pages/Makeup';
 import About from './pages/About';
 import Lashes from './pages/Lashes';
+import CancelBooking from './pages/CancelBooking';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/unbook" element={<CancelBooking />} />
         <Route path="/mehendi" element={<Mehendi />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/makeup" element={<Makeup />} />
