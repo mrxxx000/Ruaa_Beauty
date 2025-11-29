@@ -1,0 +1,84 @@
+/* Main CSS Entry Point - Imports all component styles */
+
+/* Base App Styles */
+@import './base.css';
+
+/* Layout & Typography */
+@import './layout.css';
+
+/* Header & Navigation */
+@import './header.css';
+
+/* Buttons */
+@import './buttons.css';
+
+/* Home Page */
+@import './home-page.css';
+
+/* Hero Section */
+@import './hero.css';
+
+/* Features Section */
+@import './features.css';
+
+/* Video Grids */
+@import './video-grid.css';
+@import './videos.css';
+
+/* Mehendi Section */
+@import './mehendi.css';
+
+/* Booking Form */
+@import './booking-form.css';
+
+/* Language Switcher */
+@import './language-switcher.css';
+
+/* Footer */
+@import './footer.css';
+
+/* Contact Page */
+@import './contact.css';
+
+/* Global Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: 'Segoe UI', Roboto, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #fff;
+  color: #333;
+  line-height: 1.6;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff6fa3;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff1744;
+}

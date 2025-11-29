@@ -6,7 +6,7 @@ import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import BookingForm from '../components/BookingForm';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
-const About: React.FC = () => {
+const Book: React.FC = () => {
   const location = useLocation();
   const { t } = useTranslation();
   
@@ -50,4 +50,4 @@ const About: React.FC = () => {
   );
 };
 
-export default About;
+export default Book;

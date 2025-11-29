@@ -1,0 +1,189 @@
+/* Site Header & Navigation */
+.site-header {
+  background: transparent;
+  padding: 18px 0;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Brand Logo & Title */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.brand-title {
+  font-weight: 800;
+  font-size: 1.9rem;
+  letter-spacing: 0.5px;
+  font-family: 'Segoe UI', Roboto, -apple-system, 'Helvetica Neue', Arial;
+  transform: translateY(2px);
+  margin: 0;
+
+  /* ✨ Gradient text */
+  background: linear-gradient(
+    90deg,
+    #ff1744,
+    #ff6fa3,
+    #ff9fd4,
+    #ffb8e8,
+    #ffd8ef,
+    #ff9fd4,
+    #ff6fa3,
+    #ff1744
+  );
+  background-size: 300% 300%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* ✨ Shimmer animation */
+  animation: shimmer 4s ease-in-out infinite;
+
+  /* ✨ Glow effect */
+  filter: drop-shadow(0 0 8px rgba(255, 111, 163, 0.4));
+
+  position: relative;
+}
+
+/* ✨ Sparkle effect using pseudo-element */
+.brand-title::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(2px 2px at 20% 30%, white, rgba(255,255,255,0)),
+    radial-gradient(2px 2px at 60% 70%, white, rgba(255,255,255,0)),
+    radial-gradient(1px 1px at 50% 50%, white, rgba(255,255,255,0)),
+    radial-gradient(1px 1px at 80% 10%, white, rgba(255,255,255,0)),
+    radial-gradient(2px 2px at 90% 60%, white, rgba(255,255,255,0));
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+  animation: sparkle 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ✨ Shimmer movement */
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ✨ Sparkle twinkling */
+@keyframes sparkle {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.3; }
+}
+
+.brand img {
+  width: 96px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+/* Navigation */
+.nav a {
+  margin-left: 12px;
+  color: #6b6b6b;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.nav a.active {
+  color: #ff6fa3;
+  box-shadow: 0 0 12px rgba(255, 111, 163, 0.6);
+  background-color: rgba(255, 111, 163, 0.1);
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .header-inner {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .nav {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .nav a {
+    margin-left: 0;
+    padding: 6px 10px;
+    font-size: 0.95rem;
+  }
+
+  .brand img {
+    width: 72px;
+  }
+
+  .brand-title {
+    font-size: 1.4rem;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .nav {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .header-inner {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .brand {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .brand-title {
+  margin-right: 10px;
+  margin-left: 0;
+}
+
+[dir="rtl"] .nav a {
+  margin-left: 0;
+  margin-right: 12px;
+}
+
+@media (max-width: 640px) {
+  [dir="rtl"] .header-inner {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+
+  [dir="rtl"] .nav {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  [dir="rtl"] .brand {
+    flex-direction: row-reverse;
+    align-items: center;
+  }
+
+  [dir="rtl"] .brand-title {
+    margin-right: 0;
+    margin-left: 6px;
+  }
+}
