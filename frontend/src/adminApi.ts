@@ -1,4 +1,4 @@
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
 
 export interface Booking {
   id: string;
@@ -23,12 +23,13 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  phone_number?: string | null;
   role: string;
 }
 
 // Get all bookings (admin only)
 export async function getAllBookings(token: string): Promise<Booking[]> {
-  const response = await fetch(`${API_URL}/admin/bookings`, {
+  const response = await fetch(`${API_URL}/api/admin/bookings`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -47,7 +48,7 @@ export async function getAllBookings(token: string): Promise<Booking[]> {
 
 // Get all users (admin only)
 export async function getAllUsers(token: string): Promise<User[]> {
-  const response = await fetch(`${API_URL}/admin/users`, {
+  const response = await fetch(`${API_URL}/api/admin/users`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -70,7 +71,7 @@ export async function updateBookingStatus(
   bookingId: string,
   status: 'pending' | 'completed' | 'cancelled'
 ): Promise<Booking> {
-  const response = await fetch(`${API_URL}/admin/bookings/${bookingId}/status`, {
+  const response = await fetch(`${API_URL}/api/admin/bookings/${bookingId}/status`, {
     method: 'PUT',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -90,7 +91,7 @@ export async function updateBookingStatus(
 
 // Cancel booking (admin only)
 export async function cancelBookingAdmin(token: string, bookingId: string): Promise<void> {
-  const response = await fetch(`${API_URL}/admin/bookings/${bookingId}`, {
+  const response = await fetch(`${API_URL}/api/admin/bookings/${bookingId}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,

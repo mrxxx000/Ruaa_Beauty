@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import '../styles/App.css';
@@ -109,9 +109,25 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
 
 const Home: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+
+  // Redirect admin users to admin dashboard
+  useEffect(() => {
+    const user = localStorage.getItem('currentUser');
+    if (user) {
+      try {
+        const userObj = JSON.parse(user);
+        if (userObj.role === 'admin') {
+          navigate('/admin', { replace: true });
+        }
+      } catch (err) {
+        console.error('Failed to parse user:', err);
+      }
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (location.hash) {

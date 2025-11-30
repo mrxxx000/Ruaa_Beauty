@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LogOut, Users, Calendar, Menu } from 'lucide-react';
 import '../styles/admin-dashboard.css';
 import {
   getAllBookings,
@@ -18,19 +19,28 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'bookings' | 'users'>('bookings');
   const [token, setToken] = useState('');
+  const [currentUser, setCurrentUser] = useState<{ name: string; email: string } | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     // Check if user is authenticated and is admin
-    const storedToken = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('authToken');
+    const user = localStorage.getItem('currentUser');
 
     if (!storedToken || !user) {
       navigate('/');
       return;
     }
 
-    const userObj = JSON.parse(user);
-    if (userObj.role !== 'admin') {
+    try {
+      const userObj = JSON.parse(user);
+      if (userObj.role !== 'admin') {
+        navigate('/');
+        return;
+      }
+      setCurrentUser(userObj);
+    } catch (err) {
+      console.error('Failed to parse user:', err);
       navigate('/');
       return;
     }
@@ -89,123 +99,184 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
+    
+    // Dispatch logout event for other components
+    const logoutEvent = new CustomEvent('userLogout', {
+      detail: { timestamp: new Date().getTime() }
+    });
+    window.dispatchEvent(logoutEvent);
+    
     navigate('/');
   };
 
   return (
     <div className="admin-dashboard">
+      {/* Admin Navigation Bar */}
       <nav className="admin-navbar">
         <div className="admin-navbar-content">
-          <h1 className="admin-title">Admin Dashboard</h1>
-          <button className="logout-btn" onClick={handleLogout}>
-            Logout
+          <button 
+            className="sidebar-toggle"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            <Menu className="w-6 h-6" />
           </button>
+          
+          <div className="admin-navbar-title">
+            <h1>Ruaa Beauty Admin</h1>
+          </div>
+
+          <div className="admin-navbar-user">
+            <span className="admin-user-name">{currentUser?.name || 'Admin'}</span>
+            <button 
+              className="admin-logout-btn"
+              onClick={handleLogout}
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
+              Logout
+            </button>
+          </div>
         </div>
       </nav>
 
-      <div className="admin-container">
-        <div className="admin-tabs">
+      {/* Admin Sidebar Navigation */}
+      <div className={`admin-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+        <div className="admin-sidebar-content">
           <button
-            className={`admin-tab ${activeTab === 'bookings' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
             onClick={() => setActiveTab('bookings')}
           >
-            📋 Bookings ({bookings.length})
+            <Calendar className="w-5 h-5" />
+            <span>Bookings</span>
+            {bookings.length > 0 && <span className="badge">{bookings.length}</span>}
           </button>
+
           <button
-            className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`}
+            className={`admin-nav-item ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
           >
-            👥 Users ({users.length})
+            <Users className="w-5 h-5" />
+            <span>Users</span>
+            {users.length > 0 && <span className="badge">{users.length}</span>}
           </button>
         </div>
+      </div>
 
-        {error && <div className="admin-error">{error}</div>}
+      {/* Main Content Area */}
+      <div className="admin-main-content">
+        <div className="admin-container">
+          {error && (
+            <div className="admin-error">
+              <span>{error}</span>
+              <button onClick={() => setError('')}>×</button>
+            </div>
+          )}
 
-        {loading ? (
-          <div className="admin-loading">Loading...</div>
-        ) : activeTab === 'bookings' ? (
-          <div className="bookings-section">
-            <h2>All Bookings</h2>
-            {bookings.length === 0 ? (
-              <p className="no-data">No bookings found</p>
-            ) : (
-              <div className="bookings-table-wrapper">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Email</th>
-                      <th>Phone</th>
-                      <th>Service</th>
-                      <th>Date</th>
-                      <th>Time</th>
-                      <th>Status</th>
-                      <th>Price</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bookings.map((booking) => (
-                      <tr key={booking.id} className={`booking-row status-${booking.status || 'pending'}`}>
-                        <td>{booking.name}</td>
-                        <td>{booking.email}</td>
-                        <td>{booking.phone}</td>
-                        <td>{booking.service}</td>
-                        <td>{booking.date}</td>
-                        <td>{booking.time}</td>
-                        <td>
-                          <select
-                            className="status-select"
-                            value={booking.status || 'pending'}
-                            onChange={(e) =>
-                              handleStatusChange(
-                                booking.id,
-                                e.target.value as 'pending' | 'completed' | 'cancelled'
-                              )
-                            }
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
-                          </select>
-                        </td>
-                        <td>${booking.total_price || 0}</td>
-                        <td>
-                          <button
-                            className="cancel-btn"
-                            onClick={() => handleCancelBooking(booking.id)}
-                          >
-                            Delete
-                          </button>
-                        </td>
+          {loading ? (
+            <div className="admin-loading">
+              <div className="spinner"></div>
+              <p>Loading...</p>
+            </div>
+          ) : activeTab === 'bookings' ? (
+            <div className="bookings-section">
+              <h2>All Bookings</h2>
+              {bookings.length === 0 ? (
+                <p className="no-data">No bookings found</p>
+              ) : (
+                <div className="bookings-table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Price</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="users-section">
-            <h2>All Users</h2>
-            {users.length === 0 ? (
-              <p className="no-data">No users found</p>
-            ) : (
-              <div className="users-grid">
-                {users.map((user) => (
-                  <div key={user.id} className="user-card">
-                    <div className="user-role-badge">{user.role}</div>
-                    <div className="user-name">{user.name}</div>
-                    <div className="user-email">{user.email}</div>
-                    <div className="user-id">ID: {user.id}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                    </thead>
+                    <tbody>
+                      {bookings.map((booking) => (
+                        <tr key={booking.id} className={`booking-row status-${booking.status || 'pending'}`}>
+                          <td>{booking.name}</td>
+                          <td>{booking.email}</td>
+                          <td>{booking.phone}</td>
+                          <td>{booking.service.replace('-', ' ').toUpperCase()}</td>
+                          <td>{new Date(booking.date).toLocaleDateString()}</td>
+                          <td>{booking.time}</td>
+                          <td>
+                            <select
+                              className="status-select"
+                              value={booking.status || 'pending'}
+                              onChange={(e) =>
+                                handleStatusChange(
+                                  booking.id,
+                                  e.target.value as 'pending' | 'completed' | 'cancelled'
+                                )
+                              }
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="completed">Completed</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                          </td>
+                          <td>${booking.total_price || 0}</td>
+                          <td>
+                            <button
+                              className="cancel-btn"
+                              onClick={() => handleCancelBooking(booking.id)}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="users-section">
+              <h2>All Users</h2>
+              {users.length === 0 ? (
+                <p className="no-data">No users found</p>
+              ) : (
+                <div className="users-table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((user) => (
+                        <tr key={user.id} className={`user-row role-${user.role}`}>
+                          <td>{user.name}</td>
+                          <td>{user.email}</td>
+                          <td>{(user as any).phone_number || '-'}</td>
+                          <td>
+                            <span className={`role-badge role-${user.role}`}>
+                              {user.role.toUpperCase()}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
