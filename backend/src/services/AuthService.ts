@@ -1,19 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcrypt';
 
-export class AuthService {
-  private supabaseInstance: any = null;
+// Singleton pattern for Supabase connection - reuse across requests
+let supabaseInstance: any = null;
 
-  private getSupabase() {
-    if (!this.supabaseInstance) {
-      const url = process.env.SUPABASE_URL;
-      const key = process.env.SUPABASE_SERVICE_ROLE;
-      if (!url || !key) {
-        throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE environment variables are required');
-      }
-      this.supabaseInstance = createClient(url, key);
+function getSupabase() {
+  if (!supabaseInstance) {
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE;
+    if (!url || !key) {
+      throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE environment variables are required');
     }
-    return this.supabaseInstance;
+    supabaseInstance = createClient(url, key);
+  }
+  return supabaseInstance;
+}
+
+export class AuthService {
+  private getSupabase() {
+    return getSupabase();
   }
 
   async registerUser(name: string, email: string, password: string, phone_number?: string) {
@@ -33,7 +38,7 @@ export class AuthService {
       throw new Error('Password must be at least 8 characters long');
     }
 
-    // Hash password
+    // Hash password - use rounds 10 for balance between security and speed
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Insert user
@@ -49,7 +54,7 @@ export class AuthService {
           role: 'user',
         },
       ])
-      .select()
+      .select('id, name, email, role')
       .single();
 
     if (error) {
@@ -72,11 +77,11 @@ export class AuthService {
       throw new Error('Email and password are required');
     }
 
-    // Fetch user
+    // Fetch user - select only needed columns for faster query
     const supabase = this.getSupabase();
     const { data, error } = await supabase
       .from('users')
-      .select('*')
+      .select('id, name, email, password, role')
       .eq('email', email)
       .single();
 
@@ -84,7 +89,7 @@ export class AuthService {
       throw new Error('Invalid email or password');
     }
 
-    // Verify password
+    // Verify password - this is intentionally slow for security
     const isPasswordValid = await bcrypt.compare(password, data.password);
 
     if (!isPasswordValid) {
@@ -155,7 +160,7 @@ export class AuthService {
         phone_number: phone_number || null,
       })
       .eq('id', userId)
-      .select()
+      .select('id, name, email, phone_number, role')
       .single();
 
     if (error) {
