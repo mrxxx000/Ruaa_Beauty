@@ -380,10 +380,17 @@ const MyBookings: React.FC = () => {
                               <span>{booking.time}</span>
                             </div>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#666' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#666' }}>
                               <MapPin className="w-4 h-4" />
                               <span>{booking.location}</span>
                             </div>
+
+                            {booking.address && (
+                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: '#666', marginLeft: '20px', fontSize: '0.9rem' }}>
+                                <span style={{ marginTop: '2px' }}>📍</span>
+                                <span>{booking.address}</span>
+                              </div>
+                            )}
                           </div>
 
                       {/* Right column */}

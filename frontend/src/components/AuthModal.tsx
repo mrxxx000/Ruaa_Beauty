@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LogIn, LogOut, User, Eye, EyeOff, X, Edit2, Check } from 'lucide-react';
 import '../styles/App.css';
 import { getUserProfile, updateUserProfile } from '../profileApi';
 
 const AuthModal: React.FC = () => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
@@ -105,6 +107,11 @@ const AuthModal: React.FC = () => {
       setPhone('');
       setShowPassword(false);
       setIsOpen(false);
+
+      // Redirect admin to admin dashboard immediately
+      if (data.user.role === 'admin') {
+        navigate('/admin', { replace: true });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {

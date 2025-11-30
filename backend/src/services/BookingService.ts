@@ -232,18 +232,29 @@ export class BookingService {
   async updateBookingStatus(bookingId: string, status: 'pending' | 'completed' | 'cancelled') {
     const supabase = this.getSupabase();
     
-    const { data, error } = await supabase
-      .from('bookings')
-      .update({ status })
-      .eq('id', bookingId)
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .update({ status })
+        .eq('id', bookingId)
+        .select()
+        .single();
 
-    if (error) {
-      throw new Error(`Error updating booking status: ${error.message}`);
+      if (error) {
+        // If error is about missing column, provide helpful message
+        if (error.message.includes('status')) {
+          throw new Error(
+            'Status column not found. Please run the migration: ALTER TABLE bookings ADD COLUMN status VARCHAR(50) DEFAULT \'pending\';'
+          );
+        }
+        throw new Error(`Error updating booking status: ${error.message}`);
+      }
+
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      throw new Error(`Error updating booking status: ${errorMessage}`);
     }
-
-    return data;
   }
 
   async cancelBookingAdmin(bookingId: string) {
