@@ -8,6 +8,24 @@ const authService = new AuthService();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const TOKEN_EXPIRY = '7d';
 
+// Middleware to verify JWT token
+const verifyToken = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.replace('Bearer ', '');
+
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    (req as any).userId = decoded.id;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
+};
+
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   const { name, email, password, phone_number } = req.body;
@@ -101,6 +119,45 @@ router.get('/users', async (req, res) => {
     });
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Error fetching users';
+    res.status(500).json({ message: errorMessage });
+  }
+});
+
+// GET /api/auth/profile - Get current user profile with phone number
+router.get('/profile', verifyToken, async (req, res) => {
+  const userId = (req as any).userId;
+
+  try {
+    const user = await authService.getUserWithPhone(userId);
+
+    res.status(200).json({
+      message: 'Profile retrieved successfully',
+      user,
+    });
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Error fetching profile';
+    res.status(500).json({ message: errorMessage });
+  }
+});
+
+// PUT /api/auth/profile - Update user profile
+router.put('/profile', verifyToken, async (req, res) => {
+  const userId = (req as any).userId;
+  const { name, phone_number } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ message: 'Name is required' });
+  }
+
+  try {
+    const updatedUser = await authService.updateUserProfile(userId, name, phone_number);
+
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user: updatedUser,
+    });
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Error updating profile';
     res.status(500).json({ message: errorMessage });
   }
 });

@@ -141,4 +141,48 @@ export class AuthService {
 
     return data.role === 'admin';
   }
+
+  async updateUserProfile(userId: number, name: string, phone_number?: string) {
+    if (!name || name.length < 2) {
+      throw new Error('Name must be at least 2 characters long');
+    }
+
+    const supabase = this.getSupabase();
+    const { data, error } = await supabase
+      .from('users')
+      .update({
+        name,
+        phone_number: phone_number || null,
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Error updating profile: ${error.message}`);
+    }
+
+    return {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      phone_number: data.phone_number,
+      role: data.role,
+    };
+  }
+
+  async getUserWithPhone(id: number) {
+    const supabase = this.getSupabase();
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, name, email, phone_number, role')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
+      throw new Error('User not found');
+    }
+
+    return data;
+  }
 }

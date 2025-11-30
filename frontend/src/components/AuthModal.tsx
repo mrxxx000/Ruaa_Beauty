@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { LogIn, LogOut, User, Eye, EyeOff, X } from 'lucide-react';
+import { LogIn, LogOut, User, Eye, EyeOff, X, Edit2, Check } from 'lucide-react';
 import '../styles/App.css';
+import { getUserProfile, updateUserProfile } from '../profileApi';
 
 const AuthModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,22 +15,50 @@ const AuthModal: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string; role: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string; phone_number?: string; role: string } | null>(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
 
-  // Load user from localStorage on mount
   React.useEffect(() => {
     const token = localStorage.getItem('authToken');
     const user = localStorage.getItem('currentUser');
     if (token && user) {
-      setCurrentUser(JSON.parse(user));
+      const userObj = JSON.parse(user);
+      setCurrentUser(userObj);
+      loadFullProfile(token);
     }
   }, []);
+
+  const loadFullProfile = async (token: string) => {
+    try {
+      const profile = await getUserProfile(token);
+      setCurrentUser({
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        phone_number: profile.phone_number || undefined,
+        role: profile.role,
+      });
+      localStorage.setItem('currentUser', JSON.stringify({
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        phone_number: profile.phone_number || undefined,
+        role: profile.role,
+      }));
+    } catch (err) {
+      console.error('Failed to load full profile:', err);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    // Validate fields
     if (isLogin && !email) {
       setError('Email is required');
       return;
@@ -48,7 +77,6 @@ const AuthModal: React.FC = () => {
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
-      //const backendUrl ='http://localhost:10000';
 
       const body = isLogin 
         ? { email, password }
@@ -67,12 +95,10 @@ const AuthModal: React.FC = () => {
         return;
       }
 
-      // Save token and user
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('currentUser', JSON.stringify(data.user));
       setCurrentUser(data.user);
 
-      // Reset form
       setName('');
       setEmail('');
       setPassword('');
@@ -99,6 +125,66 @@ const AuthModal: React.FC = () => {
 
   const cancelLogout = () => {
     setShowLogoutConfirm(false);
+  };
+
+  const handleEditProfile = () => {
+    setEditName(currentUser?.name || '');
+    setEditPhone(currentUser?.phone_number || '');
+    setIsEditingProfile(true);
+    setProfileError('');
+    setProfileSuccess('');
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) {
+      setProfileError('Name is required');
+      return;
+    }
+
+    setSavingProfile(true);
+    setProfileError('');
+    setProfileSuccess('');
+
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setProfileError('Session expired. Please login again.');
+        return;
+      }
+
+      const updatedUser = await updateUserProfile(token, editName, editPhone);
+      setCurrentUser({
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone_number: updatedUser.phone_number || undefined,
+        role: updatedUser.role,
+      });
+      
+      localStorage.setItem('currentUser', JSON.stringify({
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone_number: updatedUser.phone_number || undefined,
+        role: updatedUser.role,
+      }));
+
+      setProfileSuccess('Profile updated successfully!');
+      setTimeout(() => {
+        setIsEditingProfile(false);
+        setProfileSuccess('');
+      }, 2000);
+    } catch (err) {
+      setProfileError(err instanceof Error ? err.message : 'Failed to update profile');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingProfile(false);
+    setProfileError('');
+    setProfileSuccess('');
   };
 
   return (
@@ -496,34 +582,180 @@ const AuthModal: React.FC = () => {
               </button>
             </div>
 
-            {/* Profile Details Section */}
-            <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem', fontWeight: '600' }}>User Details</h3>
-              
-              <div style={{ 
-                backgroundColor: '#f9f9f9', 
-                padding: '16px', 
-                borderRadius: '8px', 
-                marginBottom: '12px',
-                borderLeft: '4px solid #ff6fa3'
+            {profileError && (
+              <div style={{
+                backgroundColor: '#fee',
+                color: '#c33',
+                padding: '12px',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                fontSize: '0.9rem',
               }}>
-                <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>Full Name</p>
-                <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600' }}>{currentUser.name}</p>
+                {profileError}
+              </div>
+            )}
+
+            {profileSuccess && (
+              <div style={{
+                backgroundColor: '#efe',
+                color: '#3c3',
+                padding: '12px',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                fontSize: '0.9rem',
+              }}>
+                {profileSuccess}
+              </div>
+            )}
+
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ color: '#333', margin: 0, fontSize: '1rem', fontWeight: '600' }}>User Details</h3>
+                {!isEditingProfile && (
+                  <button
+                    onClick={handleEditProfile}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      color: '#ff6fa3',
+                      fontWeight: '600',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    Edit
+                  </button>
+                )}
               </div>
 
-              <div style={{ 
-                backgroundColor: '#f9f9f9', 
-                padding: '16px', 
-                borderRadius: '8px', 
-                marginBottom: '12px',
-                borderLeft: '4px solid #ff6fa3'
-              }}>
-                <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>Email</p>
-                <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600', wordBreak: 'break-all' }}>{currentUser.email}</p>
-              </div>
+              {!isEditingProfile ? (
+                <>
+                  <div style={{ 
+                    backgroundColor: '#f9f9f9', 
+                    padding: '16px', 
+                    borderRadius: '8px', 
+                    marginBottom: '12px',
+                    borderLeft: '4px solid #ff6fa3'
+                  }}>
+                    <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>Full Name</p>
+                    <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600' }}>{currentUser.name}</p>
+                  </div>
+
+                  <div style={{ 
+                    backgroundColor: '#f9f9f9', 
+                    padding: '16px', 
+                    borderRadius: '8px', 
+                    marginBottom: '12px',
+                    borderLeft: '4px solid #ff6fa3'
+                  }}>
+                    <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>Email</p>
+                    <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600', wordBreak: 'break-all' }}>{currentUser.email}</p>
+                  </div>
+
+                  {currentUser.phone_number && (
+                    <div style={{ 
+                      backgroundColor: '#f9f9f9', 
+                      padding: '16px', 
+                      borderRadius: '8px', 
+                      marginBottom: '12px',
+                      borderLeft: '4px solid #ff6fa3'
+                    }}>
+                      <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>Phone Number</p>
+                      <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600' }}>{currentUser.phone_number}</p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333', fontSize: '0.9rem' }}>
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      placeholder="Enter your full name"
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '2px solid #ddd',
+                        borderRadius: '8px',
+                        fontSize: '0.95rem',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333', fontSize: '0.9rem' }}>
+                      Phone Number <span style={{ color: '#999', fontSize: '0.85rem' }}>(Optional)</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      placeholder="Enter your phone number"
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '2px solid #ddd',
+                        borderRadius: '8px',
+                        fontSize: '0.95rem',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button
+                      onClick={handleSaveProfile}
+                      disabled={savingProfile}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        backgroundColor: '#ff6fa3',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        fontSize: '0.9rem',
+                        cursor: savingProfile ? 'not-allowed' : 'pointer',
+                        opacity: savingProfile ? 0.7 : 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                      }}
+                    >
+                      <Check className="w-4 h-4" />
+                      {savingProfile ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        backgroundColor: '#f0f0f0',
+                        color: '#333',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* My Bookings Section */}
             <div style={{ marginBottom: '24px' }}>
               <h3 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem', fontWeight: '600' }}>My Bookings</h3>
               <a 
@@ -543,7 +775,6 @@ const AuthModal: React.FC = () => {
               </a>
             </div>
 
-            {/* Close Button */}
             <button
               onClick={() => setShowProfileModal(false)}
               style={{
