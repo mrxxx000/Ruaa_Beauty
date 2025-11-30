@@ -155,7 +155,7 @@ const BookingForm: React.FC = () => {
   const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours);
 
   // Fetch available times when date or services change
-  const fetchAvailableTimes = async (date: string, services: string[]) => {
+  const fetchAvailableTimes = async (date: string, services: string[], mehendiHours: number = 0) => {
     if (!date || services.length === 0) {
       // Reset to all hours if no date or services
       setAvailableHours([9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
@@ -167,7 +167,12 @@ const BookingForm: React.FC = () => {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
       //const backendUrl = 'http://localhost:10000';
       const servicesParam = services.join(',');
-      const url = `${backendUrl}/api/available-times?date=${date}&services=${servicesParam}`;
+      let url = `${backendUrl}/api/available-times?date=${date}&services=${servicesParam}`;
+      
+      // Add mehendiHours to query if mehendi service is included
+      if (services.includes('mehendi') && mehendiHours > 0) {
+        url += `&mehendiHours=${mehendiHours}`;
+      }
       
       const response = await fetch(url);
       if (response.ok) {
@@ -185,12 +190,12 @@ const BookingForm: React.FC = () => {
     }
   };
 
-  // Auto-fetch available times when date or services change
+  // Auto-fetch available times when date, services, or mehendiHours change
   useEffect(() => {
     if (formData.date && formData.services.length > 0) {
-      fetchAvailableTimes(formData.date, formData.services);
+      fetchAvailableTimes(formData.date, formData.services, formData.mehendiHours);
     }
-  }, [formData.date, formData.services]);
+  }, [formData.date, formData.services, formData.mehendiHours]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -271,7 +276,7 @@ const BookingForm: React.FC = () => {
         // Time slot conflict - refresh available times and show error
         const data = await resp.json().catch(() => null);
         console.error('Time slot conflict:', data);
-        await fetchAvailableTimes(formData.date, formData.services);
+        await fetchAvailableTimes(formData.date, formData.services, formData.mehendiHours);
         alert(data?.message || 'This time slot is already booked. Available times have been updated. Please select a different time.');
         setFormData(prev => ({ ...prev, time: '' }));
       } else {
@@ -415,7 +420,7 @@ const BookingForm: React.FC = () => {
                   setFormData({ ...formData, services: updatedServices });
                   // Fetch available times with updated services
                   if (formData.date) {
-                    fetchAvailableTimes(formData.date, updatedServices);
+                    fetchAvailableTimes(formData.date, updatedServices, formData.mehendiHours);
                   }
                 }}
               >
@@ -761,7 +766,7 @@ const BookingForm: React.FC = () => {
                             setFormData({ ...formData, services: updatedServices });
                             // Fetch available times with updated services
                             if (formData.date) {
-                              fetchAvailableTimes(formData.date, updatedServices);
+                              fetchAvailableTimes(formData.date, updatedServices, formData.mehendiHours);
                             }
                           }}
                           style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ff6fa3' }}
@@ -959,7 +964,7 @@ const BookingForm: React.FC = () => {
                     value={formData.date}
                     onChange={(e) => {
                       setFormData({ ...formData, date: e.target.value });
-                      fetchAvailableTimes(e.target.value, formData.services);
+                      fetchAvailableTimes(e.target.value, formData.services, formData.mehendiHours);
                     }}
                     onFocus={() => setFocusedField('date')}
                     onBlur={() => setFocusedField('')}

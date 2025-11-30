@@ -1,8 +1,27 @@
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 
+// Service configuration with duration and staff group
+interface ServiceConfig {
+  duration: number; // hours
+  staffGroup: string; // which staff handles this
+}
+
 export class BookingService {
   private supabaseInstance: any = null;
+
+  // Service configurations: duration in hours and staff group assignment
+  private serviceConfig: { [key: string]: ServiceConfig } = {
+    // Group A - Mehendi Staff
+    'mehendi': { duration: 0, staffGroup: 'mehendi' }, // duration set by user
+    
+    // Group B - Beauty Staff (all share same person)
+    'lash-lift': { duration: 2, staffGroup: 'beauty' },
+    'brow-lift': { duration: 2, staffGroup: 'beauty' },
+    'threading': { duration: 2, staffGroup: 'beauty' },
+    'makeup': { duration: 3, staffGroup: 'beauty' },
+    'bridal-makeup': { duration: 9, staffGroup: 'beauty' }, // full day: 9-18
+  };
 
   private getSupabase() {
     if (!this.supabaseInstance) {
@@ -16,12 +35,93 @@ export class BookingService {
     return this.supabaseInstance;
   }
 
+  /**
+   * Get the staff group for services being booked
+   */
+  private getStaffGroupsForServices(services: string[], mehendiHours: number = 0): Set<string> {
+    const staffGroups = new Set<string>();
+    
+    services.forEach(svc => {
+      const config = this.serviceConfig[svc];
+      if (config) {
+        staffGroups.add(config.staffGroup);
+      }
+    });
+    
+    return staffGroups;
+  }
+
+  /**
+   * Get the duration for a service
+   */
+  private getServiceDuration(service: string, mehendiHours: number = 0): number {
+    const config = this.serviceConfig[service];
+    if (!config) return 1; // default 1 hour
+    
+    if (service === 'mehendi') {
+      return mehendiHours || 1;
+    }
+    
+    return config.duration;
+  }
+
+  /**
+   * Check if a time slot is available
+   * Returns true if the booking can fit without conflicts
+   */
+  private isTimeSlotAvailable(
+    startHour: number,
+    totalDuration: number,
+    existingBookings: any[],
+    staffGroupsNeeded: Set<string>
+  ): boolean {
+    const endHour = startHour + totalDuration;
+    
+    // Check if booking fits within working hours (9-18)
+    if (startHour < 9 || endHour > 18) {
+      return false;
+    }
+
+    // Check for conflicts with existing bookings in the same staff group
+    for (const booking of existingBookings) {
+      const bookingHour = parseInt(booking.time.split(':')[0]);
+      const bookingServices = booking.service.split(',').map((s: string) => s.trim());
+      const bookingMehendiHours = booking.mehendi_hours || 0;
+      
+      // Get staff groups used by this existing booking
+      const existingStaffGroups = this.getStaffGroupsForServices(bookingServices, bookingMehendiHours);
+      
+      // Calculate existing booking duration
+      let existingDuration = 0;
+      bookingServices.forEach((svc: string) => {
+        const duration = this.getServiceDuration(svc, bookingMehendiHours);
+        existingDuration = Math.max(existingDuration, duration);
+      });
+      
+      const existingEndHour = bookingHour + existingDuration;
+      
+      // Check if any staff group overlaps
+      for (const staffGroup of staffGroupsNeeded) {
+        if (existingStaffGroups.has(staffGroup)) {
+          // Same staff group - check for time overlap
+          if (!(endHour <= bookingHour || startHour >= existingEndHour)) {
+            // There's a conflict
+            return false;
+          }
+        }
+      }
+    }
+    
+    return true;
+  }
+
   async validateTimeSlot(date: string, time: string, service: string, mehendiHours: number = 0) {
     const supabase = this.getSupabase();
     const { data: existingBookings, error: fetchError } = await supabase
       .from('bookings')
       .select('*')
-      .eq('date', date);
+      .eq('date', date)
+      .neq('status', 'cancelled'); // Exclude cancelled bookings
 
     if (fetchError) {
       throw new Error(`Error checking existing bookings: ${fetchError.message}`);
@@ -29,52 +129,34 @@ export class BookingService {
 
     const requestedHour = parseInt(time?.split(':')[0] || '0');
     const requestedServices = service.split(',').map((s: string) => s.trim());
-    const hoursToBlock = this.calculateBlockedHours(requestedServices, requestedHour, mehendiHours);
+    
+    // Calculate total duration needed for this booking
+    let totalDuration = 0;
+    requestedServices.forEach((svc: string) => {
+      const duration = this.getServiceDuration(svc, mehendiHours);
+      totalDuration = Math.max(totalDuration, duration);
+    });
+    
+    // Get staff groups needed
+    const staffGroupsNeeded = this.getStaffGroupsForServices(requestedServices, mehendiHours);
+    
+    // Check if slot is available
+    const isAvailable = this.isTimeSlotAvailable(
+      requestedHour,
+      totalDuration,
+      existingBookings || [],
+      staffGroupsNeeded
+    );
 
-    // Check for conflicts
-    for (const booking of existingBookings || []) {
-      const bookingHour = parseInt(booking.time.split(':')[0]);
-      const bookingServices = booking.service.split(',').map((s: string) => s.trim());
-      const bookedHours = this.calculateBlockedHours(bookingServices, bookingHour, booking.mehendi_hours || 0);
-
-      // Check for overlap
-      for (const hour of hoursToBlock) {
-        if (bookedHours.has(hour)) {
-          return {
-            isAvailable: false,
-            conflictingHour: hour,
-            conflictingService: bookingServices[0],
-          };
-        }
-      }
+    if (!isAvailable) {
+      return {
+        isAvailable: false,
+        conflictingHour: requestedHour,
+        conflictingService: requestedServices[0],
+      };
     }
 
     return { isAvailable: true };
-  }
-
-  private calculateBlockedHours(services: string[], startHour: number, mehendiHours: number = 0): Set<number> {
-    const blockedHours = new Set<number>();
-
-    services.forEach((svc: string) => {
-      if (svc === 'bridal-makeup') {
-        for (let i = 9; i <= 18; i++) {
-          blockedHours.add(i);
-        }
-      } else if (svc === 'lash-lift' || svc === 'brow-lift' || svc === 'threading') {
-        blockedHours.add(startHour);
-      } else if (svc === 'makeup') {
-        for (let i = 0; i < 3; i++) {
-          blockedHours.add(startHour + i);
-        }
-      } else if (svc === 'mehendi') {
-        const hours = mehendiHours || 1;
-        for (let i = 0; i < hours; i++) {
-          blockedHours.add(startHour + i);
-        }
-      }
-    });
-
-    return blockedHours;
   }
 
   async createBooking(bookingData: any) {
@@ -134,33 +216,48 @@ export class BookingService {
     }
   }
 
-  async getAvailableTimes(date: string, services: string[]) {
+  async getAvailableTimes(date: string, services: string[], mehendiHours: number = 0) {
     const supabase = this.getSupabase();
     const { data: bookings, error: fetchError } = await supabase
       .from('bookings')
       .select('*')
-      .eq('date', date);
+      .eq('date', date)
+      .neq('status', 'cancelled'); // Exclude cancelled bookings
 
     if (fetchError) {
       throw new Error(`Error fetching bookings: ${fetchError.message}`);
     }
 
     const allHours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
-    const unavailableHours = new Set<number>();
-
-    bookings?.forEach((booking: any) => {
-      const bookingTime = parseInt(booking.time.split(':')[0]);
-      const bookingServices = booking.service.split(',').map((s: string) => s.trim());
-      const blockedHours = this.calculateBlockedHours(bookingServices, bookingTime, booking.mehendi_hours || 0);
-
-      blockedHours.forEach(hour => unavailableHours.add(hour));
+    const availableHours: number[] = [];
+    
+    // Calculate total duration needed for requested services
+    let totalDuration = 0;
+    services.forEach((svc: string) => {
+      const duration = this.getServiceDuration(svc, mehendiHours);
+      totalDuration = Math.max(totalDuration, duration);
     });
-
-    const availableHours = allHours.filter(hour => !unavailableHours.has(hour));
+    
+    // Get staff groups needed
+    const staffGroupsNeeded = this.getStaffGroupsForServices(services, mehendiHours);
+    
+    // Check each hour
+    for (const hour of allHours) {
+      const isAvailable = this.isTimeSlotAvailable(
+        hour,
+        totalDuration,
+        bookings || [],
+        staffGroupsNeeded
+      );
+      
+      if (isAvailable) {
+        availableHours.push(hour);
+      }
+    }
 
     return {
       availableHours,
-      unavailableHours: Array.from(unavailableHours),
+      unavailableHours: allHours.filter(h => !availableHours.includes(h)),
     };
   }
 

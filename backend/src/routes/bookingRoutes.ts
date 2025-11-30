@@ -239,7 +239,7 @@ router.post('/unbook', async (req, res) => {
 
 // GET /api/available-times - Get available time slots
 router.get('/available-times', async (req, res) => {
-  const { date, services } = req.query;
+  const { date, services, mehendiHours } = req.query;
 
   if (!date || !services) {
     return res.status(400).json({ message: 'Date and services are required' });
@@ -250,9 +250,12 @@ router.get('/available-times', async (req, res) => {
       ? services.split(',').map(s => s.trim())
       : Array.isArray(services) ? (services as string[]) : [];
 
+    const mehendiHoursNum = mehendiHours ? parseInt(mehendiHours as string, 10) : 0;
+
     const { availableHours, unavailableHours } = await bookingService.getAvailableTimes(
       date as string,
-      servicesArray
+      servicesArray,
+      mehendiHoursNum
     );
 
     res.status(200).json({
