@@ -202,4 +202,111 @@ export class EmailService {
       });
     }
   }
+
+  async sendPasswordResetEmail(userEmail: string, resetToken: string) {
+    if (!this.apiKey) {
+      console.warn('⚠️ Brevo API key not configured');
+      return;
+    }
+
+    try {
+      console.log(`📧 Sending password reset email to: ${userEmail}`);
+
+      const resetLink = `${this.siteUrl}/reset-password?token=${resetToken}`;
+      const apiInstance = this.getApiInstance();
+
+      const emailObj = new brevo.SendSmtpEmail();
+      emailObj.sender = { email: this.fromEmail, name: 'Ruaa Beauty' };
+      emailObj.to = [{ email: userEmail }];
+      emailObj.subject = '🔐 Password Reset Request - Ruaa Beauty';
+      emailObj.htmlContent = `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+          <h2 style="color: #ff6fa3;">Password Reset Request</h2>
+          <p>Hi there,</p>
+          <p>We received a request to reset your password. Click the link below to set a new password:</p>
+          
+          <div style="margin: 30px 0;">
+            <a href="${resetLink}" style="
+              background-color: #ff6fa3;
+              color: white;
+              padding: 12px 30px;
+              text-decoration: none;
+              border-radius: 5px;
+              display: inline-block;
+              font-weight: bold;
+            ">Reset Password</a>
+          </div>
+          
+          <p><strong>Or copy this link:</strong></p>
+          <p style="word-break: break-all; background: #f5f5f5; padding: 10px; border-radius: 3px;">${resetLink}</p>
+          
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          
+          <p><strong>⏰ This link expires in 1 hour</strong></p>
+          <p>If you did not request a password reset, you can safely ignore this email.</p>
+          
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          <p style="font-size: 12px; color: #999;">
+            © Ruaa Beauty - Your beauty, our passion
+          </p>
+        </div>
+      `;
+
+      await apiInstance.sendTransacEmail(emailObj);
+      console.log('✅ Password reset email sent');
+    } catch (emailErr: any) {
+      console.error('❌ Password reset email sending failed:', {
+        message: emailErr.message,
+        body: emailErr.response?.body,
+      });
+      throw emailErr;
+    }
+  }
+
+  async sendPasswordChangedConfirmation(userEmail: string, userName: string) {
+    if (!this.apiKey) {
+      console.warn('⚠️ Brevo API key not configured');
+      return;
+    }
+
+    try {
+      console.log(`📧 Sending password change confirmation to: ${userEmail}`);
+
+      const apiInstance = this.getApiInstance();
+
+      const emailObj = new brevo.SendSmtpEmail();
+      emailObj.sender = { email: this.fromEmail, name: 'Ruaa Beauty' };
+      emailObj.to = [{ email: userEmail }];
+      emailObj.subject = '✅ Password Changed Successfully - Ruaa Beauty';
+      emailObj.htmlContent = `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+          <h2 style="color: #ff6fa3;">Password Changed</h2>
+          <p>Hi ${userName},</p>
+          <p>Your password has been successfully changed.</p>
+          
+          <div style="background: #f0f7ff; padding: 15px; border-left: 4px solid #ff6fa3; margin: 20px 0; border-radius: 3px;">
+            <p style="margin: 0;"><strong>ℹ️ For your security:</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>If you did not make this change, please contact us immediately</li>
+              <li>Never share your password with anyone</li>
+              <li>Make sure your password is strong and unique</li>
+            </ul>
+          </div>
+          
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          <p>If you have any questions or concerns, please don't hesitate to contact our support team.</p>
+          <p>© Ruaa Beauty - Your beauty, our passion</p>
+        </div>
+      `;
+
+      await apiInstance.sendTransacEmail(emailObj);
+      console.log('✅ Password change confirmation email sent');
+    } catch (emailErr: any) {
+      console.error('❌ Password change confirmation email sending failed:', {
+        message: emailErr.message,
+        body: emailErr.response?.body,
+      });
+      throw emailErr;
+    }
+  }
 }
