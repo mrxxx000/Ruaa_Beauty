@@ -81,9 +81,9 @@ const Mehendi: React.FC = () => {
 						<button className="secondary-btn" onClick={() => setActive('b')}>{t('mehendi.showSetB')}</button>
 					</div>
 
-					<div style={{ marginTop: 28 }}>
-						<h3>{t('mehendi.moreDesigns')}</h3>
-						<div className="more-designs-grid" style={{ marginTop: 12 }}>
+				<div style={{ marginTop: 28 }}>
+					<h3 style={{ textAlign: 'center', marginTop: 18, marginBottom: 18 }}>{t('mehendi.moreDesigns')}</h3>
+					<div className="more-designs-grid" style={{ marginTop: 12 }}>
 							<div className="single-wrap">
 								<img src={singleImg} alt="Mehendi single" className="single-img" />
 							</div>

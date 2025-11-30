@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, Calendar, Clock, MapPin, MessageSquare, User, Mail, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -89,6 +89,13 @@ const BookingForm: React.FC = () => {
     }
   };
 
+  // Auto-fetch available times when date or services change
+  useEffect(() => {
+    if (formData.date && formData.services.length > 0) {
+      fetchAvailableTimes(formData.date, formData.services);
+    }
+  }, [formData.date, formData.services]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -154,6 +161,13 @@ const BookingForm: React.FC = () => {
         setSubmitted(true);
         setFormData(defaultData);
         setTimeout(() => setSubmitted(false), 5000);
+      } else if (resp.status === 409) {
+        // Time slot conflict - refresh available times and show error
+        const data = await resp.json().catch(() => null);
+        console.error('Time slot conflict:', data);
+        await fetchAvailableTimes(formData.date, formData.services);
+        alert(data?.message || 'This time slot is already booked. Available times have been updated. Please select a different time.');
+        setFormData(prev => ({ ...prev, time: '' }));
       } else {
         const data = await resp.json().catch(() => null);
         console.error('Booking api error - Status:', resp.status, 'Data:', data);

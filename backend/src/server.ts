@@ -25,12 +25,97 @@ app.post('/api/booking', async (req, res) => {
     return res.status(400).json({ message: 'Name and email are required' });
   }
 
+  if (!date || !time) {
+    return res.status(400).json({ message: 'Date and time are required' });
+  }
+
   try {
     // Initialize Supabase client
     const supabase = createClient(
       process.env.SUPABASE_URL || '',
       process.env.SUPABASE_SERVICE_ROLE || ''
     );
+
+    // Check if time slot is already booked
+    const { data: existingBookings, error: fetchError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('date', date);
+
+    if (fetchError) {
+      // eslint-disable-next-line no-console
+      console.error('Error checking existing bookings:', fetchError);
+      return res.status(500).json({ message: 'Error validating booking' });
+    }
+
+    // Parse the requested time
+    const requestedHour = parseInt(time.split(':')[0]);
+    const requestedServices = service.split(',').map((s: string) => s.trim());
+
+    // Check for conflicts
+    const hoursToBlock = new Set<number>();
+    
+    // Determine which hours the requested services would block
+    requestedServices.forEach((svc: string) => {
+      if (svc === 'bridal-makeup') {
+        // Bridal makeup blocks entire day
+        for (let i = 9; i <= 18; i++) {
+          hoursToBlock.add(i);
+        }
+      } else if (svc === 'lash-lift' || svc === 'brow-lift' || svc === 'threading') {
+        // These services block 1 hour
+        hoursToBlock.add(requestedHour);
+      } else if (svc === 'makeup') {
+        // Professional makeup blocks 3 hours
+        for (let i = 0; i < 3; i++) {
+          hoursToBlock.add(requestedHour + i);
+        }
+      } else if (svc === 'mehendi') {
+        // Mehendi blocks hours based on duration
+        const hours = mehendiHours || 1;
+        for (let i = 0; i < hours; i++) {
+          hoursToBlock.add(requestedHour + i);
+        }
+      }
+    });
+
+    // Check if any of these hours conflict with existing bookings
+    for (const booking of existingBookings || []) {
+      const bookingHour = parseInt(booking.time.split(':')[0]);
+      const bookingServices = booking.service.split(',').map((s: string) => s.trim());
+
+      bookingServices.forEach((bookedService: string) => {
+        let bookedHours = new Set<number>();
+        if (bookedService === 'bridal-makeup') {
+          for (let i = 9; i <= 18; i++) {
+            bookedHours.add(i);
+          }
+        } else if (bookedService === 'lash-lift' || bookedService === 'brow-lift' || bookedService === 'threading') {
+          bookedHours.add(bookingHour);
+        } else if (bookedService === 'makeup') {
+          for (let i = 0; i < 3; i++) {
+            bookedHours.add(bookingHour + i);
+          }
+        } else if (bookedService === 'mehendi') {
+          const hours = booking.mehendi_hours || 1;
+          for (let i = 0; i < hours; i++) {
+            bookedHours.add(bookingHour + i);
+          }
+        }
+
+        // Check for overlap
+        for (const hour of hoursToBlock) {
+          if (bookedHours.has(hour)) {
+            return res.status(409).json({ 
+              message: 'This time slot is already booked. Please select a different date or time.',
+              conflictingService: bookedService,
+              conflictingHour: hour,
+              conflictingDate: date
+            });
+          }
+        }
+      });
+    }
 
     // Generate cancel token
     const cancelToken = randomUUID();
