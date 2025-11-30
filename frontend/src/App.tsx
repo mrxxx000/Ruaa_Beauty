@@ -18,7 +18,7 @@ function App() {
         <Route path="/mehendi" element={<Mehendi />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/makeup" element={<Makeup />} />
-        <Route path="/about" element={<Book />} />
+        <Route path="/book" element={<Book />} />
         <Route path="/lashes" element={<Lashes />} />
       </Routes>
     </BrowserRouter>
