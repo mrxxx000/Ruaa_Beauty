@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import dotenv from 'dotenv';
 import bookingRoutes from './routes/bookingRoutes';
 import authRoutes from './routes/authRoutes';
@@ -10,8 +11,19 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT ? Number(process.env.PORT) : 10000;
 
-app.use(cors());
-app.use(express.json());
+// Enable compression for faster responses
+app.use(compression());
+
+// CORS with specific options for better performance
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  optionsSuccessStatus: 200,
+}));
+
+// Parse JSON with size limit
+app.use(express.json({ limit: '10mb' }));
 
 app.get('/', (_req, res) => {
   res.send('Hello from backend');

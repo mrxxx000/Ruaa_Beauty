@@ -1,6 +1,6 @@
 import React from "react";
 import './styles/App.css';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Mehendi from './pages/Mehendi';
 import Contact from './pages/Contact';
@@ -10,11 +10,17 @@ import Lashes from './pages/Lashes';
 import CancelBooking from './pages/CancelBooking';
 import MyBookings from './pages/MyBookings';
 import AdminDashboard from './pages/AdminDashboard';
+import BottomNav from './components/BottomNav';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
-function App() {
+function AppContent() {
+  const location = useLocation();
+  
+  // Don't show bottom nav on admin page
+  const showBottomNav = !location.pathname.startsWith('/admin');
+
   return (
-    <BrowserRouter>
+    <>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/unbook" element={<CancelBooking />} />
@@ -33,6 +39,15 @@ function App() {
         <Route path="/book" element={<Book />} />
         <Route path="/lashes" element={<Lashes />} />
       </Routes>
+      {showBottomNav && <BottomNav />}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   );
 }
