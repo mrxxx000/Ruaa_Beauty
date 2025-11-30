@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import bookingRoutes from './routes/bookingRoutes';
 import authRoutes from './routes/authRoutes';
+import adminRoutes from './routes/adminRoutes';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.get('/api/status', (_req, res) => {
     routes: {
       auth: '/api/auth/register, /api/auth/login, /api/auth/verify',
       booking: '/api/booking, /api/unbook, /api/available-times',
+      admin: '/api/admin/bookings, /api/admin/users',
     },
   });
 });
@@ -32,6 +34,9 @@ app.use('/api/auth', authRoutes);
 
 // Use booking routes
 app.use('/api', bookingRoutes);
+
+// Use admin routes
+app.use('/api/admin', adminRoutes);
 
 app.listen(port, () => {
   // eslint-disable-next-line no-console

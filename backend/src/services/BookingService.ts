@@ -214,4 +214,47 @@ export class BookingService {
 
     return booking;
   }
+
+  async getAllBookings() {
+    const supabase = this.getSupabase();
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) {
+      throw new Error(`Error fetching bookings: ${error.message}`);
+    }
+
+    return data || [];
+  }
+
+  async updateBookingStatus(bookingId: string, status: 'pending' | 'completed' | 'cancelled') {
+    const supabase = this.getSupabase();
+    
+    const { data, error } = await supabase
+      .from('bookings')
+      .update({ status })
+      .eq('id', bookingId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Error updating booking status: ${error.message}`);
+    }
+
+    return data;
+  }
+
+  async cancelBookingAdmin(bookingId: string) {
+    const supabase = this.getSupabase();
+    const { error } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('id', bookingId);
+
+    if (error) {
+      throw new Error(`Error cancelling booking: ${error.message}`);
+    }
+  }
 }
