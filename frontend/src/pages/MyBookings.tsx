@@ -60,8 +60,8 @@ const MyBookings: React.FC = () => {
       }
 
       const userData = JSON.parse(user);
-      //const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
-      const backendUrl = 'http://localhost:10000';
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+      //const backendUrl = 'http://localhost:10000';
 
       const response = await fetch(`${backendUrl}/api/booking/my-bookings`, {
         method: 'GET',
@@ -94,8 +94,8 @@ const MyBookings: React.FC = () => {
     try {
       setCancellingId(bookingId);
       const token = localStorage.getItem('authToken');
-      //const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
-      const backendUrl = 'http://localhost:10000';
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+      //const backendUrl = 'http://localhost:10000';
 
       const response = await fetch(`${backendUrl}/api/booking/cancel/${bookingId}`, {
         method: 'POST',

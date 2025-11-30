@@ -47,8 +47,8 @@ const AuthModal: React.FC = () => {
 
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-      //const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
-      const backendUrl ='http://localhost:10000';
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+      //const backendUrl ='http://localhost:10000';
 
       const body = isLogin 
         ? { email, password }

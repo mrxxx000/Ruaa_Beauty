@@ -89,8 +89,8 @@ const BookingForm: React.FC = () => {
     }
 
     try {
-      //const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
-      const backendUrl = 'http://localhost:10000';
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+      //const backendUrl = 'http://localhost:10000';
       const servicesParam = services.join(',');
       const url = `${backendUrl}/api/available-times?date=${date}&services=${servicesParam}`;
       
@@ -161,11 +161,9 @@ const BookingForm: React.FC = () => {
 
       console.log('Submitting booking data:', bookingData);
 
-      // Backend URL - configure via REACT_APP_BACKEND_URL environment variable
-      // Local development: http://localhost:10000
-      // Production (Render): https://your-backend-url.onrender.com
-      //const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
-      const backendUrl = 'http://localhost:10000';
+      
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+      //const backendUrl = 'http://localhost:10000';
       const url = `${backendUrl}/api/booking`;
       
       // Get JWT token if user is logged in
