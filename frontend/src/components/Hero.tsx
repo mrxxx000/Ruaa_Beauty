@@ -43,7 +43,7 @@ const Hero: React.FC = () => {
           </p>
 
           <div style={{ marginTop: 18 }}>
-            <Link className="primary-btn" to="/contact">
+            <Link className="primary-btn" to="/book">
               {t('hero.bookButton')}
             </Link>
           </div>
