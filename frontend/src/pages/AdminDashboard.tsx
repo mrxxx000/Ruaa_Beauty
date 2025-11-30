@@ -233,13 +233,13 @@ export default function AdminDashboard() {
                         })
                         .map((booking) => (
                           <tr key={booking.id} className={`booking-row status-${booking.status || 'pending'}`}>
-                            <td>{booking.name}</td>
-                            <td>{booking.email}</td>
-                            <td>{booking.phone}</td>
-                            <td>{booking.service.replace('-', ' ').toUpperCase()}</td>
-                            <td>{new Date(booking.date).toLocaleDateString()}</td>
-                            <td>{booking.time}</td>
-                            <td>
+                            <td data-label="Name">{booking.name}</td>
+                            <td data-label="Email">{booking.email}</td>
+                            <td data-label="Phone">{booking.phone}</td>
+                            <td data-label="Service">{booking.service.replace('-', ' ').toUpperCase()}</td>
+                            <td data-label="Date">{new Date(booking.date).toLocaleDateString()}</td>
+                            <td data-label="Time">{booking.time}</td>
+                            <td data-label="Status">
                               {booking.status === 'completed' ? (
                                 <div className="status-completed">
                                   <Check className="w-5 h-5" style={{ marginRight: '0.5rem' }} />
@@ -262,8 +262,8 @@ export default function AdminDashboard() {
                                 </select>
                               )}
                             </td>
-                            <td>${booking.total_price || 0}</td>
-                            <td>
+                            <td data-label="Price">${booking.total_price || 0}</td>
+                            <td data-label="Action">
                               <button
                                 className="cancel-btn"
                                 onClick={() => handleCancelBooking(booking.id)}
@@ -297,10 +297,10 @@ export default function AdminDashboard() {
                     <tbody>
                       {users.map((user) => (
                         <tr key={user.id} className={`user-row role-${user.role}`}>
-                          <td>{user.name}</td>
-                          <td>{user.email}</td>
-                          <td>{(user as any).phone_number || '-'}</td>
-                          <td>
+                          <td data-label="Name">{user.name}</td>
+                          <td data-label="Email">{user.email}</td>
+                          <td data-label="Phone">{(user as any).phone_number || '-'}</td>
+                          <td data-label="Role">
                             <span className={`role-badge role-${user.role}`}>
                               {user.role.toUpperCase()}
                             </span>
