@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const [token, setToken] = useState('');
   const [currentUser, setCurrentUser] = useState<{ name: string; email: string } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [bookingFilter, setBookingFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [bookingFilter, setBookingFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all');
 
   useEffect(() => {
     // Check if user is authenticated and is admin
@@ -213,6 +213,12 @@ export default function AdminDashboard() {
                   >
                     Done ({bookings.filter(b => b.status === 'completed').length})
                   </button>
+                  <button
+                    className={`filter-btn ${bookingFilter === 'cancelled' ? 'active' : ''}`}
+                    onClick={() => setBookingFilter('cancelled')}
+                  >
+                    Cancelled ({bookings.filter(b => b.status === 'cancelled').length})
+                  </button>
                 </div>
               </div>
 
@@ -239,6 +245,7 @@ export default function AdminDashboard() {
                         .filter(booking => {
                           if (bookingFilter === 'pending') return booking.status !== 'completed' && booking.status !== 'cancelled';
                           if (bookingFilter === 'completed') return booking.status === 'completed';
+                          if (bookingFilter === 'cancelled') return booking.status === 'cancelled';
                           return true;
                         })
                         .map((booking) => (
