@@ -1,0 +1,46 @@
+/* Landing Page Home Section */
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fdebd3;
+}
+
+.home-card {
+  text-align: center;
+  padding: 32px 28px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(6px);
+}
+
+.home-logo {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 12px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-title {
+  margin: 0;
+  font-size: 2.4rem;
+  color: #ff6fa3;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  font-family: 'Segoe UI', Roboto, -apple-system, 'Helvetica Neue', Arial;
+}
+
+/* Mobile responsive */
+@media (max-width: 420px) {
+  .home-title {
+    font-size: 1.8rem;
+  }
+
+  .home-card {
+    padding: 22px;
+  }
+}

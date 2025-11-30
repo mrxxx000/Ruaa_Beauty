@@ -1,0 +1,96 @@
+/* Contact Page */
+.contact-main {
+  padding: 48px 0;
+}
+
+.contact-inner {
+  max-width: 820px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.contact-title {
+  font-size: 2.4rem;
+  margin-bottom: 12px;
+  color: #ff6fa3;
+  font-weight: 800;
+}
+
+.contact-lead {
+  font-size: 1.05rem;
+  color: #333;
+  line-height: 1.6;
+}
+
+.contact-block {
+  margin-top: 20px;
+  font-size: 1.05rem;
+  text-align: left;
+}
+
+.contact-block h3 {
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.contact-block p {
+  margin: 4px 0;
+  color: #666;
+}
+
+.contact-block a {
+  color: inherit;
+  word-break: break-word;
+  text-decoration: none;
+  color: #ff6fa3;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.contact-block a:hover {
+  text-decoration: underline;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .contact-main {
+    padding: 28px 0;
+  }
+
+  .contact-inner {
+    padding: 0 12px;
+  }
+
+  .contact-title {
+    font-size: 1.6rem;
+  }
+
+  .contact-lead {
+    font-size: 1rem;
+  }
+
+  .contact-block {
+    font-size: 0.98rem;
+    text-align: left;
+    margin-top: 16px;
+  }
+
+  .contact-block h3 {
+    font-size: 1rem;
+  }
+
+  .contact-block a {
+    display: inline-block;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .contact-inner {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .contact-block {
+  text-align: right;
+}

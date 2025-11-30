@@ -1,0 +1,190 @@
+/* Mehendi Section */
+.mehendi-section {
+  margin-top: 28px;
+}
+
+.mehendi-hero {
+  position: relative;
+  min-height: 720px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+}
+
+.mehendi-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.25));
+}
+
+.mehendi-hero-inner {
+  position: relative;
+  z-index: 2;
+  padding: 64px 18px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.mehendi-text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mehendi-title {
+  color: #fff;
+  font-size: 2.6rem;
+  margin: 0;
+}
+
+.mehendi-desc {
+  color: rgba(255, 255, 255, 0.95);
+  max-width: 760px;
+  line-height: 1.6;
+}
+
+/* Mehendi Gallery */
+.mehendi-gallery {
+  padding: 28px 0 64px 0;
+}
+
+.mehendi-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+}
+
+/* Image Pairs */
+.pair-wrap {
+  display: flex;
+  gap: 12px;
+  max-width: 980px;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+.pair-img {
+  width: 50%;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+/* Single Images */
+.single-wrap {
+  max-width: 760px;
+  width: 100%;
+}
+
+.single-img {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+/* More Designs Grid */
+.more-designs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.more-designs-grid .single-wrap {
+  width: 100%;
+}
+
+/* Mehendi Thumbnails */
+.mehendi-thumbs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.thumb-btn {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.15);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.thumb-btn.active {
+  background: linear-gradient(90deg, #ff9ccf, #ff6fa3);
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .mehendi-hero {
+    min-height: 360px;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    background-size: cover;
+    background-position: center;
+    border-radius: 0;
+  }
+
+  .mehendi-hero-inner {
+    padding: 32px 12px;
+  }
+
+  .mehendi-title {
+    font-size: 1.4rem;
+  }
+
+  .mehendi-desc {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 920px) {
+  .pair-wrap {
+    flex-direction: row;
+  }
+
+  .pair-img {
+    width: calc(50% - 6px);
+  }
+
+  .mehendi-title {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .pair-wrap {
+    flex-direction: column;
+    flex-wrap: wrap;
+  }
+
+  .pair-img {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .more-designs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .mehendi-hero-inner {
+  direction: rtl;
+}
+
+[dir="rtl"] .more-designs-grid {
+  direction: rtl;
+}
+
+[dir="rtl"] .mehendi-thumbs {
+  direction: rtl;
+}

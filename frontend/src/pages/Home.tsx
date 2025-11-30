@@ -135,7 +135,7 @@ const Home: React.FC = () => {
             <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>{t('nav.lashes')}</Link>
             <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>{t('nav.makeup')}</Link>
             <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>{t('nav.mehendi')}</Link>
-            <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>{t('nav.book')}</Link>
+            <Link to="/book" className={location.pathname === '/book' ? 'active' : ''}>{t('nav.book')}</Link>
             <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
           </nav>
         </div>
@@ -151,13 +151,13 @@ const Home: React.FC = () => {
 
         {/* Lashes video grid: 2 videos per row. Place your short video files in public/assets and update the `videos` array in VideoGrid. */}
         <section className="videos container" id="Lashes">
-          <h2 style={{ marginBottom: 18 }}>{t('home.lashesTitle')}</h2>
+          <h2 style={{ marginTop: 18, marginBottom: 18 }}>{t('home.lashesTitle')}</h2>
           <VideoGrid />
         </section>
 
         {/* Mehendi shorts - same layout as Lashes, using specific mehendi videos */}
         <section className="videos container" id="mehendi-shorts">
-          <h2 style={{ marginBottom: 18 }}>{t('home.mehendiTitle')}</h2>
+          <h2 style={{ marginTop: 18, marginBottom: 18 }}>{t('home.mehendiTitle')}</h2>
           <VideoGrid
             videos={[
               process.env.PUBLIC_URL + '/assets/mehendi1.mp4',

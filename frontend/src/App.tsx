@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import Mehendi from './pages/Mehendi';
 import Contact from './pages/Contact';
 import Makeup from './pages/Makeup';
-import About from './pages/About';
+import Book from './pages/Book';
 import Lashes from './pages/Lashes';
 import CancelBooking from './pages/CancelBooking';
 
@@ -18,7 +18,7 @@ function App() {
         <Route path="/mehendi" element={<Mehendi />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/makeup" element={<Makeup />} />
-        <Route path="/about" element={<About />} />
+        <Route path="/book" element={<Book />} />
         <Route path="/lashes" element={<Lashes />} />
       </Routes>
     </BrowserRouter>
