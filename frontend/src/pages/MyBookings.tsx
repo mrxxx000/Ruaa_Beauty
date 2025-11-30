@@ -439,7 +439,7 @@ const MyBookings: React.FC = () => {
 
                         {booking.total_price && (
                           <p style={{ margin: '0', color: '#ff6fa3', fontSize: '1rem', fontWeight: '600' }}>
-                            Total: ${booking.total_price.toFixed(2)}
+                            Total: {booking.total_price} Kr
                           </p>
                         )}
                       </div>

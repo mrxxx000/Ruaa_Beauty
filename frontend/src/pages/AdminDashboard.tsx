@@ -279,7 +279,7 @@ export default function AdminDashboard() {
                                 </select>
                               )}
                             </td>
-                            <td data-label="Price">${booking.total_price || 0}</td>
+                            <td data-label="Price">{booking.total_price || 0} Kr</td>
                             <td data-label="Action">
                               <button
                                 className="cancel-btn"
