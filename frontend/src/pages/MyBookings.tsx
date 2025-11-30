@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronDown, Calendar, MapPin, Clock, Phone, AlertCircle, Loader } from 'lucide-react';
+import { ChevronDown, Calendar, MapPin, Clock, Phone, AlertCircle, Loader, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
@@ -20,6 +20,7 @@ interface Booking {
   notes?: string;
   total_price?: number;
   created_at?: string;
+  status?: string;
 }
 
 const MyBookings: React.FC = () => {
@@ -33,6 +34,7 @@ const MyBookings: React.FC = () => {
   const [showCancelConfirm, setShowCancelConfirm] = useState<string | null>(null);
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const [bookingFilter, setBookingFilter] = useState<'all' | 'pending' | 'completed'>('all');
 
   useEffect(() => {
     // Check if user is authenticated
@@ -282,40 +284,107 @@ const MyBookings: React.FC = () => {
                 </Link>
               </div>
             ) : (
-              <div style={{ display: 'grid', gap: '20px' }}>
-                {bookings.map((booking) => (
-                  <div
-                    key={booking.id}
+              <div>
+                <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => setBookingFilter('all')}
                     style={{
-                      backgroundColor: 'white',
-                      borderRadius: '12px',
-                      padding: '20px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                      borderLeft: '4px solid #ff6fa3',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '6px',
+                      border: '1px solid #d1d5db',
+                      background: bookingFilter === 'all' ? '#ff6fa3' : '#f3f4f6',
+                      color: bookingFilter === 'all' ? '#fff' : '#374151',
+                      cursor: 'pointer',
+                      fontWeight: '500',
+                      fontSize: '0.9rem',
+                      transition: 'all 0.2s ease',
                     }}
                   >
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-                      {/* Left column */}
-                      <div>
-                        <h3 style={{ color: '#333', marginBottom: '12px', fontSize: '1.1rem' }}>
-                          {booking.service.replace('-', ' ').toUpperCase()}
-                        </h3>
+                    All ({bookings.length})
+                  </button>
+                  <button
+                    onClick={() => setBookingFilter('pending')}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      borderRadius: '6px',
+                      border: '1px solid #d1d5db',
+                      background: bookingFilter === 'pending' ? '#ff6fa3' : '#f3f4f6',
+                      color: bookingFilter === 'pending' ? '#fff' : '#374151',
+                      cursor: 'pointer',
+                      fontWeight: '500',
+                      fontSize: '0.9rem',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    Pending ({bookings.filter(b => b.status !== 'completed' && b.status !== 'cancelled').length})
+                  </button>
+                  <button
+                    onClick={() => setBookingFilter('completed')}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      borderRadius: '6px',
+                      border: '1px solid #d1d5db',
+                      background: bookingFilter === 'completed' ? '#ff6fa3' : '#f3f4f6',
+                      color: bookingFilter === 'completed' ? '#fff' : '#374151',
+                      cursor: 'pointer',
+                      fontWeight: '500',
+                      fontSize: '0.9rem',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    Done ({bookings.filter(b => b.status === 'completed').length})
+                  </button>
+                </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#666' }}>
-                          <Calendar className="w-4 h-4" />
-                          <span>{new Date(booking.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                <div style={{ display: 'grid', gap: '20px' }}>
+                  {bookings
+                    .filter(booking => {
+                      if (bookingFilter === 'pending') return booking.status !== 'completed' && booking.status !== 'cancelled';
+                      if (bookingFilter === 'completed') return booking.status === 'completed';
+                      return true;
+                    })
+                    .map((booking) => (
+                      <div
+                        key={booking.id}
+                        style={{
+                          backgroundColor: 'white',
+                          borderRadius: '12px',
+                          padding: '20px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                          borderLeft: booking.status === 'completed' ? '4px solid #2ed573' : '4px solid #ff6fa3',
+                          opacity: booking.status === 'completed' ? 0.85 : 1,
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                          <h3 style={{ color: '#333', marginBottom: '0', fontSize: '1.1rem', margin: 0 }}>
+                            {booking.service.replace('-', ' ').toUpperCase()}
+                          </h3>
+                          {booking.status === 'completed' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2ed573', fontWeight: '600', fontSize: '0.9rem' }}>
+                              <Check className="w-5 h-5" />
+                              Done
+                            </div>
+                          )}
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#666' }}>
-                          <Clock className="w-4 h-4" />
-                          <span>{booking.time}</span>
-                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                          {/* Left column */}
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#666' }}>
+                              <Calendar className="w-4 h-4" />
+                              <span>{new Date(booking.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                            </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#666' }}>
-                          <MapPin className="w-4 h-4" />
-                          <span>{booking.location}</span>
-                        </div>
-                      </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#666' }}>
+                              <Clock className="w-4 h-4" />
+                              <span>{booking.time}</span>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#666' }}>
+                              <MapPin className="w-4 h-4" />
+                              <span>{booking.location}</span>
+                            </div>
+                          </div>
 
                       {/* Right column */}
                       <div>
@@ -358,23 +427,25 @@ const MyBookings: React.FC = () => {
                     )}
 
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                      <button
-                        onClick={() => setShowCancelConfirm(booking.id)}
-                        disabled={cancellingId === booking.id}
-                        style={{
-                          padding: '10px 20px',
-                          backgroundColor: '#ff4444',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '8px',
-                          cursor: cancellingId === booking.id ? 'not-allowed' : 'pointer',
-                          fontWeight: '600',
-                          fontSize: '0.9rem',
-                          opacity: cancellingId === booking.id ? 0.7 : 1,
-                        }}
-                      >
-                        {cancellingId === booking.id ? 'Cancelling...' : 'Cancel Booking'}
-                      </button>
+                      {booking.status !== 'completed' && (
+                        <button
+                          onClick={() => setShowCancelConfirm(booking.id)}
+                          disabled={cancellingId === booking.id}
+                          style={{
+                            padding: '10px 20px',
+                            backgroundColor: '#ff4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: cancellingId === booking.id ? 'not-allowed' : 'pointer',
+                            fontWeight: '600',
+                            fontSize: '0.9rem',
+                            opacity: cancellingId === booking.id ? 0.7 : 1,
+                          }}
+                        >
+                          {cancellingId === booking.id ? 'Cancelling...' : 'Cancel Booking'}
+                        </button>
+                      )}
                     </div>
 
                     {/* Cancellation Confirmation Modal */}
@@ -447,6 +518,7 @@ const MyBookings: React.FC = () => {
                     )}
                   </div>
                 ))}
+                </div>
               </div>
             )}
           </div>

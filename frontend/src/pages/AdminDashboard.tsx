@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Users, Calendar, Menu } from 'lucide-react';
+import { LogOut, Users, Calendar, Menu, Check, AlertCircle } from 'lucide-react';
 import '../styles/admin-dashboard.css';
 import {
   getAllBookings,
@@ -21,6 +21,7 @@ export default function AdminDashboard() {
   const [token, setToken] = useState('');
   const [currentUser, setCurrentUser] = useState<{ name: string; email: string } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [bookingFilter, setBookingFilter] = useState<'all' | 'pending' | 'completed'>('all');
 
   useEffect(() => {
     // Check if user is authenticated and is admin
@@ -181,7 +182,30 @@ export default function AdminDashboard() {
             </div>
           ) : activeTab === 'bookings' ? (
             <div className="bookings-section">
-              <h2>All Bookings</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h2 style={{ margin: 0 }}>All Bookings</h2>
+                <div className="booking-filters" style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    className={`filter-btn ${bookingFilter === 'all' ? 'active' : ''}`}
+                    onClick={() => setBookingFilter('all')}
+                  >
+                    All ({bookings.length})
+                  </button>
+                  <button
+                    className={`filter-btn ${bookingFilter === 'pending' ? 'active' : ''}`}
+                    onClick={() => setBookingFilter('pending')}
+                  >
+                    Pending ({bookings.filter(b => b.status !== 'completed' && b.status !== 'cancelled').length})
+                  </button>
+                  <button
+                    className={`filter-btn ${bookingFilter === 'completed' ? 'active' : ''}`}
+                    onClick={() => setBookingFilter('completed')}
+                  >
+                    Done ({bookings.filter(b => b.status === 'completed').length})
+                  </button>
+                </div>
+              </div>
+
               {bookings.length === 0 ? (
                 <p className="no-data">No bookings found</p>
               ) : (
@@ -201,41 +225,54 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {bookings.map((booking) => (
-                        <tr key={booking.id} className={`booking-row status-${booking.status || 'pending'}`}>
-                          <td>{booking.name}</td>
-                          <td>{booking.email}</td>
-                          <td>{booking.phone}</td>
-                          <td>{booking.service.replace('-', ' ').toUpperCase()}</td>
-                          <td>{new Date(booking.date).toLocaleDateString()}</td>
-                          <td>{booking.time}</td>
-                          <td>
-                            <select
-                              className="status-select"
-                              value={booking.status || 'pending'}
-                              onChange={(e) =>
-                                handleStatusChange(
-                                  booking.id,
-                                  e.target.value as 'pending' | 'completed' | 'cancelled'
-                                )
-                              }
-                            >
-                              <option value="pending">Pending</option>
-                              <option value="completed">Completed</option>
-                              <option value="cancelled">Cancelled</option>
-                            </select>
-                          </td>
-                          <td>${booking.total_price || 0}</td>
-                          <td>
-                            <button
-                              className="cancel-btn"
-                              onClick={() => handleCancelBooking(booking.id)}
-                            >
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                      {bookings
+                        .filter(booking => {
+                          if (bookingFilter === 'pending') return booking.status !== 'completed' && booking.status !== 'cancelled';
+                          if (bookingFilter === 'completed') return booking.status === 'completed';
+                          return true;
+                        })
+                        .map((booking) => (
+                          <tr key={booking.id} className={`booking-row status-${booking.status || 'pending'}`}>
+                            <td>{booking.name}</td>
+                            <td>{booking.email}</td>
+                            <td>{booking.phone}</td>
+                            <td>{booking.service.replace('-', ' ').toUpperCase()}</td>
+                            <td>{new Date(booking.date).toLocaleDateString()}</td>
+                            <td>{booking.time}</td>
+                            <td>
+                              {booking.status === 'completed' ? (
+                                <div className="status-completed">
+                                  <Check className="w-5 h-5" style={{ marginRight: '0.5rem' }} />
+                                  Completed
+                                </div>
+                              ) : (
+                                <select
+                                  className="status-select"
+                                  value={booking.status || 'pending'}
+                                  onChange={(e) =>
+                                    handleStatusChange(
+                                      booking.id,
+                                      e.target.value as 'pending' | 'completed' | 'cancelled'
+                                    )
+                                  }
+                                >
+                                  <option value="pending">Pending</option>
+                                  <option value="completed">Completed</option>
+                                  <option value="cancelled">Cancelled</option>
+                                </select>
+                              )}
+                            </td>
+                            <td>${booking.total_price || 0}</td>
+                            <td>
+                              <button
+                                className="cancel-btn"
+                                onClick={() => handleCancelBooking(booking.id)}
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>

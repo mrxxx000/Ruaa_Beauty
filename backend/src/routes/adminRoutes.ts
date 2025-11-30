@@ -2,10 +2,12 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { BookingService } from '../services/BookingService';
 import { AuthService } from '../services/AuthService';
+import { EmailService } from '../services/EmailService';
 
 const router = express.Router();
 const bookingService = new BookingService();
 const authService = new AuthService();
+const emailService = new EmailService();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -99,6 +101,71 @@ router.put('/bookings/:bookingId/status', verifyAdminToken, async (req, res) => 
 
   try {
     const booking = await bookingService.updateBookingStatus(bookingId, status);
+    
+    // Send status update emails
+    const adminEmail = process.env.ADMIN_EMAIL || 'akmalsafi43@gmail.com';
+    const fromEmail = process.env.SMTP_FROM || 'akmalsafi43@gmail.com';
+    const statusMessage = status === 'completed' ? '✅ Completed' : status === 'cancelled' ? '❌ Cancelled' : '⏳ Pending';
+    
+    // Email to user
+    const userEmailSubject = `Booking Status Update - ${statusMessage}`;
+    const userEmailContent = `
+      <h3>Hi ${booking.name},</h3>
+      <p>Your booking status has been updated to: <strong>${statusMessage}</strong></p>
+      <hr>
+      <h4>Booking Details:</h4>
+      <ul>
+        <li><strong>Service:</strong> ${booking.service}</li>
+        <li><strong>Date:</strong> ${booking.date}</li>
+        <li><strong>Time:</strong> ${booking.time}</li>
+        <li><strong>Location:</strong> ${booking.location}</li>
+      </ul>
+      <hr>
+      <p>If you have any questions, please contact us.</p>
+    `;
+
+    try {
+      const brevo = require('@getbrevo/brevo');
+      const apiInstance = new brevo.TransactionalEmailsApi();
+      apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY || '');
+
+      const userEmailObj = new brevo.SendSmtpEmail();
+      userEmailObj.sender = { email: fromEmail, name: 'Ruaa Beauty' };
+      userEmailObj.to = [{ email: booking.email }];
+      userEmailObj.subject = userEmailSubject;
+      userEmailObj.htmlContent = userEmailContent;
+
+      await apiInstance.sendTransacEmail(userEmailObj);
+      console.log('✅ Status update email sent to user');
+
+      // Email to admin
+      const adminEmailSubject = `Booking Status Updated - ${booking.name}`;
+      const adminEmailContent = `
+        <h3>Booking Status Updated</h3>
+        <p><strong>Name:</strong> ${booking.name}</p>
+        <p><strong>Email:</strong> ${booking.email}</p>
+        <p><strong>New Status:</strong> ${statusMessage}</p>
+        <hr>
+        <h4>Booking Details:</h4>
+        <ul>
+          <li><strong>Service:</strong> ${booking.service}</li>
+          <li><strong>Date:</strong> ${booking.date}</li>
+          <li><strong>Time:</strong> ${booking.time}</li>
+          <li><strong>Location:</strong> ${booking.location}</li>
+        </ul>
+      `;
+
+      const adminEmailObj = new brevo.SendSmtpEmail();
+      adminEmailObj.sender = { email: fromEmail, name: 'Ruaa Beauty Bookings' };
+      adminEmailObj.to = [{ email: adminEmail }];
+      adminEmailObj.subject = adminEmailSubject;
+      adminEmailObj.htmlContent = adminEmailContent;
+
+      await apiInstance.sendTransacEmail(adminEmailObj);
+      console.log('✅ Status update email sent to admin');
+    } catch (emailErr: any) {
+      console.warn('⚠️ Email sending failed (non-critical):', emailErr.message);
+    }
     
     res.status(200).json({
       message: 'Booking status updated successfully',
