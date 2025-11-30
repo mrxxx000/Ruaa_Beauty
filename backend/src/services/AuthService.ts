@@ -126,4 +126,19 @@ export class AuthService {
 
     return data || [];
   }
+
+  async isAdmin(userId: number) {
+    const supabase = this.getSupabase();
+    const { data, error } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', userId)
+      .single();
+
+    if (error || !data) {
+      throw new Error('User not found');
+    }
+
+    return data.role === 'admin';
+  }
 }
