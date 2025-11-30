@@ -12,14 +12,14 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 const TOKEN_EXPIRY = '7d';
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+        return res.status(400).json({ message: 'Name, email and password are required' });
     }
     try {
-        const user = await authService.registerUser(username, password);
+        const user = await authService.registerUser(name, email, password);
         // Generate JWT token
-        const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+        const token = jsonwebtoken_1.default.sign({ id: user.id, name: user.name, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
         res.status(201).json({
             message: 'Registration successful',
             user,
@@ -36,14 +36,14 @@ router.post('/register', async (req, res) => {
 });
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
     }
     try {
-        const user = await authService.loginUser(username, password);
+        const user = await authService.loginUser(email, password);
         // Generate JWT token
-        const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+        const token = jsonwebtoken_1.default.sign({ id: user.id, name: user.name, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
         res.status(200).json({
             message: 'Login successful',
             user,

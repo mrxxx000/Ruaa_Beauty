@@ -5,12 +5,15 @@ import '../styles/App.css';
 const AuthModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ id: number; username: string; role: string } | null>(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string; role: string } | null>(null);
 
   // Load user from localStorage on mount
   React.useEffect(() => {
@@ -25,8 +28,16 @@ const AuthModal: React.FC = () => {
     e.preventDefault();
     setError('');
     
-    // Validate password for registration
-    if (!isLogin && password.length < 8) {
+    // Validate fields
+    if (isLogin && !email) {
+      setError('Email is required');
+      return;
+    }
+    if (!isLogin && (!name || !email)) {
+      setError('Name and email are required');
+      return;
+    }
+    if (password.length < 8) {
       setError('Password must be at least 8 characters long');
       return;
     }
@@ -35,12 +46,17 @@ const AuthModal: React.FC = () => {
 
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+      //const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+      const backendUrl ='http://localhost:10000';
+
+      const body = isLogin 
+        ? { email, password }
+        : { name, email, password, phone_number: phone || null };
 
       const response = await fetch(`${backendUrl}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(body),
       });
 
       const data = await response.json();
@@ -56,8 +72,10 @@ const AuthModal: React.FC = () => {
       setCurrentUser(data.user);
 
       // Reset form
-      setUsername('');
+      setName('');
+      setEmail('');
       setPassword('');
+      setPhone('');
       setShowPassword(false);
       setIsOpen(false);
     } catch (err) {
@@ -68,9 +86,18 @@ const AuthModal: React.FC = () => {
   };
 
   const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('currentUser');
     setCurrentUser(null);
+    setShowLogoutConfirm(false);
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
   };
 
   return (
@@ -78,7 +105,7 @@ const AuthModal: React.FC = () => {
       {currentUser ? (
         <div className="user-info-badge" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', backgroundColor: '#ff6fa3', borderRadius: '8px', color: 'white' }}>
           <User className="w-5 h-5" />
-          <span style={{ fontSize: '0.9rem', fontWeight: '600' }}>Hey {currentUser.username}</span>
+          <span style={{ fontSize: '0.9rem', fontWeight: '600' }}>Hey {currentUser.name}</span>
           <button
             onClick={handleLogout}
             style={{
@@ -159,15 +186,37 @@ const AuthModal: React.FC = () => {
                 )}
 
                 <form onSubmit={handleSubmit}>
+                  {!isLogin && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Enter your full name"
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '2px solid #ddd',
+                          borderRadius: '8px',
+                          fontSize: '1rem',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
+                  )}
+
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
-                      Username
+                      Email
                     </label>
                     <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Enter username"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
                       style={{
                         width: '100%',
                         padding: '10px',
@@ -178,6 +227,28 @@ const AuthModal: React.FC = () => {
                       }}
                     />
                   </div>
+
+                  {!isLogin && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
+                        Phone Number <span style={{ color: '#999', fontSize: '0.85rem' }}>(Optional)</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="Enter your phone number"
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '2px solid #ddd',
+                          borderRadius: '8px',
+                          fontSize: '1rem',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
+                  )}
 
                   <div style={{ marginBottom: '24px' }}>
                     <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
@@ -287,6 +358,80 @@ const AuthModal: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {showLogoutConfirm && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1001,
+          }}
+          onClick={cancelLogout}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '32px',
+              maxWidth: '350px',
+              width: '90%',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+              textAlign: 'center',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ marginBottom: '16px', color: '#ff6fa3', fontSize: '1.3rem' }}>
+              Confirm Logout
+            </h2>
+
+            <p style={{ marginBottom: '24px', color: '#666', fontSize: '0.95rem', lineHeight: '1.5' }}>
+              Are you sure you want to log out?
+            </p>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={cancelLogout}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  backgroundColor: '#f0f0f0',
+                  color: '#333',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmLogout}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  backgroundColor: '#ff6fa3',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

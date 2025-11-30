@@ -16,17 +16,21 @@ export class AuthService {
     return this.supabaseInstance;
   }
 
-  async registerUser(username: string, password: string) {
-    if (!username || !password) {
-      throw new Error('Username and password are required');
+  async registerUser(name: string, email: string, password: string, phone_number?: string) {
+    if (!name || !email || !password) {
+      throw new Error('Name, email, and password are required');
     }
 
-    if (username.length < 3) {
-      throw new Error('Username must be at least 3 characters long');
+    if (name.length < 2) {
+      throw new Error('Name must be at least 2 characters long');
     }
 
-    if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters long');
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      throw new Error('Please enter a valid email address');
+    }
+
+    if (password.length < 8) {
+      throw new Error('Password must be at least 8 characters long');
     }
 
     // Hash password
@@ -38,8 +42,10 @@ export class AuthService {
       .from('users')
       .insert([
         {
-          username,
+          name,
+          email,
           password: hashedPassword,
+          phone_number: phone_number || null,
           role: 'user',
         },
       ])
@@ -48,21 +54,22 @@ export class AuthService {
 
     if (error) {
       if (error.code === '23505') {
-        throw new Error('Username already exists');
+        throw new Error('Email already exists');
       }
       throw new Error(`Registration error: ${error.message}`);
     }
 
     return {
       id: data.id,
-      username: data.username,
+      name: data.name,
+      email: data.email,
       role: data.role,
     };
   }
 
-  async loginUser(username: string, password: string) {
-    if (!username || !password) {
-      throw new Error('Username and password are required');
+  async loginUser(email: string, password: string) {
+    if (!email || !password) {
+      throw new Error('Email and password are required');
     }
 
     // Fetch user
@@ -70,23 +77,24 @@ export class AuthService {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('username', username)
+      .eq('email', email)
       .single();
 
     if (error || !data) {
-      throw new Error('Invalid username or password');
+      throw new Error('Invalid email or password');
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, data.password);
 
     if (!isPasswordValid) {
-      throw new Error('Invalid username or password');
+      throw new Error('Invalid email or password');
     }
 
     return {
       id: data.id,
-      username: data.username,
+      name: data.name,
+      email: data.email,
       role: data.role,
     };
   }
@@ -95,7 +103,7 @@ export class AuthService {
     const supabase = this.getSupabase();
     const { data, error } = await supabase
       .from('users')
-      .select('id, username, role')
+      .select('id, name, email, role')
       .eq('id', id)
       .single();
 
@@ -110,7 +118,7 @@ export class AuthService {
     const supabase = this.getSupabase();
     const { data, error } = await supabase
       .from('users')
-      .select('id, username, role');
+      .select('id, name, email, role');
 
     if (error) {
       throw new Error(`Error fetching users: ${error.message}`);

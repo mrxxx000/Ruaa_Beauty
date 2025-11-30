@@ -10,18 +10,18 @@ const TOKEN_EXPIRY = '7d';
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-  const { username, password } = req.body;
+  const { name, email, password, phone_number } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ message: 'Username and password are required' });
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: 'Name, email and password are required' });
   }
 
   try {
-    const user = await authService.registerUser(username, password);
+    const user = await authService.registerUser(name, email, password, phone_number);
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role },
+      { id: user.id, name: user.name, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: TOKEN_EXPIRY }
     );
@@ -44,18 +44,18 @@ router.post('/register', async (req, res) => {
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ message: 'Username and password are required' });
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
   }
 
   try {
-    const user = await authService.loginUser(username, password);
+    const user = await authService.loginUser(email, password);
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role },
+      { id: user.id, name: user.name, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: TOKEN_EXPIRY }
     );
