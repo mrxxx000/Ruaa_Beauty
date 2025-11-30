@@ -144,14 +144,17 @@ class BookingService {
     }
     async getBookingsByUserId(userId) {
         const supabase = this.getSupabase();
+        console.log('🔍 Fetching bookings for userId:', userId);
         const { data, error } = await supabase
             .from('bookings')
             .select('*')
             .eq('user_id', userId)
             .order('date', { ascending: false });
         if (error) {
+            console.error('❌ Error fetching bookings:', error);
             throw new Error(`Error fetching bookings: ${error.message}`);
         }
+        console.log(`✅ Found ${data?.length || 0} bookings for userId ${userId}`);
         return data || [];
     }
     async cancelBookingByUserAndId(bookingId, userId) {

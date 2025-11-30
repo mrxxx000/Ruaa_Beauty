@@ -166,6 +166,8 @@ export class BookingService {
 
   async getBookingsByUserId(userId: number) {
     const supabase = this.getSupabase();
+    console.log('🔍 Fetching bookings for userId:', userId);
+    
     const { data, error } = await supabase
       .from('bookings')
       .select('*')
@@ -173,9 +175,11 @@ export class BookingService {
       .order('date', { ascending: false });
 
     if (error) {
+      console.error('❌ Error fetching bookings:', error);
       throw new Error(`Error fetching bookings: ${error.message}`);
     }
 
+    console.log(`✅ Found ${data?.length || 0} bookings for userId ${userId}`);
     return data || [];
   }
 

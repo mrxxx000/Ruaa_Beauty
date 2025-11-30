@@ -45,6 +45,26 @@ const BookingForm: React.FC = () => {
   const [focusedField, setFocusedField] = useState<string>('');
   const [availableHours, setAvailableHours] = useState<number[]>([9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
   const [unavailableHours, setUnavailableHours] = useState<number[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string; phone?: string } | null>(null);
+
+  // Check if user is logged in on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const user = localStorage.getItem('currentUser');
+    if (token && user) {
+      const userData = JSON.parse(user);
+      setIsLoggedIn(true);
+      setCurrentUser(userData);
+      // Auto-populate form fields with user data
+      setFormData(prev => ({
+        ...prev,
+        name: userData.name || '',
+        email: userData.email || '',
+        phone: userData.phone || '',
+      }));
+    }
+  }, []);
 
   // Calculate total price
   const calculateTotalPrice = (services: string[], mehendiHours: number = 0): number => {
@@ -69,7 +89,8 @@ const BookingForm: React.FC = () => {
     }
 
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+      //const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+      const backendUrl = 'http://localhost:10000';
       const servicesParam = services.join(',');
       const url = `${backendUrl}/api/available-times?date=${date}&services=${servicesParam}`;
       
@@ -141,17 +162,22 @@ const BookingForm: React.FC = () => {
       console.log('Submitting booking data:', bookingData);
 
       // Backend URL - configure via REACT_APP_BACKEND_URL environment variable
-      // Local development: http://localhost:5000
+      // Local development: http://localhost:10000
       // Production (Render): https://your-backend-url.onrender.com
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+      //const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+      const backendUrl = 'http://localhost:10000';
       const url = `${backendUrl}/api/booking`;
-      console.log('Sending request to:', url);
       
       // Get JWT token if user is logged in
       const token = localStorage.getItem('authToken');
+      console.log('🔑 Token from localStorage:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN');
+      
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+        console.log('📤 Sending request with Authorization header');
+      } else {
+        console.log('📤 Sending request WITHOUT Authorization header');
       }
 
       const resp = await fetch(url, {
@@ -448,67 +474,146 @@ const BookingForm: React.FC = () => {
           <div className="booking-inner-card">
             <form onSubmit={handleSubmit} className="booking-form">
             <div className="booking-grid">
-              {/* Name */}
-              <div className="form-group">
-                <label htmlFor="bf-name" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
-                  <User className="w-4 h-4 text-primary" />
-                  {t('bookingForm.nameLabel')} *
-                </label>
-                <div className="relative">
-                  <input
-                    id="bf-name"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    onFocus={() => setFocusedField('name')}
-                    onBlur={() => setFocusedField('')}
-                    placeholder={t('bookingForm.namePlaceholder')}
-                    className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'name' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
-                  />
+              {/* Name - Hidden when logged in */}
+              {!isLoggedIn && (
+                <div className="form-group">
+                  <label htmlFor="bf-name" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                    <User className="w-4 h-4 text-primary" />
+                    {t('bookingForm.nameLabel')} *
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="bf-name"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onFocus={() => setFocusedField('name')}
+                      onBlur={() => setFocusedField('')}
+                      placeholder={t('bookingForm.namePlaceholder')}
+                      className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'name' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
+              
+              {/* Name Display - Shown when logged in */}
+              {isLoggedIn && (
+                <div className="form-group">
+                  <label className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                    <User className="w-4 h-4 text-primary" />
+                    {t('bookingForm.nameLabel')}
+                  </label>
+                  <div className="relative">
+                    <div style={{
+                      width: '100%',
+                      padding: '16px 24px',
+                      fontSize: '1rem',
+                      backgroundColor: '#f3f4f6',
+                      border: '2px solid #e5e7eb',
+                      borderRadius: '16px',
+                      color: '#666',
+                      fontWeight: '500',
+                    }}>
+                      {formData.name}
+                    </div>
+                  </div>
+                </div>
+              )}
 
-              {/* Email */}
-              <div className="form-group">
-                <label htmlFor="bf-email" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
-                  <Mail className="w-4 h-4 text-primary" />
-                  {t('bookingForm.emailLabel')} *
-                </label>
-                <div className="relative">
-                  <input
-                    id="bf-email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    onFocus={() => setFocusedField('email')}
-                    onBlur={() => setFocusedField('')}
-                    placeholder={t('bookingForm.emailPlaceholder')}
-                    className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'email' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
-                  />
+              {/* Email - Hidden when logged in */}
+              {!isLoggedIn && (
+                <div className="form-group">
+                  <label htmlFor="bf-email" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                    <Mail className="w-4 h-4 text-primary" />
+                    {t('bookingForm.emailLabel')} *
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="bf-email"
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() => setFocusedField('')}
+                      placeholder={t('bookingForm.emailPlaceholder')}
+                      className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'email' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
+              
+              {/* Email Display - Shown when logged in */}
+              {isLoggedIn && (
+                <div className="form-group">
+                  <label className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                    <Mail className="w-4 h-4 text-primary" />
+                    {t('bookingForm.emailLabel')}
+                  </label>
+                  <div className="relative">
+                    <div style={{
+                      width: '100%',
+                      padding: '16px 24px',
+                      fontSize: '1rem',
+                      backgroundColor: '#f3f4f6',
+                      border: '2px solid #e5e7eb',
+                      borderRadius: '16px',
+                      color: '#666',
+                      fontWeight: '500',
+                      wordBreak: 'break-all',
+                    }}>
+                      {formData.email}
+                    </div>
+                  </div>
+                </div>
+              )}
 
-              {/* Phone */}
-              <div className="form-group">
-                <label htmlFor="bf-phone" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
-                  <Phone className="w-4 h-4 text-primary" />
-                  {t('bookingForm.phoneLabel')} *
-                </label>
-                <div className="relative">
-                  <input
-                    id="bf-phone"
-                    type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    onFocus={() => setFocusedField('phone')}
-                    onBlur={() => setFocusedField('')}
-                    placeholder={t('bookingForm.phonePlaceholder')}
-                    className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'phone' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
-                  />
+              {/* Phone - Hidden when logged in */}
+              {!isLoggedIn && (
+                <div className="form-group">
+                  <label htmlFor="bf-phone" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                    <Phone className="w-4 h-4 text-primary" />
+                    {t('bookingForm.phoneLabel')} *
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="bf-phone"
+                      type="tel"
+                      required
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onFocus={() => setFocusedField('phone')}
+                      onBlur={() => setFocusedField('')}
+                      placeholder={t('bookingForm.phonePlaceholder')}
+                      className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none placeholder:text-muted-foreground/50 ${focusedField === 'phone' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
+              
+              {/* Phone Display - Shown when logged in (optional) */}
+              {isLoggedIn && (
+                <div className="form-group">
+                  <label className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                    <Phone className="w-4 h-4 text-primary" />
+                    {t('bookingForm.phoneLabel')} <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#999' }}>(Optional)</span>
+                  </label>
+                  <div className="relative">
+                    <div style={{
+                      width: '100%',
+                      padding: '16px 24px',
+                      fontSize: '1rem',
+                      backgroundColor: '#f3f4f6',
+                      border: '2px solid #e5e7eb',
+                      borderRadius: '16px',
+                      color: formData.phone ? '#666' : '#999',
+                      fontWeight: '500',
+                    }}>
+                      {formData.phone || '(Not provided)'}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Services - Multiple Selection */}
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>

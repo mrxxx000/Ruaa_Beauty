@@ -15,32 +15,45 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.replace('Bearer ', '');
+    console.log('🔐 verifyToken middleware - Authorization header:', authHeader);
+    console.log('🔐 verifyToken middleware - Token extracted:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN');
     if (!token) {
+        console.log('❌ No token provided');
         return res.status(401).json({ message: 'No token provided' });
     }
     try {
         const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
+        console.log('✅ Token verified, decoded:', { id: decoded.id, email: decoded.email });
         req.userId = decoded.id;
         next();
     }
     catch (err) {
+        console.log('❌ Token verification failed:', err instanceof Error ? err.message : err);
         return res.status(401).json({ message: 'Invalid or expired token' });
     }
 };
 // POST /api/booking - Create a new booking
 router.post('/booking', async (req, res) => {
+    console.log('📝 Booking request received');
+    console.log('Authorization header:', req.headers.authorization);
     const authHeader = req.headers.authorization;
     const token = authHeader?.replace('Bearer ', '');
     let userId = null;
     // Try to verify token if provided
     if (token) {
         try {
+            console.log('🔐 Token found, attempting verification...');
             const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
             userId = decoded.id;
+            console.log('✅ Token verified, userId:', userId);
         }
         catch (err) {
+            console.log('⚠️  Token verification failed:', err instanceof Error ? err.message : err);
             // Token invalid, but booking can still proceed without user
         }
+    }
+    else {
+        console.log('⚠️  No token provided in authorization header');
     }
     const { name, email, phone, service, date, time, location, address, notes, totalPrice, servicePricing, mehendiHours } = req.body;
     if (!name || !email) {
@@ -76,7 +89,7 @@ router.post('/booking', async (req, res) => {
             mehendiHours,
             userId,
         });
-        console.log('✅ Booking saved to database');
+        console.log('✅ Booking saved to database with userId:', userId);
         // Send response immediately
         res.status(200).json({
             message: 'Booking saved successfully. Confirmation email will be sent shortly.',
@@ -109,8 +122,9 @@ router.post('/booking', async (req, res) => {
     }
 });
 // GET /api/booking/my-bookings - Get user's bookings (requires authentication)
-router.get('/my-bookings', verifyToken, async (req, res) => {
+router.get('/booking/my-bookings', verifyToken, async (req, res) => {
     const userId = req.userId;
+    console.log('🔍 GET /my-bookings request, userId from token:', userId);
     try {
         const bookings = await bookingService.getBookingsByUserId(userId);
         res.status(200).json({
@@ -128,7 +142,7 @@ router.get('/my-bookings', verifyToken, async (req, res) => {
     }
 });
 // POST /api/booking/cancel/:bookingId - Cancel a booking (requires authentication)
-router.post('/cancel/:bookingId', verifyToken, async (req, res) => {
+router.post('/booking/cancel/:bookingId', verifyToken, async (req, res) => {
     const userId = req.userId;
     const bookingId = req.params.bookingId || '';
     if (!bookingId) {
