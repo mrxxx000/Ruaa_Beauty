@@ -34,7 +34,7 @@ const MyBookings: React.FC = () => {
   const [showCancelConfirm, setShowCancelConfirm] = useState<string | null>(null);
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
-  const [bookingFilter, setBookingFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [bookingFilter, setBookingFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all');
 
   useEffect(() => {
     // Check if user is authenticated
@@ -334,6 +334,22 @@ const MyBookings: React.FC = () => {
                   >
                     Done ({bookings.filter(b => b.status === 'completed').length})
                   </button>
+                  <button
+                    onClick={() => setBookingFilter('cancelled')}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      borderRadius: '6px',
+                      border: '1px solid #d1d5db',
+                      background: bookingFilter === 'cancelled' ? '#ff6fa3' : '#f3f4f6',
+                      color: bookingFilter === 'cancelled' ? '#fff' : '#374151',
+                      cursor: 'pointer',
+                      fontWeight: '500',
+                      fontSize: '0.9rem',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    Cancelled ({bookings.filter(b => b.status === 'cancelled').length})
+                  </button>
                 </div>
 
                 <div style={{ display: 'grid', gap: '20px' }}>
@@ -341,6 +357,7 @@ const MyBookings: React.FC = () => {
                     .filter(booking => {
                       if (bookingFilter === 'pending') return booking.status !== 'completed' && booking.status !== 'cancelled';
                       if (bookingFilter === 'completed') return booking.status === 'completed';
+                      if (bookingFilter === 'cancelled') return booking.status === 'cancelled';
                       return true;
                     })
                     .map((booking) => (
@@ -351,8 +368,10 @@ const MyBookings: React.FC = () => {
                           borderRadius: '12px',
                           padding: '20px',
                           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                          borderLeft: booking.status === 'completed' ? '4px solid #2ed573' : '4px solid #ff6fa3',
-                          opacity: booking.status === 'completed' ? 0.85 : 1,
+                          borderLeft: booking.status === 'completed' ? '4px solid #2ed573' : booking.status === 'cancelled' ? '4px solid #f87171' : '4px solid #ff6fa3',
+                          opacity: (booking.status === 'completed' || booking.status === 'cancelled') ? 0.85 : 1,
+                          filter: booking.status === 'cancelled' ? 'blur(0.5px)' : 'none',
+                          pointerEvents: booking.status === 'cancelled' ? 'none' : 'auto',
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
@@ -363,6 +382,12 @@ const MyBookings: React.FC = () => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2ed573', fontWeight: '600', fontSize: '0.9rem' }}>
                               <Check className="w-5 h-5" />
                               Done
+                            </div>
+                          )}
+                          {booking.status === 'cancelled' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f87171', fontWeight: '600', fontSize: '0.9rem' }}>
+                              <AlertCircle className="w-5 h-5" />
+                              Cancelled
                             </div>
                           )}
                         </div>
@@ -414,7 +439,7 @@ const MyBookings: React.FC = () => {
 
                         {booking.total_price && (
                           <p style={{ margin: '0', color: '#ff6fa3', fontSize: '1rem', fontWeight: '600' }}>
-                            Total: ${booking.total_price.toFixed(2)}
+                            Total: {booking.total_price} Kr
                           </p>
                         )}
                       </div>
@@ -434,7 +459,7 @@ const MyBookings: React.FC = () => {
                     )}
 
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                      {booking.status !== 'completed' && (
+                      {booking.status !== 'completed' && booking.status !== 'cancelled' && (
                         <button
                           onClick={() => setShowCancelConfirm(booking.id)}
                           disabled={cancellingId === booking.id}

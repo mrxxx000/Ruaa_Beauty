@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Calendar, Clock, MapPin, MessageSquare, User, Mail, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 type FormData = {
   name: string;
@@ -39,6 +40,7 @@ const SERVICES_PRICING: { [key: string]: number } = {
 
 const BookingForm: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>(defaultData);
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -155,7 +157,7 @@ const BookingForm: React.FC = () => {
   const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours);
 
   // Fetch available times when date or services change
-  const fetchAvailableTimes = async (date: string, services: string[]) => {
+  const fetchAvailableTimes = async (date: string, services: string[], mehendiHours: number = 0) => {
     if (!date || services.length === 0) {
       // Reset to all hours if no date or services
       setAvailableHours([9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
@@ -167,7 +169,12 @@ const BookingForm: React.FC = () => {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
       //const backendUrl = 'http://localhost:10000';
       const servicesParam = services.join(',');
-      const url = `${backendUrl}/api/available-times?date=${date}&services=${servicesParam}`;
+      let url = `${backendUrl}/api/available-times?date=${date}&services=${servicesParam}`;
+      
+      // Add mehendiHours to query if mehendi service is included
+      if (services.includes('mehendi') && mehendiHours > 0) {
+        url += `&mehendiHours=${mehendiHours}`;
+      }
       
       const response = await fetch(url);
       if (response.ok) {
@@ -185,12 +192,12 @@ const BookingForm: React.FC = () => {
     }
   };
 
-  // Auto-fetch available times when date or services change
+  // Auto-fetch available times when date, services, or mehendiHours change
   useEffect(() => {
     if (formData.date && formData.services.length > 0) {
-      fetchAvailableTimes(formData.date, formData.services);
+      fetchAvailableTimes(formData.date, formData.services, formData.mehendiHours);
     }
-  }, [formData.date, formData.services]);
+  }, [formData.date, formData.services, formData.mehendiHours]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -271,7 +278,7 @@ const BookingForm: React.FC = () => {
         // Time slot conflict - refresh available times and show error
         const data = await resp.json().catch(() => null);
         console.error('Time slot conflict:', data);
-        await fetchAvailableTimes(formData.date, formData.services);
+        await fetchAvailableTimes(formData.date, formData.services, formData.mehendiHours);
         alert(data?.message || 'This time slot is already booked. Available times have been updated. Please select a different time.');
         setFormData(prev => ({ ...prev, time: '' }));
       } else {
@@ -415,7 +422,7 @@ const BookingForm: React.FC = () => {
                   setFormData({ ...formData, services: updatedServices });
                   // Fetch available times with updated services
                   if (formData.date) {
-                    fetchAvailableTimes(formData.date, updatedServices);
+                    fetchAvailableTimes(formData.date, updatedServices, formData.mehendiHours);
                   }
                 }}
               >
@@ -761,7 +768,7 @@ const BookingForm: React.FC = () => {
                             setFormData({ ...formData, services: updatedServices });
                             // Fetch available times with updated services
                             if (formData.date) {
-                              fetchAvailableTimes(formData.date, updatedServices);
+                              fetchAvailableTimes(formData.date, updatedServices, formData.mehendiHours);
                             }
                           }}
                           style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ff6fa3' }}
@@ -944,46 +951,110 @@ const BookingForm: React.FC = () => {
                 </div>
               )}
 
-              {/* Date */}
-              <div className="form-group">
-                <label htmlFor="bf-date" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
-                  <Calendar className="w-4 h-4 text-primary" />
-                  {t('bookingForm.dateLabel')} *
-                </label>
-                <div className="relative">
-                  <input
-                    id="bf-date"
-                    type="date"
-                    required
-                    min={new Date().toISOString().split('T')[0]}
-                    value={formData.date}
-                    onChange={(e) => {
-                      setFormData({ ...formData, date: e.target.value });
-                      fetchAvailableTimes(e.target.value, formData.services);
-                    }}
-                    onFocus={() => setFocusedField('date')}
-                    onBlur={() => setFocusedField('')}
-                    onClick={(e) => {
-                      const input = e.currentTarget;
-                      if (!input.showPicker) return;
-                      try {
-                        input.showPicker();
-                      } catch (err) {
-                        // showPicker not supported in some browsers, fallback to default behavior
-                      }
-                    }}
-                    className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none cursor-pointer ${focusedField === 'date' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
-                  />
+              {/* Customer Support Message - Always Visible */}
+              <div style={{
+                marginTop: '24px',
+                padding: '16px',
+                background: 'linear-gradient(135deg, #E0F2FE 0%, #EFF6FF 100%)',
+                border: '2px solid #3B82F6',
+                borderRadius: '16px',
+                display: 'flex',
+                gap: '12px',
+                alignItems: 'flex-start'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  backgroundColor: '#3B82F6',
+                  flexShrink: 0,
+                  fontSize: '18px'
+                }}>
+                  🕒
+                </div>
+                <div>
+                  <p style={{
+                    color: '#1f2937',
+                    fontWeight: '600',
+                    marginBottom: '8px',
+                    fontSize: '1rem'
+                  }}>
+                    Don't find a time that works for you?
+                  </p>
+                  <p style={{
+                    color: '#4b5563',
+                    fontSize: '0.95rem',
+                    lineHeight: '1.5'
+                  }}>
+                    Please feel free to{' '}
+                    <button
+                      type="button"
+                      onClick={() => navigate('/contact')}
+                      style={{
+                        color: '#2563EB',
+                        fontWeight: '600',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        border: 'none',
+                        background: 'none',
+                        padding: '0',
+                        transition: 'text-decoration 0.2s'
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                      onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                    >
+                      contact us
+                    </button>
+                    . We'll do our best to adjust the schedule and find a time that suits you — your comfort and happiness are our top priority.
+                  </p>
                 </div>
               </div>
 
-              {/* Time */}
-              <div className="form-group">
-                <label htmlFor="bf-time" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
-                  <Clock className="w-4 h-4 text-primary" />
-                  {t('bookingForm.timeLabel')} *
-                </label>
-                <div className="relative">
+              {/* Date & Time Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Date */}
+                <div className="form-group">
+                  <label htmlFor="bf-date" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                    <Calendar className="w-4 h-4 text-primary" />
+                    {t('bookingForm.dateLabel')} *
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="bf-date"
+                      type="date"
+                      required
+                      min={new Date().toISOString().split('T')[0]}
+                      value={formData.date}
+                      onChange={(e) => {
+                        setFormData({ ...formData, date: e.target.value });
+                        fetchAvailableTimes(e.target.value, formData.services, formData.mehendiHours);
+                      }}
+                      onFocus={() => setFocusedField('date')}
+                      onBlur={() => setFocusedField('')}
+                      onClick={(e) => {
+                        const input = e.currentTarget;
+                        if (!input.showPicker) return;
+                        try {
+                          input.showPicker();
+                        } catch (err) {
+                          // showPicker not supported in some browsers, fallback to default behavior
+                        }
+                      }}
+                      className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none cursor-pointer ${focusedField === 'date' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
+                    />
+                  </div>
+                </div>
+
+                {/* Time */}
+                <div className="form-group">
+                  <label htmlFor="bf-time" className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                    <Clock className="w-4 h-4 text-primary" />
+                    {t('bookingForm.timeLabel')} *
+                  </label>
+                  <div className="relative">
                   <select
                     id="bf-time"
                     required
@@ -1018,6 +1089,7 @@ const BookingForm: React.FC = () => {
                       );
                     })}
                   </select>
+                </div>
                 </div>
               </div>
             </div>
