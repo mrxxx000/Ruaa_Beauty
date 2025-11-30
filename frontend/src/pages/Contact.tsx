@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-react';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import AuthModal from '../components/AuthModal';
 
 const Contact: React.FC = () => {
   const location = useLocation();
@@ -65,6 +66,7 @@ const Contact: React.FC = () => {
             <Link to="/book" className={location.pathname === '/book' ? 'active' : ''}>{t('nav.book')}</Link>
             <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
           </nav>
+          <AuthModal />
         </div>
       </header>
 

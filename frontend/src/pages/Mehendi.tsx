@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import AuthModal from '../components/AuthModal';
 
 const slideA = process.env.PUBLIC_URL + '/assets/SnapInsta.to_448241189_1815301755622097_667881131947720916_n.jpg';
 const slideB = process.env.PUBLIC_URL + '/assets/SnapInsta.to_448396960_432194449635910_11943437998895029_n.jpg';
@@ -81,6 +82,7 @@ const Mehendi: React.FC = () => {
                         <Link to="/book" className={location.pathname === '/book' ? 'active' : ''}>{t('nav.book')}</Link>
                         <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
 					</nav>
+					<AuthModal />
 				</div>
 			</header>
 

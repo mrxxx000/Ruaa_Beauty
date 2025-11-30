@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { AlertCircle, CheckCircle, XCircle, Loader } from 'lucide-react';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { AlertCircle, CheckCircle, XCircle, Loader, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import '../styles/App.css';
+import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
+import LanguageSwitcher from '../components/LanguageSwitcher';
+import AuthModal from '../components/AuthModal';
 
 type CancelState = 'loading' | 'confirm' | 'cancelling' | 'success' | 'error' | 'not-found';
 
@@ -75,11 +79,75 @@ const CancelBooking: React.FC = () => {
     navigate('/');
   };
 
+  const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
+  const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const [unsubToken] = useState(searchParams.get('token'));
+
   return (
-    <section
-      className="min-h-screen py-16 px-4 flex items-center justify-center"
-      style={{ background: 'linear-gradient(180deg, #fff6f8 0%, #fff1f3 100%)' }}
-    >
+    <div className="cancel-booking-page">
+      <header className="site-header">
+        <div className="container header-inner">
+          <div className="brand">
+            <Link to="/">
+              <img src={logoImg} alt="Ruaa Beauty logo" />
+            </Link>
+            <span className="brand-title">Ruaa Beauty</span>
+          </div>
+          <nav className="nav">
+            <Link to="/">{t('nav.home')}</Link>
+            
+            <div className="nav-dropdown">
+              <button 
+                className="nav-dropdown-btn"
+                onClick={() => setSalonDropdownOpen(!salonDropdownOpen)}
+              >
+                Salon Services
+                <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: salonDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
+              </button>
+              {salonDropdownOpen && (
+                <div className="nav-dropdown-menu">
+                  <Link to="/makeup" onClick={() => setSalonDropdownOpen(false)}>
+                    {t('nav.makeup')}
+                  </Link>
+                  <Link to="/mehendi" onClick={() => setSalonDropdownOpen(false)}>
+                    {t('nav.mehendi')}
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            <div className="nav-dropdown">
+              <button 
+                className="nav-dropdown-btn"
+                onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
+              >
+                Products
+                <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: productsDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
+              </button>
+              {productsDropdownOpen && (
+                <div className="nav-dropdown-menu">
+                  <Link to="/lashes" onClick={() => setProductsDropdownOpen(false)}>
+                    {t('nav.lashes')}
+                  </Link>
+                </div>
+              )}
+            </div>
+            
+            <Link to="/book">{t('nav.book')}</Link>
+            <Link to="/contact">{t('nav.contact')}</Link>
+          </nav>
+          <AuthModal />
+        </div>
+      </header>
+
+      <div className="lang-switcher-container">
+        <LanguageSwitcher />
+      </div>
+
+      <section
+        className="min-h-screen py-16 px-4 flex items-center justify-center"
+        style={{ background: 'linear-gradient(180deg, #fff6f8 0%, #fff1f3 100%)' }}
+      >
       <div className="w-full max-w-md">
         {/* Loading State */}
         {state === 'loading' && (
@@ -207,6 +275,13 @@ const CancelBooking: React.FC = () => {
         )}
       </div>
     </section>
+
+    <footer className="site-footer">
+      <div className="container text-center">
+        <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
+      </div>
+    </footer>
+    </div>
   );
 };
 
