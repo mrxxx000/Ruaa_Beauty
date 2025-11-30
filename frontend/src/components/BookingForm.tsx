@@ -57,7 +57,15 @@ const BookingForm: React.FC = () => {
       setIsLoggedIn(true);
       setCurrentUser(userData);
       
-      // Fetch the latest profile data from backend
+      // Immediately populate form with localStorage data
+      setFormData(prev => ({
+        ...prev,
+        name: userData.name || '',
+        email: userData.email || '',
+        phone: userData.phone || '',
+      }));
+      
+      // Then fetch the latest profile data from backend to update if needed
       const fetchLatestProfile = async () => {
         try {
           const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
@@ -84,24 +92,9 @@ const BookingForm: React.FC = () => {
               email: profileData.email,
               phone: profileData.phone_number,
             }));
-          } else {
-            // Fallback to localStorage if profile fetch fails
-            setFormData(prev => ({
-              ...prev,
-              name: userData.name || '',
-              email: userData.email || '',
-              phone: userData.phone || '',
-            }));
           }
         } catch (err) {
           console.log('Could not fetch latest profile, using localStorage:', err);
-          // Fallback to localStorage data
-          setFormData(prev => ({
-            ...prev,
-            name: userData.name || '',
-            email: userData.email || '',
-            phone: userData.phone || '',
-          }));
         }
       };
 
