@@ -40,6 +40,9 @@
 /* Contact Page */
 @import './contact.css';
 
+/* Bottom Navigation */
+@import './bottom-nav.css';
+
 /* Global Reset and Base Styles */
 * {
   margin: 0;
