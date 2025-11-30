@@ -50,6 +50,21 @@ const MyBookings: React.FC = () => {
     fetchBookings();
   }, []);
 
+  // Listen for logout event and refresh UI immediately
+  useEffect(() => {
+    const handleLogout = () => {
+      setIsAuthenticated(false);
+      setBookings([]);
+      setError('Please login to view your bookings');
+    };
+
+    window.addEventListener('userLogout', handleLogout);
+
+    return () => {
+      window.removeEventListener('userLogout', handleLogout);
+    };
+  }, []);
+
   const fetchBookings = async () => {
     try {
       const token = localStorage.getItem('authToken');

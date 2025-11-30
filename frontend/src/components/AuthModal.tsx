@@ -121,6 +121,13 @@ const AuthModal: React.FC = () => {
     localStorage.removeItem('currentUser');
     setCurrentUser(null);
     setShowLogoutConfirm(false);
+    setShowProfileModal(false);
+    
+    // Dispatch custom event to notify other components about logout
+    const logoutEvent = new CustomEvent('userLogout', {
+      detail: { timestamp: new Date().getTime() }
+    });
+    window.dispatchEvent(logoutEvent);
   };
 
   const cancelLogout = () => {
