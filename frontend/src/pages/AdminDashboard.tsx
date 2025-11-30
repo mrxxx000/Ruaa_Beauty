@@ -49,7 +49,7 @@ export default function AdminDashboard() {
     setToken(storedToken);
     loadData(storedToken);
 
-    // Listen for profile updates to refresh bookings/users data
+    // Listen for profile updates to refresh bookings/users data.
     const handleProfileUpdate = () => {
       loadData(storedToken);
     };
