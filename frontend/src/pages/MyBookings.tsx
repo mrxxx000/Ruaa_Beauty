@@ -46,9 +46,20 @@ const MyBookings: React.FC = () => {
       return;
     }
 
+    try {
+      const userObj = JSON.parse(user);
+      // If user is admin, redirect to admin dashboard
+      if (userObj.role === 'admin') {
+        navigate('/admin', { replace: true });
+        return;
+      }
+    } catch (err) {
+      console.error('Failed to parse user:', err);
+    }
+
     setIsAuthenticated(true);
     fetchBookings();
-  }, []);
+  }, [navigate]);
 
   // Listen for logout event and refresh UI immediately
   useEffect(() => {
