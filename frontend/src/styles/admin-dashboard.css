@@ -411,7 +411,8 @@
   width: fit-content;
 }
 
-
+/* User Role Badge */
+.role-badge {
   display: inline-block;
   padding: 0.4rem 0.8rem;
   border-radius: 20px;
