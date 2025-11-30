@@ -1,4 +1,4 @@
-const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000/api';
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
 
 export interface UserProfile {
   id: number;
@@ -9,7 +9,7 @@ export interface UserProfile {
 }
 
 export async function getUserProfile(token: string): Promise<UserProfile> {
-  const response = await fetch(`${API_URL}/auth/profile`, {
+  const response = await fetch(`${API_URL}/api/auth/profile`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -31,7 +31,7 @@ export async function updateUserProfile(
   name: string,
   phone_number?: string
 ): Promise<UserProfile> {
-  const response = await fetch(`${API_URL}/auth/profile`, {
+  const response = await fetch(`${API_URL}/api/auth/profile`, {
     method: 'PUT',
     headers: {
       'Authorization': `Bearer ${token}`,
