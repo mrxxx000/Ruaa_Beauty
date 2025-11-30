@@ -2,13 +2,23 @@ import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 
 export class BookingService {
-  private supabase = createClient(
-    process.env.SUPABASE_URL || '',
-    process.env.SUPABASE_SERVICE_ROLE || ''
-  );
+  private supabaseInstance: any = null;
+
+  private getSupabase() {
+    if (!this.supabaseInstance) {
+      const url = process.env.SUPABASE_URL;
+      const key = process.env.SUPABASE_SERVICE_ROLE;
+      if (!url || !key) {
+        throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE environment variables are required');
+      }
+      this.supabaseInstance = createClient(url, key);
+    }
+    return this.supabaseInstance;
+  }
 
   async validateTimeSlot(date: string, time: string, service: string, mehendiHours: number = 0) {
-    const { data: existingBookings, error: fetchError } = await this.supabase
+    const supabase = this.getSupabase();
+    const { data: existingBookings, error: fetchError } = await supabase
       .from('bookings')
       .select('*')
       .eq('date', date);
@@ -68,9 +78,10 @@ export class BookingService {
   }
 
   async createBooking(bookingData: any) {
+    const supabase = this.getSupabase();
     const cancelToken = randomUUID();
 
-    const { error: dbError } = await this.supabase.from('bookings').insert([
+    const { error: dbError } = await supabase.from('bookings').insert([
       {
         name: bookingData.name,
         email: bookingData.email,
@@ -96,7 +107,8 @@ export class BookingService {
   }
 
   async getBookingByToken(token: string) {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabase();
+    const { data, error } = await supabase
       .from('bookings')
       .select('*')
       .eq('cancel_token', token)
@@ -110,7 +122,8 @@ export class BookingService {
   }
 
   async cancelBooking(id: string) {
-    const { error } = await this.supabase
+    const supabase = this.getSupabase();
+    const { error } = await supabase
       .from('bookings')
       .delete()
       .eq('id', id);
@@ -121,7 +134,8 @@ export class BookingService {
   }
 
   async getAvailableTimes(date: string, services: string[]) {
-    const { data: bookings, error: fetchError } = await this.supabase
+    const supabase = this.getSupabase();
+    const { data: bookings, error: fetchError } = await supabase
       .from('bookings')
       .select('*')
       .eq('date', date);

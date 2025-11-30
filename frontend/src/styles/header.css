@@ -93,6 +93,12 @@
 }
 
 /* Navigation */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .nav a {
   margin-left: 12px;
   color: #6b6b6b;
@@ -106,6 +112,80 @@
   color: #ff6fa3;
   box-shadow: 0 0 12px rgba(255, 111, 163, 0.6);
   background-color: rgba(255, 111, 163, 0.1);
+}
+
+/* Dropdown Styles */
+.nav-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  color: #6b6b6b;
+  background: transparent;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.nav-dropdown-btn:hover {
+  color: #ff6fa3;
+  background-color: rgba(255, 111, 163, 0.1);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  min-width: 160px;
+  z-index: 100;
+  margin-top: 8px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nav-dropdown-menu a {
+  display: block;
+  padding: 12px 16px;
+  color: #6b6b6b;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  margin-left: 0;
+}
+
+.nav-dropdown-menu a:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.nav-dropdown-menu a:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
+.nav-dropdown-menu a:hover,
+.nav-dropdown-menu a.active {
+  background-color: rgba(255, 111, 163, 0.1);
+  color: #ff6fa3;
 }
 
 /* Mobile responsive */
@@ -124,10 +204,17 @@
     gap: 2px;
   }
 
-  .nav a {
+  .nav a,
+  .nav-dropdown-btn {
     margin-left: 0;
     padding: 6px 10px;
     font-size: 0.95rem;
+  }
+
+  .nav-dropdown-menu {
+    left: -40px;
+    right: auto;
+    width: 140px;
   }
 
   .brand img {
@@ -157,9 +244,15 @@
   margin-left: 0;
 }
 
-[dir="rtl"] .nav a {
+[dir="rtl"] .nav a,
+[dir="rtl"] .nav-dropdown-btn {
   margin-left: 0;
   margin-right: 12px;
+}
+
+[dir="rtl"] .nav-dropdown-menu {
+  left: auto;
+  right: 0;
 }
 
 @media (max-width: 640px) {
@@ -185,5 +278,10 @@
   [dir="rtl"] .brand-title {
     margin-right: 0;
     margin-left: 6px;
+  }
+
+  [dir="rtl"] .nav-dropdown-menu {
+    left: auto;
+    right: -40px;
   }
 }

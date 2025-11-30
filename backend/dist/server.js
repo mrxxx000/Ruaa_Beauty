@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const bookingRoutes_1 = __importDefault(require("./routes/bookingRoutes"));
+const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT ? Number(process.env.PORT) : 10000;
@@ -15,6 +16,18 @@ app.use(express_1.default.json());
 app.get('/', (_req, res) => {
     res.send('Hello from backend');
 });
+// Debug endpoint to check if routes are loaded
+app.get('/api/status', (_req, res) => {
+    res.json({
+        message: 'Backend is running',
+        routes: {
+            auth: '/api/auth/register, /api/auth/login, /api/auth/verify',
+            booking: '/api/booking, /api/unbook, /api/available-times',
+        },
+    });
+});
+// Use auth routes
+app.use('/api/auth', authRoutes_1.default);
 // Use booking routes
 app.use('/api', bookingRoutes_1.default);
 app.listen(port, () => {
