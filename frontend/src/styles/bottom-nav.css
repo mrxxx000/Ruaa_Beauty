@@ -121,8 +121,8 @@
     width: 16px;
     height: 16px;
     position: absolute;
-    bottom: 2px;
-    right: 2px;
+    bottom: 10px;
+    right: 8px;
     stroke-width: 2;
     color: inherit;
     stroke: currentColor;
@@ -159,11 +159,12 @@
   .dropdown-menu-item {
     display: block;
     padding: 12px 16px;
-    color: #666;
+    color: #ff6fa3;
     text-decoration: none;
     transition: all 0.3s ease;
     font-size: 0.95rem;
     text-align: center;
+    font-weight: 500;
   }
 
   .dropdown-menu-item:first-child {
@@ -177,7 +178,7 @@
   .dropdown-menu-item:hover,
   .dropdown-menu-item.active {
     background-color: rgba(255, 111, 163, 0.1);
-    color: #ff6fa3;
+    color: #ff1744;
   }
 
   /* Adjust main content to not overlap with bottom nav */

@@ -12,8 +12,6 @@ const BottomNav: React.FC = () => {
 
   const regularItems = [
     { path: '/', icon: Home, label: t('nav.home') },
-    { path: '/book', icon: ShoppingBag, label: t('nav.book') },
-    { path: '/contact', icon: Mail, label: t('nav.contact') },
   ];
 
   const salonItems = [
@@ -33,6 +31,7 @@ const BottomNav: React.FC = () => {
   return (
     <nav className="bottom-nav">
       <div className="bottom-nav-inner">
+        {/* Home */}
         {regularItems.map(({ path, icon: Icon, label }) => (
           <Link
             key={path}
@@ -103,6 +102,28 @@ const BottomNav: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Book */}
+        <Link
+          to="/book"
+          className={`bottom-nav-item ${location.pathname === '/book' ? 'active' : ''}`}
+          onClick={handleNavClick}
+          title={t('nav.book')}
+        >
+          <ShoppingBag className="bottom-nav-icon" />
+          <span className="bottom-nav-label">{t('nav.book')}</span>
+        </Link>
+
+        {/* Contact */}
+        <Link
+          to="/contact"
+          className={`bottom-nav-item ${location.pathname === '/contact' ? 'active' : ''}`}
+          onClick={handleNavClick}
+          title={t('nav.contact')}
+        >
+          <Mail className="bottom-nav-icon" />
+          <span className="bottom-nav-label">{t('nav.contact')}</span>
+        </Link>
       </div>
     </nav>
   );
