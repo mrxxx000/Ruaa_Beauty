@@ -77,20 +77,21 @@ const BookingForm: React.FC = () => {
           });
 
           if (response.ok) {
-            const profileData = await response.json();
-            // Update form with latest data from backend
+            const data = await response.json();
+            const profileData = data.user || data; // Handle both response formats
+            // Update form only with non-empty values from backend
             setFormData(prev => ({
               ...prev,
-              name: profileData.name || '',
-              email: profileData.email || '',
-              phone: profileData.phone_number || '',
+              name: profileData.name || prev.name || '',
+              email: profileData.email || prev.email || '',
+              phone: profileData.phone_number || prev.phone || '',
             }));
             // Also update localStorage with latest data
             localStorage.setItem('currentUser', JSON.stringify({
               ...userData,
-              name: profileData.name,
-              email: profileData.email,
-              phone: profileData.phone_number,
+              name: profileData.name || userData.name,
+              email: profileData.email || userData.email,
+              phone: profileData.phone_number || userData.phone,
             }));
           }
         } catch (err) {
@@ -116,12 +117,14 @@ const BookingForm: React.FC = () => {
             });
 
             if (response.ok) {
-              const profileData = await response.json();
+              const data = await response.json();
+              const profileData = data.user || data; // Handle both response formats
+              // Update form with latest data, preserving existing values if backend returns empty
               setFormData(prev => ({
                 ...prev,
-                name: profileData.name || '',
-                email: profileData.email || '',
-                phone: profileData.phone_number || '',
+                name: profileData.name || prev.name || '',
+                email: profileData.email || prev.email || '',
+                phone: profileData.phone_number || prev.phone || '',
               }));
             }
           } catch (err) {
