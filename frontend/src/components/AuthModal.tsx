@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogIn, LogOut, User } from 'lucide-react';
+import { LogIn, LogOut, User, Eye, EyeOff } from 'lucide-react';
 import '../styles/App.css';
 
 const AuthModal: React.FC = () => {
@@ -7,6 +7,7 @@ const AuthModal: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ id: number; username: string; role: string } | null>(null);
@@ -23,12 +24,18 @@ const AuthModal: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    // Validate password for registration
+    if (!isLogin && password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-      //const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
-      const backendUrl = 'http://localhost:10000';
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
 
       const response = await fetch(`${backendUrl}${endpoint}`, {
         method: 'POST',
@@ -51,6 +58,7 @@ const AuthModal: React.FC = () => {
       // Reset form
       setUsername('');
       setPassword('');
+      setShowPassword(false);
       setIsOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -175,25 +183,54 @@ const AuthModal: React.FC = () => {
                     <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
                       Password
                     </label>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter password"
-                      style={{
-                        width: '100%',
-                        padding: '10px',
-                        border: '2px solid #ddd',
-                        borderRadius: '8px',
-                        fontSize: '1rem',
-                        boxSizing: 'border-box',
-                      }}
-                    />
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder={isLogin ? 'Enter password' : 'Enter password (min. 8 characters)'}
+                        style={{
+                          width: '100%',
+                          padding: '10px 40px 10px 10px',
+                          border: '2px solid #ddd',
+                          borderRadius: '8px',
+                          fontSize: '1rem',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{
+                          position: 'absolute',
+                          right: '10px',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#6b6b6b',
+                        }}
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                    {!isLogin && password && (
+                      <p style={{
+                        marginTop: '6px',
+                        fontSize: '0.75rem',
+                        color: password.length >= 8 ? '#4caf50' : '#ff9800',
+                      }}>
+                        {password.length >= 8 ? '✓ Password is strong' : `⚠ At least 8 characters (${password.length}/8)`}
+                      </p>
+                    )}
                   </div>
 
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || (!isLogin && password.length < 8)}
                     style={{
                       width: '100%',
                       padding: '12px',
@@ -203,8 +240,8 @@ const AuthModal: React.FC = () => {
                       borderRadius: '8px',
                       fontWeight: '600',
                       fontSize: '1rem',
-                      cursor: loading ? 'not-allowed' : 'pointer',
-                      opacity: loading ? 0.7 : 1,
+                      cursor: (loading || (!isLogin && password.length < 8)) ? 'not-allowed' : 'pointer',
+                      opacity: (loading || (!isLogin && password.length < 8)) ? 0.7 : 1,
                     }}
                   >
                     {loading ? 'Processing...' : isLogin ? 'Login' : 'Register'}
