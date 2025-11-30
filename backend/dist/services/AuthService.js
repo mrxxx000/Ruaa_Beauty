@@ -19,7 +19,7 @@ class AuthService {
         }
         return this.supabaseInstance;
     }
-    async registerUser(name, email, password) {
+    async registerUser(name, email, password, phone_number) {
         if (!name || !email || !password) {
             throw new Error('Name, email, and password are required');
         }
@@ -43,6 +43,7 @@ class AuthService {
                 name,
                 email,
                 password: hashedPassword,
+                phone_number: phone_number || null,
                 role: 'user',
             },
         ])

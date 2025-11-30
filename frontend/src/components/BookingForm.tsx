@@ -147,9 +147,16 @@ const BookingForm: React.FC = () => {
       const url = `${backendUrl}/api/booking`;
       console.log('Sending request to:', url);
       
+      // Get JWT token if user is logged in
+      const token = localStorage.getItem('authToken');
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const resp = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(bookingData),
       });
 

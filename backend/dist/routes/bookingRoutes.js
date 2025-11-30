@@ -4,13 +4,44 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const BookingService_1 = require("../services/BookingService");
 const EmailService_1 = require("../services/EmailService");
 const router = express_1.default.Router();
 const bookingService = new BookingService_1.BookingService();
 const emailService = new EmailService_1.EmailService();
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+// Middleware to verify JWT token
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace('Bearer ', '');
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided' });
+    }
+    try {
+        const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
+        req.userId = decoded.id;
+        next();
+    }
+    catch (err) {
+        return res.status(401).json({ message: 'Invalid or expired token' });
+    }
+};
 // POST /api/booking - Create a new booking
 router.post('/booking', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace('Bearer ', '');
+    let userId = null;
+    // Try to verify token if provided
+    if (token) {
+        try {
+            const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
+            userId = decoded.id;
+        }
+        catch (err) {
+            // Token invalid, but booking can still proceed without user
+        }
+    }
     const { name, email, phone, service, date, time, location, address, notes, totalPrice, servicePricing, mehendiHours } = req.body;
     if (!name || !email) {
         return res.status(400).json({ message: 'Name and email are required' });
@@ -29,7 +60,7 @@ router.post('/booking', async (req, res) => {
                 conflictingDate: date,
             });
         }
-        // Create booking
+        // Create booking with optional user_id
         const { cancelToken } = await bookingService.createBooking({
             name,
             email,
@@ -43,6 +74,7 @@ router.post('/booking', async (req, res) => {
             totalPrice,
             servicePricing,
             mehendiHours,
+            userId,
         });
         console.log('✅ Booking saved to database');
         // Send response immediately
@@ -76,7 +108,62 @@ router.post('/booking', async (req, res) => {
         });
     }
 });
-// POST /api/unbook - Cancel a booking
+// GET /api/booking/my-bookings - Get user's bookings (requires authentication)
+router.get('/my-bookings', verifyToken, async (req, res) => {
+    const userId = req.userId;
+    try {
+        const bookings = await bookingService.getBookingsByUserId(userId);
+        res.status(200).json({
+            message: 'Bookings retrieved successfully',
+            bookings,
+        });
+    }
+    catch (err) {
+        console.error('Error fetching bookings:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        res.status(500).json({
+            message: 'Error fetching bookings',
+            details: errorMessage,
+        });
+    }
+});
+// POST /api/booking/cancel/:bookingId - Cancel a booking (requires authentication)
+router.post('/cancel/:bookingId', verifyToken, async (req, res) => {
+    const userId = req.userId;
+    const bookingId = req.params.bookingId || '';
+    if (!bookingId) {
+        return res.status(400).json({ message: 'Booking ID is required' });
+    }
+    try {
+        const booking = await bookingService.cancelBookingByUserAndId(bookingId, userId);
+        res.status(200).json({
+            message: 'Booking cancelled successfully',
+            booking: {
+                name: booking.name,
+                email: booking.email,
+                service: booking.service,
+                date: booking.date,
+            },
+        });
+        // Send cancellation emails asynchronously
+        emailService.sendCancellationEmails(booking);
+    }
+    catch (err) {
+        console.error('Error cancelling booking:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        if (errorMessage.includes('not found')) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+        if (errorMessage.includes('Not authorized')) {
+            return res.status(403).json({ message: errorMessage });
+        }
+        res.status(500).json({
+            message: 'Error cancelling booking',
+            details: errorMessage,
+        });
+    }
+});
+// POST /api/unbook - Cancel a booking via token (for unauthenticated users)
 router.post('/unbook', async (req, res) => {
     const { token } = req.body || req.query || {};
     if (!token) {

@@ -12,12 +12,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 const TOKEN_EXPIRY = '7d';
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, phone_number } = req.body;
     if (!name || !email || !password) {
         return res.status(400).json({ message: 'Name, email and password are required' });
     }
     try {
-        const user = await authService.registerUser(name, email, password);
+        const user = await authService.registerUser(name, email, password, phone_number);
         // Generate JWT token
         const token = jsonwebtoken_1.default.sign({ id: user.id, name: user.name, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
         res.status(201).json({

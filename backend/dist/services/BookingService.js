@@ -89,6 +89,7 @@ class BookingService {
                 total_price: bookingData.totalPrice || 0,
                 service_pricing: bookingData.servicePricing || [],
                 mehendi_hours: bookingData.mehendiHours || 0,
+                user_id: bookingData.userId || null,
             },
         ]);
         if (dbError) {
@@ -140,6 +141,43 @@ class BookingService {
             availableHours,
             unavailableHours: Array.from(unavailableHours),
         };
+    }
+    async getBookingsByUserId(userId) {
+        const supabase = this.getSupabase();
+        const { data, error } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('user_id', userId)
+            .order('date', { ascending: false });
+        if (error) {
+            throw new Error(`Error fetching bookings: ${error.message}`);
+        }
+        return data || [];
+    }
+    async cancelBookingByUserAndId(bookingId, userId) {
+        const supabase = this.getSupabase();
+        // First, get the booking to verify ownership
+        const { data: booking, error: fetchError } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('id', bookingId)
+            .single();
+        if (fetchError || !booking) {
+            throw new Error('Booking not found');
+        }
+        // Check if booking belongs to user
+        if (booking.user_id !== userId) {
+            throw new Error('Not authorized to cancel this booking');
+        }
+        // Delete the booking
+        const { error: deleteError } = await supabase
+            .from('bookings')
+            .delete()
+            .eq('id', bookingId);
+        if (deleteError) {
+            throw new Error(`Error cancelling booking: ${deleteError.message}`);
+        }
+        return booking;
     }
 }
 exports.BookingService = BookingService;

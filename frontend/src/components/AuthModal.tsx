@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogIn, LogOut, User, Eye, EyeOff } from 'lucide-react';
+import { LogIn, LogOut, User, Eye, EyeOff, X } from 'lucide-react';
 import '../styles/App.css';
 
 const AuthModal: React.FC = () => {
@@ -13,6 +13,7 @@ const AuthModal: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string; role: string } | null>(null);
 
   // Load user from localStorage on mount
@@ -104,8 +105,23 @@ const AuthModal: React.FC = () => {
     <div className="auth-modal-container">
       {currentUser ? (
         <div className="user-info-badge" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', backgroundColor: '#ff6fa3', borderRadius: '8px', color: 'white' }}>
-          <User className="w-5 h-5" />
-          <span style={{ fontSize: '0.9rem', fontWeight: '600' }}>Hey {currentUser.name}</span>
+          <button
+            onClick={() => setShowProfileModal(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'white',
+              fontWeight: '600',
+              fontSize: '0.9rem',
+            }}
+          >
+            <User className="w-5 h-5" />
+            <span>Hey {currentUser.name}</span>
+          </button>
           <button
             onClick={handleLogout}
             style={{
@@ -431,6 +447,119 @@ const AuthModal: React.FC = () => {
                 Logout
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showProfileModal && currentUser && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1002,
+          }}
+          onClick={() => setShowProfileModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '32px',
+              maxWidth: '450px',
+              width: '90%',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ color: '#ff6fa3', margin: 0 }}>My Profile</h2>
+              <button
+                onClick={() => setShowProfileModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <X className="w-6 h-6" style={{ color: '#333' }} />
+              </button>
+            </div>
+
+            {/* Profile Details Section */}
+            <div style={{ marginBottom: '32px' }}>
+              <h3 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem', fontWeight: '600' }}>User Details</h3>
+              
+              <div style={{ 
+                backgroundColor: '#f9f9f9', 
+                padding: '16px', 
+                borderRadius: '8px', 
+                marginBottom: '12px',
+                borderLeft: '4px solid #ff6fa3'
+              }}>
+                <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>Full Name</p>
+                <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600' }}>{currentUser.name}</p>
+              </div>
+
+              <div style={{ 
+                backgroundColor: '#f9f9f9', 
+                padding: '16px', 
+                borderRadius: '8px', 
+                marginBottom: '12px',
+                borderLeft: '4px solid #ff6fa3'
+              }}>
+                <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>Email</p>
+                <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600', wordBreak: 'break-all' }}>{currentUser.email}</p>
+              </div>
+            </div>
+
+            {/* My Bookings Section */}
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem', fontWeight: '600' }}>My Bookings</h3>
+              <a 
+                href="/my-bookings"
+                style={{
+                  display: 'inline-block',
+                  padding: '12px 24px',
+                  backgroundColor: '#ff6fa3',
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '0.95rem',
+                }}
+              >
+                View My Bookings
+              </a>
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={() => setShowProfileModal(false)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: '#f0f0f0',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                color: '#333',
+                fontWeight: '600',
+              }}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
