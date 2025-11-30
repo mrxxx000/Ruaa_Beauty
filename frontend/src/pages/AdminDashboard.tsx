@@ -48,6 +48,16 @@ export default function AdminDashboard() {
 
     setToken(storedToken);
     loadData(storedToken);
+
+    // Listen for profile updates to refresh bookings/users data
+    const handleProfileUpdate = () => {
+      loadData(storedToken);
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, [navigate]);
 
   const loadData = async (authToken: string) => {

@@ -56,14 +56,93 @@ const BookingForm: React.FC = () => {
       const userData = JSON.parse(user);
       setIsLoggedIn(true);
       setCurrentUser(userData);
-      // Auto-populate form fields with user data
-      setFormData(prev => ({
-        ...prev,
-        name: userData.name || '',
-        email: userData.email || '',
-        phone: userData.phone || '',
-      }));
+      
+      // Fetch the latest profile data from backend
+      const fetchLatestProfile = async () => {
+        try {
+          const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+          const response = await fetch(`${backendUrl}/api/auth/profile`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const profileData = await response.json();
+            // Update form with latest data from backend
+            setFormData(prev => ({
+              ...prev,
+              name: profileData.name || '',
+              email: profileData.email || '',
+              phone: profileData.phone_number || '',
+            }));
+            // Also update localStorage with latest data
+            localStorage.setItem('currentUser', JSON.stringify({
+              ...userData,
+              name: profileData.name,
+              email: profileData.email,
+              phone: profileData.phone_number,
+            }));
+          } else {
+            // Fallback to localStorage if profile fetch fails
+            setFormData(prev => ({
+              ...prev,
+              name: userData.name || '',
+              email: userData.email || '',
+              phone: userData.phone || '',
+            }));
+          }
+        } catch (err) {
+          console.log('Could not fetch latest profile, using localStorage:', err);
+          // Fallback to localStorage data
+          setFormData(prev => ({
+            ...prev,
+            name: userData.name || '',
+            email: userData.email || '',
+            phone: userData.phone || '',
+          }));
+        }
+      };
+
+      fetchLatestProfile();
     }
+
+    // Listen for profile update events
+    const handleProfileUpdate = (event: any) => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        const fetchUpdatedProfile = async () => {
+          try {
+            const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+            const response = await fetch(`${backendUrl}/api/auth/profile`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            });
+
+            if (response.ok) {
+              const profileData = await response.json();
+              setFormData(prev => ({
+                ...prev,
+                name: profileData.name || '',
+                email: profileData.email || '',
+                phone: profileData.phone_number || '',
+              }));
+            }
+          } catch (err) {
+            console.log('Could not fetch updated profile:', err);
+          }
+        };
+        fetchUpdatedProfile();
+      }
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, []);
 
   // Calculate total price

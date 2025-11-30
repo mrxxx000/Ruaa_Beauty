@@ -183,6 +183,16 @@ const AuthModal: React.FC = () => {
         role: updatedUser.role,
       }));
 
+      // Dispatch event to notify other components that profile was updated
+      const profileUpdateEvent = new CustomEvent('profileUpdated', {
+        detail: {
+          name: updatedUser.name,
+          email: updatedUser.email,
+          phone_number: updatedUser.phone_number,
+        }
+      });
+      window.dispatchEvent(profileUpdateEvent);
+
       setProfileSuccess('Profile updated successfully!');
       setTimeout(() => {
         setIsEditingProfile(false);
