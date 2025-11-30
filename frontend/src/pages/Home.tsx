@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ChevronDown } from 'lucide-react';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import Hero from '../components/Hero';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import AuthModal from '../components/AuthModal';
 
 const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
   // If caller provides videos prop, use it; otherwise use the default lashes shorts
@@ -108,6 +110,8 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
 const Home: React.FC = () => {
   const location = useLocation();
   const { t } = useTranslation();
+  const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
+  const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (location.hash) {
@@ -132,12 +136,48 @@ const Home: React.FC = () => {
           </div>
           <nav className="nav">
             <Link to="/" className={location.pathname === '/' ? 'active' : ''}>{t('nav.home')}</Link>
-            <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>{t('nav.lashes')}</Link>
-            <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>{t('nav.makeup')}</Link>
-            <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>{t('nav.mehendi')}</Link>
+            
+            <div className="nav-dropdown">
+              <button 
+                className="nav-dropdown-btn"
+                onClick={() => setSalonDropdownOpen(!salonDropdownOpen)}
+              >
+                Salon Services
+                <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: salonDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
+              </button>
+              {salonDropdownOpen && (
+                <div className="nav-dropdown-menu">
+                  <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''} onClick={() => setSalonDropdownOpen(false)}>
+                    {t('nav.makeup')}
+                  </Link>
+                  <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''} onClick={() => setSalonDropdownOpen(false)}>
+                    {t('nav.mehendi')}
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            <div className="nav-dropdown">
+              <button 
+                className="nav-dropdown-btn"
+                onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
+              >
+                Products
+                <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: productsDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
+              </button>
+              {productsDropdownOpen && (
+                <div className="nav-dropdown-menu">
+                  <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''} onClick={() => setProductsDropdownOpen(false)}>
+                    {t('nav.lashes')}
+                  </Link>
+                </div>
+              )}
+            </div>
+            
             <Link to="/book" className={location.pathname === '/book' ? 'active' : ''}>{t('nav.book')}</Link>
             <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
           </nav>
+          <AuthModal />
         </div>
       </header>
 

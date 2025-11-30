@@ -8,6 +8,7 @@ import Makeup from './pages/Makeup';
 import Book from './pages/Book';
 import Lashes from './pages/Lashes';
 import CancelBooking from './pages/CancelBooking';
+import MyBookings from './pages/MyBookings';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/unbook" element={<CancelBooking />} />
+        <Route path="/my-bookings" element={<MyBookings />} />
         <Route path="/mehendi" element={<Mehendi />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/makeup" element={<Makeup />} />

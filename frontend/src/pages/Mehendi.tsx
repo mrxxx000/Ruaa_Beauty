@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import '../styles/App.css';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ChevronDown } from 'lucide-react';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import AuthModal from '../components/AuthModal';
 
 const slideA = process.env.PUBLIC_URL + '/assets/SnapInsta.to_448241189_1815301755622097_667881131947720916_n.jpg';
 const slideB = process.env.PUBLIC_URL + '/assets/SnapInsta.to_448396960_432194449635910_11943437998895029_n.jpg';
@@ -17,6 +19,8 @@ const more5 = process.env.PUBLIC_URL + '/assets/SnapInsta.to_125829760_423863109
 
 const Mehendi: React.FC = () => {
 	const [active, setActive] = useState<'a' | 'b'>('a');
+	const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
+	const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
 	const location = useLocation();
 	const { t } = useTranslation();
 
@@ -37,12 +41,48 @@ const Mehendi: React.FC = () => {
 					</div>
 					<nav className="nav">
 						<Link to="/" className={location.pathname === '/' ? 'active' : ''}>{t('nav.home')}</Link>
-                        <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''}>{t('nav.lashes')}</Link>
-						<Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''}>{t('nav.makeup')}</Link>
-                        <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''}>{t('nav.mehendi')}</Link>
+                        
+                        <div className="nav-dropdown">
+                          <button 
+                            className="nav-dropdown-btn"
+                            onClick={() => setSalonDropdownOpen(!salonDropdownOpen)}
+                          >
+                            Salon Services
+                            <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: salonDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
+                          </button>
+                          {salonDropdownOpen && (
+                            <div className="nav-dropdown-menu">
+                              <Link to="/makeup" className={location.pathname === '/makeup' ? 'active' : ''} onClick={() => setSalonDropdownOpen(false)}>
+                                {t('nav.makeup')}
+                              </Link>
+                              <Link to="/mehendi" className={location.pathname === '/mehendi' ? 'active' : ''} onClick={() => setSalonDropdownOpen(false)}>
+                                {t('nav.mehendi')}
+                              </Link>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="nav-dropdown">
+                          <button 
+                            className="nav-dropdown-btn"
+                            onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
+                          >
+                            Products
+                            <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: productsDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
+                          </button>
+                          {productsDropdownOpen && (
+                            <div className="nav-dropdown-menu">
+                              <Link to="/lashes" className={location.pathname === '/lashes' ? 'active' : ''} onClick={() => setProductsDropdownOpen(false)}>
+                                {t('nav.lashes')}
+                              </Link>
+                            </div>
+                          )}
+                        </div>
+                        
                         <Link to="/book" className={location.pathname === '/book' ? 'active' : ''}>{t('nav.book')}</Link>
                         <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
 					</nav>
+					<AuthModal />
 				</div>
 			</header>
 
