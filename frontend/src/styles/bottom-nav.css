@@ -20,17 +20,23 @@
     z-index: 1000;
     padding-bottom: env(safe-area-inset-bottom);
     overflow: visible;
+    margin: 0;
+    padding-top: 0;
+    padding-left: 1rem;
+    padding-right: 0rem;
   }
 
   .bottom-nav-inner {
     display: flex;
     justify-content: flex-start;
-    align-items: flex-start;
+    align-items: center;
     height: 60px;
     overflow-x: auto;
     overflow-y: hidden;
     position: relative;
     scroll-behavior: smooth;
+    padding: 0;
+    margin: 0;
   }
 
   .bottom-nav-inner::-webkit-scrollbar {
@@ -58,6 +64,8 @@
     border: none;
     cursor: pointer;
     font-size: 1rem;
+    margin: 0;
+    height: 60px;
   }
 
   .bottom-nav-item.active {
