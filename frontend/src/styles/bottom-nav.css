@@ -24,6 +24,7 @@
     padding-top: 0;
     padding-left: 1rem;
     padding-right: 0rem;
+    max-height: fit-content;
   }
 
   .bottom-nav-inner {
@@ -32,11 +33,12 @@
     align-items: center;
     height: 60px;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: visible;
     position: relative;
     scroll-behavior: smooth;
     padding: 0;
     margin: 0;
+    z-index: 1000;
   }
 
   .bottom-nav-inner::-webkit-scrollbar {
@@ -148,18 +150,18 @@
 
   /* Dropup Menu */
   .bottom-nav-dropdown-menu {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
+    position: fixed;
+    bottom: 65px;
     background: white;
-    border-radius: 8px 8px 0 0;
+    border-radius: 8px;
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
     min-width: 140px;
-    z-index: 1001;
-    margin-bottom: 4px;
+    z-index: 1002;
+    margin-bottom: 0;
     animation: slideUp 0.2s ease;
     overflow: hidden;
+    transform: translateX(-50%);
+    left: var(--menu-left, 50px);
   }
 
   @keyframes slideUp {
