@@ -44,7 +44,7 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    // Check if user is authenticated and is admin
+    // Check if user is authenticated and is admin.
     const storedToken = localStorage.getItem('authToken');
     const user = localStorage.getItem('currentUser');
 
