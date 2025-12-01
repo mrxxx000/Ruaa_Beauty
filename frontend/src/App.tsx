@@ -7,6 +7,7 @@ import Contact from './pages/Contact';
 import Makeup from './pages/Makeup';
 import Book from './pages/Book';
 import Lashes from './pages/Lashes';
+import ResetPassword from './pages/ResetPassword';
 import CancelBooking from './pages/CancelBooking';
 import MyBookings from './pages/MyBookings';
 import AdminDashboard from './pages/AdminDashboard';
@@ -23,6 +24,7 @@ function AppContent() {
     <>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/unbook" element={<CancelBooking />} />
         <Route path="/my-bookings" element={<MyBookings />} />
         <Route
