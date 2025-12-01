@@ -24,11 +24,22 @@
 
   .bottom-nav-inner {
     display: flex;
-    justify-content: space-around;
+    justify-content: flex-start;
     align-items: flex-start;
     height: 60px;
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: hidden;
     position: relative;
+    scroll-behavior: smooth;
+  }
+
+  .bottom-nav-inner::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bottom-nav-inner {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   .bottom-nav-item {
@@ -41,9 +52,8 @@
     color: #666;
     text-decoration: none;
     transition: all 0.3s ease;
-    flex: 1;
-    min-width: 60px;
-    max-width: 80px;
+    flex: 0 0 auto;
+    min-width: 70px;
     background: none;
     border: none;
     cursor: pointer;
@@ -81,9 +91,8 @@
   /* Dropdown Container */
   .bottom-nav-dropdown {
     position: relative;
-    flex: 1;
-    min-width: 60px;
-    max-width: 80px;
+    flex: 0 0 auto;
+    min-width: 70px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -194,7 +203,11 @@
 /* Extra small screens */
 @media (max-width: 480px) {
   .bottom-nav-item {
-    min-width: 50px;
+    min-width: 60px;
+  }
+
+  .bottom-nav-dropdown {
+    min-width: 60px;
   }
 
   .bottom-nav-label {

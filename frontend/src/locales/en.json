@@ -5,7 +5,8 @@
     "makeup": "Makeup",
     "mehendi": "Mehendi",
     "book": "Book",
-    "contact": "Contact"
+    "contact": "Contact",
+    "reviews": "Reviews"
   },
   "hero": {
   "title": "Ruaa Beauty",
@@ -127,6 +128,10 @@
     "errorMessage": "An error occurred while cancelling your booking.",
     "notFoundTitle": "Booking Not Found",
     "notFoundMessage": "The cancellation link is invalid or has expired."
+  },
+  "reviews": {
+    "title": "Our Reviews",
+    "subtitle": "See what our clients have to say"
   },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. All rights reserved."

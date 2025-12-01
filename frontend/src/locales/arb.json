@@ -5,7 +5,8 @@
     "makeup": "المكياج",
     "mehendi": "الحِنّة",
     "book": "احجزي",
-    "contact": "تواصل"
+    "contact": "تواصل",
+    "reviews": "تقييمات"
   },
 
   "hero": {
@@ -131,6 +132,10 @@
     "notFoundMessage": "رابط الإلغاء غير صحيح أو انتهت صلاحيته."
   },
 
+  "reviews": {
+    "title": "تقييمات عملائنا",
+    "subtitle": "اعرفي ما يقوله عملاؤنا عنا"
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. جميع الحقوق محفوظة."
   }

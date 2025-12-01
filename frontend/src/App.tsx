@@ -7,6 +7,7 @@ import Contact from './pages/Contact';
 import Makeup from './pages/Makeup';
 import Book from './pages/Book';
 import Lashes from './pages/Lashes';
+import Reviews from './pages/Reviews';
 import ResetPassword from './pages/ResetPassword';
 import CancelBooking from './pages/CancelBooking';
 import MyBookings from './pages/MyBookings';
@@ -40,6 +41,7 @@ function AppContent() {
         <Route path="/makeup" element={<Makeup />} />
         <Route path="/book" element={<Book />} />
         <Route path="/lashes" element={<Lashes />} />
+        <Route path="/reviews" element={<Reviews />} />
       </Routes>
       {showBottomNav && <BottomNav />}
     </>

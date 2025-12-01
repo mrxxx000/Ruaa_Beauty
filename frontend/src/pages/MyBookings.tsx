@@ -200,6 +200,7 @@ const MyBookings: React.FC = () => {
             
             <Link to="/book" className="">{t('nav.book')}</Link>
             <Link to="/contact" className="">{t('nav.contact')}</Link>
+            <Link to="/reviews" className="">{t('nav.reviews')}</Link>
           </nav>
           <AuthModal />
         </div>

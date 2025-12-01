@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Home, Sparkles, Package, ShoppingBag, Mail, ChevronUp } from 'lucide-react';
+import { Home, Sparkles, Package, ShoppingBag, Mail, Star, ChevronUp } from 'lucide-react';
 import '../styles/bottom-nav.css';
 
 const BottomNav: React.FC = () => {
@@ -123,6 +123,17 @@ const BottomNav: React.FC = () => {
         >
           <Mail className="bottom-nav-icon" />
           <span className="bottom-nav-label">{t('nav.contact')}</span>
+        </Link>
+
+        {/* Reviews */}
+        <Link
+          to="/reviews"
+          className={`bottom-nav-item ${location.pathname === '/reviews' ? 'active' : ''}`}
+          onClick={handleNavClick}
+          title={t('nav.reviews')}
+        >
+          <Star className="bottom-nav-icon" />
+          <span className="bottom-nav-label">{t('nav.reviews')}</span>
         </Link>
       </div>
     </nav>

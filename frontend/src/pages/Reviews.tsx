@@ -1,20 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
+import ReviewCard from '../components/ReviewCard';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AuthModal from '../components/AuthModal';
+import { getAllReviews, deleteReview } from '../reviewApi';
+import '../styles/reviews.css';
 
-const Makeup: React.FC = () => {
+interface Review {
+  id: number;
+  rating: number;
+  comment: string;
+  created_at: string;
+  users: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  replies?: Array<{
+    id: number;
+    user_id: number;
+    reply: string;
+    created_at: string;
+    users: {
+      id: number;
+      name: string;
+      email: string;
+    };
+  }>;
+}
+
+const Reviews: React.FC = () => {
   const location = useLocation();
   const { t } = useTranslation();
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
-  
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await getAllReviews(100, 0);
+      setReviews(data.reviews || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load reviews');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: number) => {
+    try {
+      await deleteReview(reviewId);
+      setReviews(reviews.filter((r) => r.id !== reviewId));
+    } catch (err) {
+      console.error('Failed to delete review:', err);
+    }
+  };
+
   return (
-    <div className="page-coming-soon">
+    <div className="reviews-page">
       <header className="site-header">
         <div className="container header-inner">
           <div className="brand">
@@ -23,11 +78,11 @@ const Makeup: React.FC = () => {
             </Link>
             <span className="brand-title">Ruaa Beauty</span>
           </div>
-           <nav className="nav">
+          <nav className="nav">
             <Link to="/" className={location.pathname === '/' ? 'active' : ''}>{t('nav.home')}</Link>
-            
+
             <div className="nav-dropdown">
-              <button 
+              <button
                 className="nav-dropdown-btn"
                 onClick={() => setSalonDropdownOpen(!salonDropdownOpen)}
               >
@@ -47,7 +102,7 @@ const Makeup: React.FC = () => {
             </div>
 
             <div className="nav-dropdown">
-              <button 
+              <button
                 className="nav-dropdown-btn"
                 onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
               >
@@ -62,7 +117,7 @@ const Makeup: React.FC = () => {
                 </div>
               )}
             </div>
-            
+
             <Link to="/book" className={location.pathname === '/book' ? 'active' : ''}>{t('nav.book')}</Link>
             <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t('nav.contact')}</Link>
             <Link to="/reviews" className={location.pathname === '/reviews' ? 'active' : ''}>{t('nav.reviews')}</Link>
@@ -71,16 +126,37 @@ const Makeup: React.FC = () => {
         </div>
       </header>
 
-      {/* Language Switcher - Below navbar, centered */}
       <div className="lang-switcher-container">
         <LanguageSwitcher />
       </div>
 
       <main>
-        <section className="container" style={{ padding: '80px 0', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '2rem', marginBottom: 12 }}>{t('nav.makeup')} — {t('pages.comingSoon')}</h1>
-          <p style={{ color: '#666' }}>We're working on this page. Check back soon for makeup services and galleries.</p>
-        </section>
+        <div className="reviews-header">
+          <h1>{t('reviews.title', 'Our Reviews')}</h1>
+          <p>{t('reviews.subtitle', 'See what our clients have to say')}</p>
+        </div>
+
+        {loading && <p className="loading">Loading reviews...</p>}
+        {error && <p className="error">{error}</p>}
+
+        {!loading && reviews.length === 0 && !error && (
+          <p className="no-reviews">No reviews yet. Be the first to leave a review!</p>
+        )}
+
+        <div className="reviews-container">
+          {reviews.map((review) => (
+            <ReviewCard
+              key={review.id}
+              id={review.id}
+              rating={review.rating}
+              comment={review.comment}
+              created_at={review.created_at}
+              users={review.users}
+              replies={review.replies}
+              onDelete={handleDeleteReview}
+            />
+          ))}
+        </div>
       </main>
 
       <footer className="site-footer">
@@ -92,4 +168,4 @@ const Makeup: React.FC = () => {
   );
 };
 
-export default Makeup;
+export default Reviews;
