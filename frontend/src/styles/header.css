@@ -125,7 +125,7 @@
 .nav-dropdown-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0px;
   margin-left: 12px;
   color: #6b6b6b;
   background: transparent;
@@ -134,8 +134,8 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 400;
 }
 
 .nav-dropdown-btn:hover {
