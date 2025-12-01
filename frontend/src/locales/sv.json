@@ -5,7 +5,8 @@
     "makeup": "Smink",
     "mehendi": "Mehendi",
     "book": "Boka",
-    "contact": "Kontakt"
+    "contact": "Kontakt",
+    "reviews": "Recensioner"
   },
 
   "hero": {
@@ -131,6 +132,10 @@
     "notFoundMessage": "Avbokningslänken är ogiltig eller har upphört att gälla."
   },
 
+  "reviews": {
+    "title": "Våra Recensioner",
+    "subtitle": "Se vad våra klienter säger"
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. Alla rättigheter förbehållna."
   }

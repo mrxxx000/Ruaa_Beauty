@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Home, Sparkles, Package, ShoppingBag, Mail, ChevronUp } from 'lucide-react';
+import { Home, Sparkles, Package, ShoppingBag, Mail, Star, ChevronUp } from 'lucide-react';
 import '../styles/bottom-nav.css';
 
 const BottomNav: React.FC = () => {
@@ -9,6 +9,10 @@ const BottomNav: React.FC = () => {
   const { t } = useTranslation();
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const [salonDropdownPos, setSalonDropdownPos] = useState<number>(0);
+  const [productsDropdownPos, setProductsDropdownPos] = useState<number>(0);
+  const salonBtnRef = React.useRef<HTMLButtonElement>(null);
+  const productsBtnRef = React.useRef<HTMLButtonElement>(null);
 
   const regularItems = [
     { path: '/', icon: Home, label: t('nav.home') },
@@ -26,6 +30,22 @@ const BottomNav: React.FC = () => {
   const handleNavClick = () => {
     setSalonDropdownOpen(false);
     setProductsDropdownOpen(false);
+  };
+
+  const handleSalonDropdownClick = () => {
+    if (salonBtnRef.current) {
+      const rect = salonBtnRef.current.getBoundingClientRect();
+      setSalonDropdownPos(rect.left + rect.width / 2);
+    }
+    setSalonDropdownOpen(!salonDropdownOpen);
+  };
+
+  const handleProductsDropdownClick = () => {
+    if (productsBtnRef.current) {
+      const rect = productsBtnRef.current.getBoundingClientRect();
+      setProductsDropdownPos(rect.left + rect.width / 2);
+    }
+    setProductsDropdownOpen(!productsDropdownOpen);
   };
 
   return (
@@ -48,10 +68,11 @@ const BottomNav: React.FC = () => {
         {/* Salon Services Dropdown */}
         <div className="bottom-nav-dropdown">
           <button
+            ref={salonBtnRef}
             className={`bottom-nav-item dropdown-btn ${
               salonItems.some(item => item.path === location.pathname) ? 'active' : ''
             }`}
-            onClick={() => setSalonDropdownOpen(!salonDropdownOpen)}
+            onClick={handleSalonDropdownClick}
             title="Salon Services"
           >
             <Sparkles className="bottom-nav-icon" />
@@ -59,7 +80,7 @@ const BottomNav: React.FC = () => {
             <ChevronUp className="dropdown-chevron" style={{ opacity: salonDropdownOpen ? 1 : 0.5 }} />
           </button>
           {salonDropdownOpen && (
-            <div className="bottom-nav-dropdown-menu">
+            <div className="bottom-nav-dropdown-menu" style={{ left: `${salonDropdownPos}px` }}>
               {salonItems.map(({ path, label }) => (
                 <Link
                   key={path}
@@ -77,10 +98,11 @@ const BottomNav: React.FC = () => {
         {/* Products Dropdown */}
         <div className="bottom-nav-dropdown">
           <button
+            ref={productsBtnRef}
             className={`bottom-nav-item dropdown-btn ${
               productItems.some(item => item.path === location.pathname) ? 'active' : ''
             }`}
-            onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
+            onClick={handleProductsDropdownClick}
             title="Products"
           >
             <Package className="bottom-nav-icon" />
@@ -88,7 +110,7 @@ const BottomNav: React.FC = () => {
             <ChevronUp className="dropdown-chevron" style={{ opacity: productsDropdownOpen ? 1 : 0.5 }} />
           </button>
           {productsDropdownOpen && (
-            <div className="bottom-nav-dropdown-menu">
+            <div className="bottom-nav-dropdown-menu" style={{ left: `${productsDropdownPos}px` }}>
               {productItems.map(({ path, label }) => (
                 <Link
                   key={path}
@@ -123,6 +145,17 @@ const BottomNav: React.FC = () => {
         >
           <Mail className="bottom-nav-icon" />
           <span className="bottom-nav-label">{t('nav.contact')}</span>
+        </Link>
+
+        {/* Reviews */}
+        <Link
+          to="/reviews"
+          className={`bottom-nav-item ${location.pathname === '/reviews' ? 'active' : ''}`}
+          onClick={handleNavClick}
+          title={t('nav.reviews')}
+        >
+          <Star className="bottom-nav-icon" />
+          <span className="bottom-nav-label">{t('nav.reviews')}</span>
         </Link>
       </div>
     </nav>

@@ -71,10 +71,18 @@ const MyBookings: React.FC = () => {
       setError('Please login to view your bookings');
     };
 
+    const handleLogin = () => {
+      setIsAuthenticated(true);
+      setError('');
+      fetchBookings();
+    };
+
     window.addEventListener('userLogout', handleLogout);
+    window.addEventListener('userLogin', handleLogin);
 
     return () => {
       window.removeEventListener('userLogout', handleLogout);
+      window.removeEventListener('userLogin', handleLogin);
     };
   }, []);
 
@@ -200,6 +208,7 @@ const MyBookings: React.FC = () => {
             
             <Link to="/book" className="">{t('nav.book')}</Link>
             <Link to="/contact" className="">{t('nav.contact')}</Link>
+            <Link to="/reviews" className="">{t('nav.reviews')}</Link>
           </nav>
           <AuthModal />
         </div>

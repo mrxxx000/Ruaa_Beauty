@@ -123,6 +123,12 @@ const AuthModal: React.FC = () => {
       setShowPassword(false);
       setIsOpen(false);
 
+      // Dispatch custom event to notify other components about login
+      const loginEvent = new CustomEvent('userLogin', {
+        detail: { user: data.user, timestamp: new Date().getTime() }
+      });
+      window.dispatchEvent(loginEvent);
+
       // Redirect admin to admin dashboard immediately
       if (data.user.role === 'admin') {
         navigate('/admin', { replace: true });

@@ -135,6 +135,7 @@ const CancelBooking: React.FC = () => {
             
             <Link to="/book">{t('nav.book')}</Link>
             <Link to="/contact">{t('nav.contact')}</Link>
+            <Link to="/reviews">{t('nav.reviews')}</Link>
           </nav>
           <AuthModal />
         </div>

@@ -1,0 +1,127 @@
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirm-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.confirm-modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.confirm-modal-header h2 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.confirm-modal-body {
+  padding: 1.5rem;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.confirm-modal-body p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.confirm-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.confirm-modal-cancel,
+.confirm-modal-confirm {
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.confirm-modal-cancel {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.confirm-modal-cancel:hover {
+  background: #d1d5db;
+}
+
+.confirm-modal-confirm {
+  background: #667eea;
+  color: white;
+}
+
+.confirm-modal-confirm:hover {
+  background: #5568d3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.confirm-modal-confirm.danger {
+  background: #ff4757;
+  color: white;
+}
+
+.confirm-modal-confirm.danger:hover {
+  background: #ff3838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
+}
+
+@media (max-width: 480px) {
+  .confirm-modal {
+    width: 95%;
+  }
+
+  .confirm-modal-header,
+  .confirm-modal-body,
+  .confirm-modal-footer {
+    padding: 1rem;
+  }
+
+  .confirm-modal-footer {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .confirm-modal-cancel,
+  .confirm-modal-confirm {
+    width: 100%;
+  }
+}

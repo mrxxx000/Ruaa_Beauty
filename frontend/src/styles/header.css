@@ -1,7 +1,9 @@
 /* Site Header & Navigation */
 .site-header {
-  background: transparent;
+  background: white;
   padding: 18px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .header-inner {
@@ -96,11 +98,11 @@
 .nav {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0px;
 }
 
 .nav a {
-  margin-left: 12px;
+  margin-left: 6px;
   color: #6b6b6b;
   text-decoration: none;
   padding: 8px 14px;
@@ -123,8 +125,8 @@
 .nav-dropdown-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-left: 12px;
+  gap: 0px;
+  margin-left: 6px;
   color: #6b6b6b;
   background: transparent;
   border: none;
@@ -132,8 +134,8 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 400;
 }
 
 .nav-dropdown-btn:hover {

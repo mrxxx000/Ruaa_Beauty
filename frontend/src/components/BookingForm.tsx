@@ -137,9 +137,36 @@ const BookingForm: React.FC = () => {
       }
     };
 
+    // Listen for login events to instantly update the form
+    const handleUserLogin = (event: any) => {
+      if (event instanceof CustomEvent) {
+        const { user } = event.detail;
+        setIsLoggedIn(true);
+        setCurrentUser(user);
+        setFormData(prev => ({
+          ...prev,
+          name: user.name || '',
+          email: user.email || '',
+          phone: user.phone || '',
+        }));
+      }
+    };
+
+    // Listen for logout events to instantly reset the form
+    const handleUserLogout = (event: any) => {
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+      setFormData(defaultData);
+    };
+
     window.addEventListener('profileUpdated', handleProfileUpdate);
+    window.addEventListener('userLogin', handleUserLogin);
+    window.addEventListener('userLogout', handleUserLogout);
+    
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
+      window.removeEventListener('userLogin', handleUserLogin);
+      window.removeEventListener('userLogout', handleUserLogout);
     };
   }, []);
 
