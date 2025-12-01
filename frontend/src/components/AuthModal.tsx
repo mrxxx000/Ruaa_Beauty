@@ -981,7 +981,7 @@ const AuthModal: React.FC = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          zIndex: 1000,
+          zIndex: 1003,
         }}>
           <div style={{
             backgroundColor: 'white',
@@ -1209,7 +1209,7 @@ const AuthModal: React.FC = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          zIndex: 1000,
+          zIndex: 1003,
         }}>
           <div style={{
             backgroundColor: 'white',
