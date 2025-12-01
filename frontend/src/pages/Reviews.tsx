@@ -7,7 +7,7 @@ import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import ReviewCard from '../components/ReviewCard';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AuthModal from '../components/AuthModal';
-import { getAllReviews, deleteReview } from '../reviewApi';
+import { getAllReviews, deleteReview, submitReview } from '../reviewApi';
 import '../styles/reviews.css';
 
 interface Review {
@@ -41,10 +41,35 @@ const Reviews: React.FC = () => {
   const [error, setError] = useState('');
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | undefined>();
+  
+  // Review submission state
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   useEffect(() => {
     fetchReviews();
+    checkAuthentication();
   }, []);
+
+  const checkAuthentication = () => {
+    const user = localStorage.getItem('currentUser');
+    if (user) {
+      try {
+        const userObj = JSON.parse(user);
+        setIsAuthenticated(true);
+        setCurrentUserId(userObj.id);
+      } catch (err) {
+        setIsAuthenticated(false);
+      }
+    } else {
+      setIsAuthenticated(false);
+    }
+  };
 
   const fetchReviews = async () => {
     try {
@@ -56,6 +81,31 @@ const Reviews: React.FC = () => {
       setError(err instanceof Error ? err.message : 'Failed to load reviews');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitError('');
+    setSubmitSuccess(false);
+
+    if (!comment.trim()) {
+      setSubmitError('Please write a review');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const newReview = await submitReview(rating, comment);
+      setComment('');
+      setRating(5);
+      setSubmitSuccess(true);
+      fetchReviews();
+      setTimeout(() => setSubmitSuccess(false), 3000);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to submit review');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -136,6 +186,63 @@ const Reviews: React.FC = () => {
           <p>{t('reviews.subtitle', 'See what our clients have to say')}</p>
         </div>
 
+        {/* Review Submission Form - Only for logged in users */}
+        {isAuthenticated && (
+          <div className="review-submission-section">
+            <h2>Leave a Review</h2>
+            <form onSubmit={handleSubmitReview} className="review-form">
+              {submitError && <div className="form-error">{submitError}</div>}
+              {submitSuccess && <div className="form-success">✨ Thank you! Your review has been submitted successfully.</div>}
+              
+              <div className="form-group">
+                <label htmlFor="rating">Rating</label>
+                <div className="rating-input">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      className={`star ${star <= rating ? 'active' : ''}`}
+                      onClick={() => setRating(star)}
+                      title={`${star} stars`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="comment">Your Review</label>
+                <textarea
+                  id="comment"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Share your experience with us..."
+                  rows={5}
+                  maxLength={500}
+                  disabled={submitting}
+                />
+                <div className="char-count">{comment.length}/500</div>
+              </div>
+
+              <button
+                type="submit"
+                className="submit-btn"
+                disabled={submitting || !comment.trim()}
+              >
+                {submitting ? '⏳ Submitting...' : '✨ Submit Review'}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Login Prompt - Only for non-logged in users */}
+        {!isAuthenticated && (
+          <div className="login-prompt">
+            <p>👤 Sign in to share your experience and leave a review</p>
+          </div>
+        )}
+
         {loading && <p className="loading">Loading reviews...</p>}
         {error && <p className="error">{error}</p>}
 
@@ -153,6 +260,7 @@ const Reviews: React.FC = () => {
               created_at={review.created_at}
               users={review.users}
               replies={review.replies}
+              currentUserId={currentUserId}
               onDelete={handleDeleteReview}
             />
           ))}
