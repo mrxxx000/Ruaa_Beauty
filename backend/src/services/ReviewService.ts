@@ -370,7 +370,7 @@ export class ReviewService {
   }
 
   /**
-   * Delete a reply (only by the reply author)
+   * Delete a reply (only by the reply author or admin)
    */
   async deleteReply(reviewId: number, replyId: number, userId: number) {
     console.log(`🗑️  Deleting reply ${replyId} from review ${reviewId}`);
@@ -378,7 +378,7 @@ export class ReviewService {
     try {
       const supabase = this.getSupabase();
 
-      // Verify the reply exists and ownership
+      // Verify the reply exists
       const { data: reply, error: fetchError } = await supabase
         .from('review_replies')
         .select('user_id')
@@ -390,8 +390,22 @@ export class ReviewService {
         throw new Error('Reply not found');
       }
 
+      // Check if user is the reply author or an admin
       if (reply.user_id !== userId) {
-        throw new Error('Not authorized to delete this reply');
+        // Check if the user is an admin
+        const { data: user, error: userError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', userId)
+          .single();
+
+        if (userError || !user) {
+          throw new Error('User not found');
+        }
+
+        if (user.role !== 'admin') {
+          throw new Error('Not authorized to delete this reply');
+        }
       }
 
       // Delete reply

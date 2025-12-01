@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Users, Calendar, Menu, Check, AlertCircle } from 'lucide-react';
+import { LogOut, Users, Calendar, Menu, Check, AlertCircle, MessageSquare } from 'lucide-react';
 import '../styles/admin-dashboard.css';
+import ConfirmModal from '../components/ConfirmModal';
 import {
   getAllBookings,
   getAllUsers,
@@ -10,18 +11,35 @@ import {
   Booking,
   User,
 } from '../adminApi';
+import { getAllReviews, deleteReview, deleteReply } from '../reviewApi';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'bookings' | 'users'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'users' | 'reviews'>('bookings');
   const [token, setToken] = useState('');
   const [currentUser, setCurrentUser] = useState<{ name: string; email: string } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [bookingFilter, setBookingFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all');
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText: string;
+    isDanger: boolean;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    isDanger: false,
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     // Check if user is authenticated and is admin
@@ -68,9 +86,12 @@ export default function AdminDashboard() {
       if (activeTab === 'bookings') {
         const bookingsData = await getAllBookings(authToken);
         setBookings(bookingsData);
-      } else {
+      } else if (activeTab === 'users') {
         const usersData = await getAllUsers(authToken);
         setUsers(usersData);
+      } else if (activeTab === 'reviews') {
+        const reviewsData = await getAllReviews(100, 0);
+        setReviews(reviewsData.reviews || []);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -99,14 +120,73 @@ export default function AdminDashboard() {
   };
 
   const handleCancelBooking = async (bookingId: string) => {
-    if (window.confirm('Are you sure you want to cancel this booking?')) {
-      try {
-        await cancelBookingAdmin(token, bookingId);
-        setBookings(bookings.filter((booking) => booking.id !== bookingId));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to cancel booking');
-      }
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Booking',
+      message: 'Are you sure you want to delete this booking? This action cannot be undone.',
+      confirmText: 'Delete',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await cancelBookingAdmin(token, bookingId);
+          setBookings(bookings.filter((booking) => booking.id !== bookingId));
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to cancel booking');
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      },
+    });
+  };
+
+  const handleDeleteReview = async (reviewId: number) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Review',
+      message: 'Are you sure you want to delete this review? This will also delete all its replies. This action cannot be undone.',
+      confirmText: 'Delete',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await deleteReview(reviewId);
+          setReviews(reviews.filter((review) => review.id !== reviewId));
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to delete review');
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      },
+    });
+  };
+
+  const handleDeleteReply = async (reviewId: number, replyId: number) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Reply',
+      message: 'Are you sure you want to delete this reply? This action cannot be undone.',
+      confirmText: 'Delete',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await deleteReply(reviewId, replyId);
+          // Update the reviews list to remove the reply
+          setReviews(
+            reviews.map((review) =>
+              review.id === reviewId
+                ? {
+                    ...review,
+                    review_replies: review.review_replies.filter((r: any) => r.id !== replyId),
+                  }
+                : review
+            )
+          );
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to delete reply');
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      },
+    });
   };
 
   const handleLogout = () => {
@@ -124,6 +204,16 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        isDanger={confirmModal.isDanger}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
+
       {/* Admin Navigation Bar */}
       <nav className="admin-navbar">
         <div className="admin-navbar-content">
@@ -171,6 +261,15 @@ export default function AdminDashboard() {
             <Users className="w-5 h-5" />
             <span>Users</span>
             {users.length > 0 && <span className="badge">{users.length}</span>}
+          </button>
+
+          <button
+            className={`admin-nav-item ${activeTab === 'reviews' ? 'active' : ''}`}
+            onClick={() => setActiveTab('reviews')}
+          >
+            <MessageSquare className="w-5 h-5" />
+            <span>Reviews</span>
+            {reviews.length > 0 && <span className="badge">{reviews.length}</span>}
           </button>
         </div>
       </div>
@@ -295,7 +394,7 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-          ) : (
+          ) : activeTab === 'users' ? (
             <div className="users-section">
               <h2>All Users</h2>
               {users.length === 0 ? (
@@ -326,6 +425,63 @@ export default function AdminDashboard() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="reviews-section">
+              <h2>All Reviews</h2>
+              {reviews.length === 0 ? (
+                <p className="no-data">No reviews found</p>
+              ) : (
+                <div className="reviews-list">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="admin-review-card">
+                      <div className="review-header">
+                        <div className="review-info">
+                          <h3>{review.users.name}</h3>
+                          <p className="review-email">{review.users.email}</p>
+                          <p className="review-date">{new Date(review.created_at).toLocaleDateString()}</p>
+                        </div>
+                        <div className="review-rating">
+                          <span className="stars">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+                          <span className="rating-value">{review.rating}/5</span>
+                        </div>
+                        <button
+                          className="delete-review-btn"
+                          onClick={() => handleDeleteReview(review.id)}
+                          title="Delete review"
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                      <p className="review-comment">{review.comment}</p>
+
+                      {review.review_replies && review.review_replies.length > 0 && (
+                        <div className="admin-replies-section">
+                          <h4>Replies ({review.review_replies.length})</h4>
+                          {review.review_replies.map((reply: any) => (
+                            <div key={reply.id} className="admin-reply-item">
+                              <div className="admin-reply-header">
+                                <div>
+                                  <p className="reply-author"><strong>{reply.users.name}</strong> ({reply.users.email})</p>
+                                  <p className="reply-date">{new Date(reply.created_at).toLocaleDateString()}</p>
+                                </div>
+                                <button
+                                  className="delete-reply-btn"
+                                  onClick={() => handleDeleteReply(review.id, reply.id)}
+                                  title="Delete reply"
+                                >
+                                  🗑️
+                                </button>
+                              </div>
+                              <p className="reply-text">{reply.reply}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

@@ -154,7 +154,7 @@ router.post('/reviews/:reviewId/reply', verifyToken, async (req, res) => {
   }
 });
 
-// DELETE /api/reviews/:reviewId/reply/:replyId - Delete reply (requires authentication, only author)
+// DELETE /api/reviews/:reviewId/reply/:replyId - Delete reply (requires authentication, only author or admin)
 router.delete('/reviews/:reviewId/reply/:replyId', verifyToken, async (req, res) => {
   const userId = (req as any).userId;
   const { reviewId, replyId } = req.params;
