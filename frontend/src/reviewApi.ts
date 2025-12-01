@@ -1,4 +1,4 @@
-const API_URL = process.env.REACT_APP_API_URL || '/api';
+const API_URL = process.env.REACT_APP_BACKEND_URL || '/api';
 
 // Get authentication token from localStorage
 const getAuthToken = () => {
