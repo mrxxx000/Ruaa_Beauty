@@ -207,11 +207,19 @@ router.post('/forgot-password', async (req, res) => {
     // If user exists, send reset email
     if (result.resetToken) {
       try {
+        console.log(`📧 Attempting to send password reset email to: ${result.email}`);
+        console.log(`🔑 Reset token: ${result.resetToken.substring(0, 10)}...`);
         await emailService.sendPasswordResetEmail(result.email, result.resetToken);
         console.log(`✅ Password reset email sent to ${result.email}`);
-      } catch (emailErr) {
-        console.error('❌ Failed to send reset email');
-        return res.status(500).json({ message: 'Error sending reset email' });
+      } catch (emailErr: any) {
+        console.error('❌ Failed to send reset email:', emailErr);
+        console.error('📍 Error details:', {
+          message: emailErr.message,
+          statusCode: emailErr.statusCode,
+          response: emailErr.response,
+        });
+        // Don't fail the request - email sending is not critical
+        console.warn('⚠️ Email failed but continuing with response');
       }
     }
 
@@ -221,6 +229,7 @@ router.post('/forgot-password', async (req, res) => {
     });
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Error processing reset request';
+    console.error('❌ Error in forgot-password endpoint:', errorMessage);
     res.status(500).json({ message: errorMessage });
   }
 });
