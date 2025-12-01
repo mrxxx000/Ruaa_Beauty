@@ -71,10 +71,18 @@ const MyBookings: React.FC = () => {
       setError('Please login to view your bookings');
     };
 
+    const handleLogin = () => {
+      setIsAuthenticated(true);
+      setError('');
+      fetchBookings();
+    };
+
     window.addEventListener('userLogout', handleLogout);
+    window.addEventListener('userLogin', handleLogin);
 
     return () => {
       window.removeEventListener('userLogout', handleLogout);
+      window.removeEventListener('userLogin', handleLogin);
     };
   }, []);
 

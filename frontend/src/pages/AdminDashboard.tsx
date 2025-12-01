@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, Users, Calendar, Menu, Check, AlertCircle, MessageSquare } from 'lucide-react';
 import '../styles/admin-dashboard.css';
 import ConfirmModal from '../components/ConfirmModal';
+import { useReviewUpdates } from '../hooks/useReviewUpdates';
 import {
   getAllBookings,
   getAllUsers,
@@ -15,6 +16,7 @@ import { getAllReviews, deleteReview, deleteReply } from '../reviewApi';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { notifyReviewDeleted, notifyReplyDeleted } = useReviewUpdates();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -150,6 +152,7 @@ export default function AdminDashboard() {
         try {
           await deleteReview(reviewId);
           setReviews(reviews.filter((review) => review.id !== reviewId));
+          notifyReviewDeleted(reviewId);
           setConfirmModal({ ...confirmModal, isOpen: false });
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Failed to delete review');
@@ -180,6 +183,7 @@ export default function AdminDashboard() {
                 : review
             )
           );
+          notifyReplyDeleted(reviewId, replyId);
           setConfirmModal({ ...confirmModal, isOpen: false });
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Failed to delete reply');

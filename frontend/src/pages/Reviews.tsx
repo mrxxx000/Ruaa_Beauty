@@ -8,6 +8,7 @@ import ReviewCard from '../components/ReviewCard';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AuthModal from '../components/AuthModal';
 import { getAllReviews, deleteReview, submitReview, addReplyToReview, getReviewWithReplies, deleteReply } from '../reviewApi';
+import { useReviewUpdates } from '../hooks/useReviewUpdates';
 import '../styles/reviews.css';
 
 interface Review {
@@ -62,9 +63,58 @@ const Reviews: React.FC = () => {
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
+  // Initialize review updates hook
+  useReviewUpdates();
+
   useEffect(() => {
     fetchReviews();
     checkAuthentication();
+
+    // Listen for real-time review updates from other parts of the app (e.g., admin dashboard)
+    const handleReviewUpdate = (e: Event) => {
+      if (e instanceof CustomEvent) {
+        const { type, reviewId, replyId } = e.detail;
+        
+        if (type === 'review_deleted') {
+          // Remove deleted review
+          setReviews(prev => prev.filter(r => r.id !== reviewId));
+        } else if (type === 'reply_deleted') {
+          // Remove deleted reply from all reviews
+          setReviews(prev =>
+            prev.map(review => ({
+              ...review,
+              replies: review.replies?.filter(r => r.id !== replyId),
+              review_replies: review.review_replies?.filter(r => r.id !== replyId)
+            }))
+          );
+        }
+      }
+    };
+
+    // Listen for login events to instantly show review form
+    const handleUserLogin = (e: Event) => {
+      if (e instanceof CustomEvent) {
+        const { user } = e.detail;
+        setIsAuthenticated(true);
+        setCurrentUserId(user.id);
+      }
+    };
+
+    // Listen for logout events to instantly hide review form
+    const handleUserLogout = (e: Event) => {
+      setIsAuthenticated(false);
+      setCurrentUserId(undefined);
+    };
+
+    window.addEventListener('reviewUpdated', handleReviewUpdate);
+    window.addEventListener('userLogin', handleUserLogin);
+    window.addEventListener('userLogout', handleUserLogout);
+    
+    return () => {
+      window.removeEventListener('reviewUpdated', handleReviewUpdate);
+      window.removeEventListener('userLogin', handleUserLogin);
+      window.removeEventListener('userLogout', handleUserLogout);
+    };
   }, []);
 
   const checkAuthentication = () => {
