@@ -327,7 +327,7 @@ export class ReviewService {
   }
 
   /**
-   * Delete a review (only by the review author)
+   * Delete a review (only by the review author or admin)
    */
   async deleteReview(reviewId: number, userId: number) {
     console.log(`🗑️  Deleting review ${reviewId}`);
@@ -335,7 +335,7 @@ export class ReviewService {
     try {
       const supabase = this.getSupabase();
 
-      // Verify ownership
+      // Verify review exists
       const { data: review, error: fetchError } = await supabase
         .from('reviews')
         .select('user_id')
@@ -346,8 +346,22 @@ export class ReviewService {
         throw new Error('Review not found');
       }
 
+      // Check if user is the review author or an admin
       if (review.user_id !== userId) {
-        throw new Error('Not authorized to delete this review');
+        // Check if the user is an admin
+        const { data: user, error: userError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', userId)
+          .single();
+
+        if (userError || !user) {
+          throw new Error('User not found');
+        }
+
+        if (user.role !== 'admin') {
+          throw new Error('Not authorized to delete this review');
+        }
       }
 
       // Delete replies first (cascade)
