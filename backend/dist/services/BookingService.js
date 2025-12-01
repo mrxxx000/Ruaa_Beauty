@@ -5,6 +5,17 @@ const supabase_js_1 = require("@supabase/supabase-js");
 const crypto_1 = require("crypto");
 class BookingService {
     supabaseInstance = null;
+    // Service configurations: duration in hours and staff group assignment
+    serviceConfig = {
+        // Group A - Mehendi Staff
+        'mehendi': { duration: 0, staffGroup: 'mehendi' }, // duration set by user
+        // Group B - Beauty Staff (all share same person)
+        'lash-lift': { duration: 2, staffGroup: 'beauty' },
+        'brow-lift': { duration: 2, staffGroup: 'beauty' },
+        'threading': { duration: 2, staffGroup: 'beauty' },
+        'makeup': { duration: 3, staffGroup: 'beauty' },
+        'bridal-makeup': { duration: 9, staffGroup: 'beauty' }, // full day: 9-18
+    };
     getSupabase() {
         if (!this.supabaseInstance) {
             const url = process.env.SUPABASE_URL;
@@ -16,60 +27,98 @@ class BookingService {
         }
         return this.supabaseInstance;
     }
+    /**
+     * Get the staff group for services being booked
+     */
+    getStaffGroupsForServices(services, mehendiHours = 0) {
+        const staffGroups = new Set();
+        services.forEach(svc => {
+            const config = this.serviceConfig[svc];
+            if (config) {
+                staffGroups.add(config.staffGroup);
+            }
+        });
+        return staffGroups;
+    }
+    /**
+     * Get the duration for a service
+     */
+    getServiceDuration(service, mehendiHours = 0) {
+        const config = this.serviceConfig[service];
+        if (!config)
+            return 1; // default 1 hour
+        if (service === 'mehendi') {
+            return mehendiHours || 1;
+        }
+        return config.duration;
+    }
+    /**
+     * Check if a time slot is available
+     * Returns true if the booking can fit without conflicts
+     */
+    isTimeSlotAvailable(startHour, totalDuration, existingBookings, staffGroupsNeeded) {
+        const endHour = startHour + totalDuration;
+        // Check if booking fits within working hours (9-18)
+        if (startHour < 9 || endHour > 18) {
+            return false;
+        }
+        // Check for conflicts with existing bookings in the same staff group
+        for (const booking of existingBookings) {
+            const bookingHour = parseInt(booking.time.split(':')[0]);
+            const bookingServices = booking.service.split(',').map((s) => s.trim());
+            const bookingMehendiHours = booking.mehendi_hours || 0;
+            // Get staff groups used by this existing booking
+            const existingStaffGroups = this.getStaffGroupsForServices(bookingServices, bookingMehendiHours);
+            // Calculate existing booking duration
+            let existingDuration = 0;
+            bookingServices.forEach((svc) => {
+                const duration = this.getServiceDuration(svc, bookingMehendiHours);
+                existingDuration = Math.max(existingDuration, duration);
+            });
+            const existingEndHour = bookingHour + existingDuration;
+            // Check if any staff group overlaps
+            for (const staffGroup of staffGroupsNeeded) {
+                if (existingStaffGroups.has(staffGroup)) {
+                    // Same staff group - check for time overlap
+                    if (!(endHour <= bookingHour || startHour >= existingEndHour)) {
+                        // There's a conflict
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
     async validateTimeSlot(date, time, service, mehendiHours = 0) {
         const supabase = this.getSupabase();
         const { data: existingBookings, error: fetchError } = await supabase
             .from('bookings')
             .select('*')
-            .eq('date', date);
+            .eq('date', date)
+            .neq('status', 'cancelled'); // Exclude cancelled bookings
         if (fetchError) {
             throw new Error(`Error checking existing bookings: ${fetchError.message}`);
         }
         const requestedHour = parseInt(time?.split(':')[0] || '0');
         const requestedServices = service.split(',').map((s) => s.trim());
-        const hoursToBlock = this.calculateBlockedHours(requestedServices, requestedHour, mehendiHours);
-        // Check for conflicts
-        for (const booking of existingBookings || []) {
-            const bookingHour = parseInt(booking.time.split(':')[0]);
-            const bookingServices = booking.service.split(',').map((s) => s.trim());
-            const bookedHours = this.calculateBlockedHours(bookingServices, bookingHour, booking.mehendi_hours || 0);
-            // Check for overlap
-            for (const hour of hoursToBlock) {
-                if (bookedHours.has(hour)) {
-                    return {
-                        isAvailable: false,
-                        conflictingHour: hour,
-                        conflictingService: bookingServices[0],
-                    };
-                }
-            }
+        // Calculate total duration needed for this booking
+        let totalDuration = 0;
+        requestedServices.forEach((svc) => {
+            const duration = this.getServiceDuration(svc, mehendiHours);
+            totalDuration = Math.max(totalDuration, duration);
+        });
+        // Get staff groups needed
+        const staffGroupsNeeded = this.getStaffGroupsForServices(requestedServices, mehendiHours);
+        // Check if slot is available
+        const isAvailable = this.isTimeSlotAvailable(requestedHour, totalDuration, existingBookings || [], staffGroupsNeeded);
+        if (!isAvailable) {
+            return {
+                isAvailable: false,
+                conflictingHour: requestedHour,
+                conflictingService: requestedServices[0],
+            };
         }
         return { isAvailable: true };
-    }
-    calculateBlockedHours(services, startHour, mehendiHours = 0) {
-        const blockedHours = new Set();
-        services.forEach((svc) => {
-            if (svc === 'bridal-makeup') {
-                for (let i = 9; i <= 18; i++) {
-                    blockedHours.add(i);
-                }
-            }
-            else if (svc === 'lash-lift' || svc === 'brow-lift' || svc === 'threading') {
-                blockedHours.add(startHour);
-            }
-            else if (svc === 'makeup') {
-                for (let i = 0; i < 3; i++) {
-                    blockedHours.add(startHour + i);
-                }
-            }
-            else if (svc === 'mehendi') {
-                const hours = mehendiHours || 1;
-                for (let i = 0; i < hours; i++) {
-                    blockedHours.add(startHour + i);
-                }
-            }
-        });
-        return blockedHours;
     }
     async createBooking(bookingData) {
         const supabase = this.getSupabase();
@@ -119,27 +168,36 @@ class BookingService {
             throw new Error(`Error cancelling booking: ${error.message}`);
         }
     }
-    async getAvailableTimes(date, services) {
+    async getAvailableTimes(date, services, mehendiHours = 0) {
         const supabase = this.getSupabase();
         const { data: bookings, error: fetchError } = await supabase
             .from('bookings')
             .select('*')
-            .eq('date', date);
+            .eq('date', date)
+            .neq('status', 'cancelled'); // Exclude cancelled bookings
         if (fetchError) {
             throw new Error(`Error fetching bookings: ${fetchError.message}`);
         }
         const allHours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
-        const unavailableHours = new Set();
-        bookings?.forEach((booking) => {
-            const bookingTime = parseInt(booking.time.split(':')[0]);
-            const bookingServices = booking.service.split(',').map((s) => s.trim());
-            const blockedHours = this.calculateBlockedHours(bookingServices, bookingTime, booking.mehendi_hours || 0);
-            blockedHours.forEach(hour => unavailableHours.add(hour));
+        const availableHours = [];
+        // Calculate total duration needed for requested services
+        let totalDuration = 0;
+        services.forEach((svc) => {
+            const duration = this.getServiceDuration(svc, mehendiHours);
+            totalDuration = Math.max(totalDuration, duration);
         });
-        const availableHours = allHours.filter(hour => !unavailableHours.has(hour));
+        // Get staff groups needed
+        const staffGroupsNeeded = this.getStaffGroupsForServices(services, mehendiHours);
+        // Check each hour
+        for (const hour of allHours) {
+            const isAvailable = this.isTimeSlotAvailable(hour, totalDuration, bookings || [], staffGroupsNeeded);
+            if (isAvailable) {
+                availableHours.push(hour);
+            }
+        }
         return {
             availableHours,
-            unavailableHours: Array.from(unavailableHours),
+            unavailableHours: allHours.filter(h => !availableHours.includes(h)),
         };
     }
     async getBookingsByUserId(userId) {
@@ -181,6 +239,50 @@ class BookingService {
             throw new Error(`Error cancelling booking: ${deleteError.message}`);
         }
         return booking;
+    }
+    async getAllBookings() {
+        const supabase = this.getSupabase();
+        const { data, error } = await supabase
+            .from('bookings')
+            .select('*')
+            .order('date', { ascending: false });
+        if (error) {
+            throw new Error(`Error fetching bookings: ${error.message}`);
+        }
+        return data || [];
+    }
+    async updateBookingStatus(bookingId, status) {
+        const supabase = this.getSupabase();
+        try {
+            const { data, error } = await supabase
+                .from('bookings')
+                .update({ status })
+                .eq('id', bookingId)
+                .select()
+                .single();
+            if (error) {
+                // If error is about missing column, provide helpful message
+                if (error.message.includes('status')) {
+                    throw new Error('Status column not found. Please run the migration: ALTER TABLE bookings ADD COLUMN status VARCHAR(50) DEFAULT \'pending\';');
+                }
+                throw new Error(`Error updating booking status: ${error.message}`);
+            }
+            return data;
+        }
+        catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            throw new Error(`Error updating booking status: ${errorMessage}`);
+        }
+    }
+    async cancelBookingAdmin(bookingId) {
+        const supabase = this.getSupabase();
+        const { error } = await supabase
+            .from('bookings')
+            .delete()
+            .eq('id', bookingId);
+        if (error) {
+            throw new Error(`Error cancelling booking: ${error.message}`);
+        }
     }
 }
 exports.BookingService = BookingService;

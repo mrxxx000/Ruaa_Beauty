@@ -25,6 +25,7 @@ interface ReviewCardProps {
   currentUserId?: number;
   onReply?: (reviewId: number, reply: string) => Promise<void>;
   onDelete?: (reviewId: number) => Promise<void>;
+  onDeleteReply?: (reviewId: number, replyId: number) => Promise<void>;
 }
 
 export default function ReviewCard({
@@ -37,11 +38,14 @@ export default function ReviewCard({
   currentUserId,
   onReply,
   onDelete,
+  onDeleteReply,
 }: ReviewCardProps) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [reply, setReply] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [visibleReplies, setVisibleReplies] = useState(3);
+  const [deletingReplyId, setDeletingReplyId] = useState<number | null>(null);
 
   const isAuthor = currentUserId === users.id;
   const formattedDate = new Date(created_at).toLocaleDateString('en-US', {
@@ -85,6 +89,21 @@ export default function ReviewCard({
     }
   };
 
+  const handleDeleteReply = async (replyId: number) => {
+    if (window.confirm('Are you sure you want to delete this reply?')) {
+      try {
+        setDeletingReplyId(replyId);
+        if (onDeleteReply) {
+          await onDeleteReply(id, replyId);
+        }
+      } catch (err) {
+        console.error('Failed to delete reply:', err);
+      } finally {
+        setDeletingReplyId(null);
+      }
+    }
+  };
+
   return (
     <div className="review-card">
       {/* Header */}
@@ -124,22 +143,42 @@ export default function ReviewCard({
         <div className="replies-section">
           <h4 className="replies-title">💬 Replies ({replies.length})</h4>
           <div className="replies-list">
-            {replies.map((r) => (
+            {replies.slice(0, visibleReplies).map((r) => (
               <div key={r.id} className="reply">
                 <div className="reply-header">
-                  <strong>{r.users.name}</strong>
-                  <span className="reply-date">
-                    {new Date(r.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                  </span>
+                  <div className="reply-info">
+                    <strong>{r.users.name}</strong>
+                    <span className="reply-date">
+                      {new Date(r.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                  {currentUserId === r.user_id && onDeleteReply && (
+                    <button
+                      className="delete-reply-btn"
+                      onClick={() => handleDeleteReply(r.id)}
+                      disabled={deletingReplyId === r.id}
+                      title="Delete reply"
+                    >
+                      {deletingReplyId === r.id ? '⏳' : '🗑️'}
+                    </button>
+                  )}
                 </div>
                 <p className="reply-text">{r.reply}</p>
               </div>
             ))}
           </div>
+          {visibleReplies < replies.length && (
+            <button
+              className="load-more-btn"
+              onClick={() => setVisibleReplies(visibleReplies + 3)}
+            >
+              Load More ({replies.length - visibleReplies} remaining)
+            </button>
+          )}
         </div>
       )}
 

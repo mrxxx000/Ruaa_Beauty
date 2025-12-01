@@ -7,7 +7,7 @@ import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import ReviewCard from '../components/ReviewCard';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AuthModal from '../components/AuthModal';
-import { getAllReviews, deleteReview, submitReview } from '../reviewApi';
+import { getAllReviews, deleteReview, submitReview, addReplyToReview, getReviewWithReplies, deleteReply } from '../reviewApi';
 import '../styles/reviews.css';
 
 interface Review {
@@ -21,6 +21,17 @@ interface Review {
     email: string;
   };
   replies?: Array<{
+    id: number;
+    user_id: number;
+    reply: string;
+    created_at: string;
+    users: {
+      id: number;
+      name: string;
+      email: string;
+    };
+  }>;
+  review_replies?: Array<{
     id: number;
     user_id: number;
     reply: string;
@@ -76,7 +87,14 @@ const Reviews: React.FC = () => {
       setLoading(true);
       setError('');
       const data = await getAllReviews(100, 0);
-      setReviews(data.reviews || []);
+      
+      // Map review_replies to replies field for ReviewCard compatibility
+      const reviewsWithReplies = (data.reviews || []).map((review: Review) => ({
+        ...review,
+        replies: review.review_replies || review.replies || []
+      }));
+      
+      setReviews(reviewsWithReplies);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load reviews');
     } finally {
@@ -115,6 +133,52 @@ const Reviews: React.FC = () => {
       setReviews(reviews.filter((r) => r.id !== reviewId));
     } catch (err) {
       console.error('Failed to delete review:', err);
+    }
+  };
+
+  const handleReply = async (reviewId: number, reply: string) => {
+    try {
+      await addReplyToReview(reviewId, reply);
+      // Fetch the updated review with its replies
+      const updatedReview = await getReviewWithReplies(reviewId);
+      // Update the reviews list with the new replies (map review_replies to replies)
+      setReviews((prevReviews) =>
+        prevReviews.map((r) =>
+          r.id === reviewId
+            ? {
+                ...r,
+                review_replies: updatedReview.review_replies || [],
+                replies: updatedReview.review_replies || [],
+              }
+            : r
+        )
+      );
+    } catch (err) {
+      console.error('Failed to add reply:', err);
+      throw err;
+    }
+  };
+
+  const handleDeleteReply = async (reviewId: number, replyId: number) => {
+    try {
+      await deleteReply(reviewId, replyId);
+      // Fetch the updated review with its replies
+      const updatedReview = await getReviewWithReplies(reviewId);
+      // Update the reviews list with the updated replies
+      setReviews((prevReviews) =>
+        prevReviews.map((r) =>
+          r.id === reviewId
+            ? {
+                ...r,
+                review_replies: updatedReview.review_replies || [],
+                replies: updatedReview.review_replies || [],
+              }
+            : r
+        )
+      );
+    } catch (err) {
+      console.error('Failed to delete reply:', err);
+      throw err;
     }
   };
 
@@ -262,6 +326,8 @@ const Reviews: React.FC = () => {
               replies={review.replies}
               currentUserId={currentUserId}
               onDelete={handleDeleteReview}
+              onReply={handleReply}
+              onDeleteReply={handleDeleteReply}
             />
           ))}
         </div>

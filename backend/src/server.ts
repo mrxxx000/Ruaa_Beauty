@@ -54,7 +54,26 @@ app.use('/api', reviewRoutes);
 // Use admin routes
 app.use('/api/admin', adminRoutes);
 
-app.listen(port, () => {
+// Error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('❌ Error:', err);
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal server error',
+  });
+});
+
+const server = app.listen(port, () => {
   // eslint-disable-next-line no-console
   console.log(`Server listening on http://localhost:${port}`);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
 });

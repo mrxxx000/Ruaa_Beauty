@@ -99,7 +99,14 @@ export class ReviewService {
           rating,
           comment,
           created_at,
-          users:user_id (id, name, email)
+          users:user_id (id, name, email),
+          review_replies (
+            id,
+            user_id,
+            reply,
+            created_at,
+            users:user_id (id, name, email)
+          )
         `,
           { count: 'exact' }
         )
@@ -358,6 +365,50 @@ export class ReviewService {
       return { message: 'Review deleted successfully' };
     } catch (err) {
       console.error('❌ Error deleting review:', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Delete a reply (only by the reply author)
+   */
+  async deleteReply(reviewId: number, replyId: number, userId: number) {
+    console.log(`🗑️  Deleting reply ${replyId} from review ${reviewId}`);
+
+    try {
+      const supabase = this.getSupabase();
+
+      // Verify the reply exists and ownership
+      const { data: reply, error: fetchError } = await supabase
+        .from('review_replies')
+        .select('user_id')
+        .eq('id', replyId)
+        .eq('review_id', reviewId)
+        .single();
+
+      if (fetchError || !reply) {
+        throw new Error('Reply not found');
+      }
+
+      if (reply.user_id !== userId) {
+        throw new Error('Not authorized to delete this reply');
+      }
+
+      // Delete reply
+      const { error } = await supabase
+        .from('review_replies')
+        .delete()
+        .eq('id', replyId);
+
+      if (error) {
+        console.error('❌ Failed to delete reply:', error);
+        throw error;
+      }
+
+      console.log(`✅ Reply ${replyId} deleted`);
+      return { message: 'Reply deleted successfully' };
+    } catch (err) {
+      console.error('❌ Error deleting reply:', err);
       throw err;
     }
   }

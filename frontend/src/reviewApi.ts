@@ -126,6 +126,29 @@ export async function addReplyToReview(reviewId: number, reply: string) {
   return data.reply;
 }
 
+// Delete reply to review
+export async function deleteReply(reviewId: number, replyId: number) {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error('You must be logged in to delete a reply');
+  }
+
+  const response = await fetch(`${API_URL}/reviews/${reviewId}/reply/${replyId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to delete reply');
+  }
+
+  return data;
+}
+
 // Update review
 export async function updateReview(
   reviewId: number,

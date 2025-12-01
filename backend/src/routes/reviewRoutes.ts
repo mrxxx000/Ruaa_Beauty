@@ -154,13 +154,46 @@ router.post('/reviews/:reviewId/reply', verifyToken, async (req, res) => {
   }
 });
 
+// DELETE /api/reviews/:reviewId/reply/:replyId - Delete reply (requires authentication, only author)
+router.delete('/reviews/:reviewId/reply/:replyId', verifyToken, async (req, res) => {
+  const userId = (req as any).userId;
+  const { reviewId, replyId } = req.params;
+
+  if (!reviewId || !replyId) {
+    return res.status(400).json({ message: 'Review ID and Reply ID are required' });
+  }
+
+  try {
+    await reviewService.deleteReply(parseInt(reviewId), parseInt(replyId), userId);
+    res.status(200).json({
+      message: 'Reply deleted successfully',
+    });
+  } catch (err) {
+    console.error('Error deleting reply:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+
+    if (errorMessage.includes('Not authorized')) {
+      return res.status(403).json({ message: errorMessage });
+    }
+
+    if (errorMessage.includes('not found')) {
+      return res.status(404).json({ message: 'Reply not found' });
+    }
+
+    res.status(400).json({
+      message: 'Error deleting reply',
+      details: errorMessage,
+    });
+  }
+});
+
 // PUT /api/reviews/:reviewId - Update review (requires authentication, only author)
 router.put('/reviews/:reviewId', verifyToken, async (req, res) => {
   const userId = (req as any).userId;
-  const { reviewId } = req.params;
-  const { rating, comment } = req.body;
+  const { reviewId } = req.params as { reviewId?: string };
+  const { rating, comment } = req.body as { rating?: number; comment?: string };
 
-  if (!rating || !comment) {
+  if (!reviewId || !rating || !comment) {
     return res.status(400).json({ message: 'Rating and comment are required' });
   }
 

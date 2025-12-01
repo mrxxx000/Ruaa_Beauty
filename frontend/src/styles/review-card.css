@@ -114,6 +114,24 @@
   gap: 0.75rem;
 }
 
+.load-more-btn {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  margin-top: 0.75rem;
+}
+
+.load-more-btn:hover {
+  background: #f5f5ff;
+  transform: translateY(-1px);
+}
+
 .reply {
   background: white;
   border-left: 3px solid #667eea;
@@ -129,6 +147,12 @@
   font-size: 0.9rem;
 }
 
+.reply-info {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
 .reply-header strong {
   color: #2d1b3d;
 }
@@ -136,6 +160,25 @@
 .reply-date {
   color: #999;
   font-size: 0.8rem;
+}
+
+.delete-reply-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.delete-reply-btn:hover:not(:disabled) {
+  opacity: 1;
+}
+
+.delete-reply-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .reply-text {
