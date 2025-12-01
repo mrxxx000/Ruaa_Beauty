@@ -202,4 +202,149 @@ export class EmailService {
       });
     }
   }
+
+  async sendPasswordResetEmail(userEmail: string, resetToken: string) {
+    if (!this.apiKey) {
+      console.warn('⚠️ Brevo API key not configured');
+      return;
+    }
+
+    try {
+      const logData = {
+        timestamp: new Date().toISOString(),
+        action: 'sending_password_reset_email',
+        to: userEmail,
+        tokenPreview: resetToken.substring(0, 10),
+      };
+      console.log('📧 PASSWORD RESET EMAIL:', JSON.stringify(logData));
+
+      const resetLink = `${this.siteUrl}/reset-password?token=${resetToken}`;
+      
+      const apiInstance = this.getApiInstance();
+
+      // Create email object with proper Brevo SDK structure
+      const sendSmtpEmail = new brevo.SendSmtpEmail();
+      sendSmtpEmail.sender = { 
+        email: this.fromEmail, 
+        name: 'Ruaa Beauty' 
+      };
+      sendSmtpEmail.to = [{ 
+        email: userEmail,
+        name: 'User'
+      }];
+      sendSmtpEmail.subject = '🔐 Password Reset Request - Ruaa Beauty';
+      sendSmtpEmail.htmlContent = `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+          <div style="background-color: #ff6fa3; padding: 20px; text-align: center; border-radius: 5px 5px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">Ruaa Beauty</h1>
+          </div>
+          
+          <div style="background-color: #f9f9f9; padding: 30px; border-radius: 0 0 5px 5px;">
+            <h2 style="color: #ff6fa3; margin-top: 0;">Password Reset Request</h2>
+            <p style="font-size: 16px; line-height: 1.5;">Hi there,</p>
+            <p style="font-size: 16px; line-height: 1.5;">We received a request to reset your password. Click the button below to set a new password:</p>
+            
+            <div style="margin: 30px 0; text-align: center;">
+              <a href="${resetLink}" style="
+                background-color: #ff6fa3;
+                color: white;
+                padding: 12px 30px;
+                text-decoration: none;
+                border-radius: 5px;
+                display: inline-block;
+                font-weight: bold;
+                font-size: 16px;
+              ">🔐 Reset Password</a>
+            </div>
+            
+            <p style="font-size: 14px; color: #666;">
+              <strong>Or copy this link if the button doesn't work:</strong><br/>
+              <span style="word-break: break-all; background: #f0f0f0; padding: 10px; display: block; margin-top: 5px; border-radius: 3px;">${resetLink}</span>
+            </p>
+            
+            <hr style="border: none; border-top: 2px solid #f0f0f0; margin: 30px 0;">
+            
+            <div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ff6fa3; border-radius: 3px; margin: 20px 0;">
+              <p style="margin: 0; font-size: 14px; color: #333;">
+                <strong>⏰ This link expires in 1 hour</strong>
+              </p>
+            </div>
+            
+            <p style="font-size: 14px; color: #666;">
+              If you did not request a password reset, you can safely ignore this email.
+            </p>
+            
+            <hr style="border: none; border-top: 2px solid #f0f0f0; margin: 30px 0;">
+            <p style="font-size: 12px; color: #999; text-align: center; margin: 0;">
+              © 2025 Ruaa Beauty - Your beauty, our passion
+            </p>
+          </div>
+        </div>
+      `;
+
+      const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
+      console.log('✅ PASSWORD RESET EMAIL SENT:', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        to: userEmail,
+        messageId: (response?.body as any)?.messageId,
+        status: 'sent'
+      }));
+      return response;
+    } catch (emailErr: any) {
+      console.error('❌ PASSWORD RESET EMAIL FAILED:', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        to: userEmail,
+        error: emailErr.message,
+        statusCode: emailErr.statusCode,
+      }));
+      throw new Error(`Email sending failed: ${emailErr.message || emailErr.toString()}`);
+    }
+  }
+
+  async sendPasswordChangedConfirmation(userEmail: string, userName: string) {
+    if (!this.apiKey) {
+      console.warn('⚠️ Brevo API key not configured');
+      return;
+    }
+
+    try {
+      console.log(`📧 Sending password change confirmation to: ${userEmail}`);
+
+      const apiInstance = this.getApiInstance();
+
+      const emailObj = new brevo.SendSmtpEmail();
+      emailObj.sender = { email: this.fromEmail, name: 'Ruaa Beauty' };
+      emailObj.to = [{ email: userEmail }];
+      emailObj.subject = '✅ Password Changed Successfully - Ruaa Beauty';
+      emailObj.htmlContent = `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+          <h2 style="color: #ff6fa3;">Password Changed</h2>
+          <p>Hi ${userName},</p>
+          <p>Your password has been successfully changed.</p>
+          
+          <div style="background: #f0f7ff; padding: 15px; border-left: 4px solid #ff6fa3; margin: 20px 0; border-radius: 3px;">
+            <p style="margin: 0;"><strong>ℹ️ For your security:</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>If you did not make this change, please contact us immediately</li>
+              <li>Never share your password with anyone</li>
+              <li>Make sure your password is strong and unique</li>
+            </ul>
+          </div>
+          
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          <p>If you have any questions or concerns, please don't hesitate to contact our support team.</p>
+          <p>© Ruaa Beauty - Your beauty, our passion</p>
+        </div>
+      `;
+
+      await apiInstance.sendTransacEmail(emailObj);
+      console.log('✅ Password change confirmation email sent');
+    } catch (emailErr: any) {
+      console.error('❌ Password change confirmation email sending failed:', {
+        message: emailErr.message,
+        body: emailErr.response?.body,
+      });
+      throw emailErr;
+    }
+  }
 }

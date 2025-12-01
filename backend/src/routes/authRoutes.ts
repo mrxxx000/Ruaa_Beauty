@@ -1,9 +1,11 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { AuthService } from '../services/AuthService';
+import { EmailService } from '../services/EmailService';
 
 const router = express.Router();
 const authService = new AuthService();
+const emailService = new EmailService();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const TOKEN_EXPIRY = '7d';
@@ -159,6 +161,104 @@ router.put('/profile', verifyToken, async (req, res) => {
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Error updating profile';
     res.status(500).json({ message: errorMessage });
+  }
+});
+
+// POST /api/auth/change-password - Change password (authenticated)
+router.post('/change-password', verifyToken, async (req, res) => {
+  const userId = (req as any).userId;
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({ message: 'Old password and new password are required' });
+  }
+
+  try {
+    const result = await authService.changePassword(userId, oldPassword, newPassword);
+
+    // Send confirmation email
+    try {
+      await emailService.sendPasswordChangedConfirmation(result.user.email, result.user.name);
+    } catch (emailErr) {
+      console.warn('⚠️ Failed to send confirmation email, but password changed successfully');
+    }
+
+    res.status(200).json({
+      message: 'Password changed successfully',
+      user: result.user,
+    });
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Error changing password';
+    res.status(400).json({ message: errorMessage });
+  }
+});
+
+// POST /api/auth/forgot-password - Request password reset
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  try {
+    const result = await authService.requestPasswordReset(email);
+
+    // If user exists, send reset email
+    if (result.resetToken) {
+      try {
+        console.log(`📧 Attempting to send password reset email to: ${result.email}`);
+        console.log(`🔑 Reset token: ${result.resetToken.substring(0, 10)}...`);
+        await emailService.sendPasswordResetEmail(result.email, result.resetToken);
+        console.log(`✅ Password reset email sent to ${result.email}`);
+      } catch (emailErr: any) {
+        console.error('❌ Failed to send reset email:', emailErr);
+        console.error('📍 Error details:', {
+          message: emailErr.message,
+          statusCode: emailErr.statusCode,
+          response: emailErr.response,
+        });
+        // Don't fail the request - email sending is not critical
+        console.warn('⚠️ Email failed but continuing with response');
+      }
+    }
+
+    // Always return the same message for security
+    res.status(200).json({
+      message: 'If this email exists, a password reset link has been sent to your inbox',
+    });
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Error processing reset request';
+    console.error('❌ Error in forgot-password endpoint:', errorMessage);
+    res.status(500).json({ message: errorMessage });
+  }
+});
+
+// POST /api/auth/reset-password - Reset password with token
+router.post('/reset-password', async (req, res) => {
+  const { resetToken, newPassword } = req.body;
+
+  if (!resetToken || !newPassword) {
+    return res.status(400).json({ message: 'Reset token and new password are required' });
+  }
+
+  try {
+    const result = await authService.resetPassword(resetToken, newPassword);
+
+    // Send confirmation email
+    try {
+      await emailService.sendPasswordChangedConfirmation(result.user.email, result.user.name);
+    } catch (emailErr) {
+      console.warn('⚠️ Failed to send confirmation email, but password reset successfully');
+    }
+
+    res.status(200).json({
+      message: 'Password reset successfully',
+      user: result.user,
+    });
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Error resetting password';
+    res.status(400).json({ message: errorMessage });
   }
 });
 

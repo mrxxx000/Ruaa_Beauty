@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, LogOut, User, Eye, EyeOff, X, Edit2, Check } from 'lucide-react';
+import { LogIn, LogOut, User, Eye, EyeOff, X, Edit2, Check, Lock } from 'lucide-react';
 import '../styles/App.css';
 import { getUserProfile, updateUserProfile } from '../profileApi';
 
@@ -24,6 +24,21 @@ const AuthModal: React.FC = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [changePasswordError, setChangePasswordError] = useState('');
+  const [changePasswordSuccess, setChangePasswordSuccess] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotPasswordError, setForgotPasswordError] = useState('');
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
 
   React.useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -209,6 +224,96 @@ const AuthModal: React.FC = () => {
     setIsEditingProfile(false);
     setProfileError('');
     setProfileSuccess('');
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setChangePasswordError('');
+    setChangePasswordSuccess('');
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setChangePasswordError('All password fields are required');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setChangePasswordError('New password must be at least 8 characters');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setChangePasswordError('New passwords do not match');
+      return;
+    }
+
+    if (oldPassword === newPassword) {
+      setChangePasswordError('New password must be different from old password');
+      return;
+    }
+
+    setChangingPassword(true);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+
+      const response = await fetch(`${backendUrl}/api/auth/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ oldPassword, newPassword }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setChangePasswordError(data.message || 'Failed to change password');
+        return;
+      }
+
+      setChangePasswordSuccess('Password changed successfully!');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => setShowChangePassword(false), 2000);
+    } catch (err) {
+      setChangePasswordError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotPasswordError('');
+    setForgotPasswordSuccess(false);
+
+    if (!forgotEmail) {
+      setForgotPasswordError('Email is required');
+      return;
+    }
+
+    setSendingReset(true);
+
+    try {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+
+      const response = await fetch(`${backendUrl}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+
+      const data = await response.json();
+      setForgotPasswordSuccess(true);
+      setForgotEmail('');
+    } catch (err) {
+      setForgotPasswordError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setSendingReset(false);
+    }
   };
 
   return (
@@ -443,6 +548,28 @@ const AuthModal: React.FC = () => {
                   >
                     {loading ? 'Processing...' : isLogin ? 'Login' : 'Register'}
                   </button>
+
+                  {isLogin && (
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotPassword(true)}
+                      style={{
+                        width: '100%',
+                        marginTop: '12px',
+                        padding: '10px',
+                        backgroundColor: 'transparent',
+                        color: '#ff6fa3',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                      }}
+                    >
+                      🔐 Forgot password?
+                    </button>
+                  )}
                 </form>
 
                 <p style={{ textAlign: 'center', marginTop: '16px', color: '#666' }}>
@@ -799,6 +926,29 @@ const AuthModal: React.FC = () => {
               </a>
             </div>
 
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem', fontWeight: '600' }}>Security</h3>
+              <button
+                onClick={() => setShowChangePassword(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 24px',
+                  backgroundColor: '#ff6fa3',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                }}
+              >
+                <Lock className="w-4 h-4" />
+                 Change Password
+              </button>
+            </div>
+
             <button
               onClick={() => setShowProfileModal(false)}
               style={{
@@ -815,6 +965,368 @@ const AuthModal: React.FC = () => {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1003,
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '32px',
+            maxWidth: '450px',
+            width: '90%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ color: '#333', margin: 0, fontSize: '1.3rem' }}>🔐 Change Password</h2>
+              <button
+                onClick={() => setShowChangePassword(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#999',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {changePasswordSuccess ? (
+              <div style={{
+                backgroundColor: '#d4edda',
+                color: '#155724',
+                padding: '12px',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                textAlign: 'center',
+              }}>
+                ✅ {changePasswordSuccess}
+              </div>
+            ) : (
+              <form onSubmit={handleChangePassword}>
+                {changePasswordError && (
+                  <div style={{
+                    backgroundColor: '#f8d7da',
+                    color: '#c33',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                  }}>
+                    ❌ {changePasswordError}
+                  </div>
+                )}
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
+                    Current Password
+                  </label>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type={showOldPassword ? 'text' : 'password'}
+                      value={oldPassword}
+                      onChange={(e) => setOldPassword(e.target.value)}
+                      placeholder="Enter current password"
+                      style={{
+                        width: '100%',
+                        padding: '10px 40px 10px 10px',
+                        border: '2px solid #ddd',
+                        borderRadius: '8px',
+                        fontSize: '1rem',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowOldPassword(!showOldPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '0',
+                        color: '#6b6b6b',
+                      }}
+                    >
+                      {showOldPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
+                    New Password
+                  </label>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password (min. 8 characters)"
+                      style={{
+                        width: '100%',
+                        padding: '10px 40px 10px 10px',
+                        border: '2px solid #ddd',
+                        borderRadius: '8px',
+                        fontSize: '1rem',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '0',
+                        color: '#6b6b6b',
+                      }}
+                    >
+                      {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  {newPassword && (
+                    <p style={{
+                      marginTop: '6px',
+                      fontSize: '0.75rem',
+                      color: newPassword.length >= 8 ? '#4caf50' : '#ff9800',
+                    }}>
+                      {newPassword.length >= 8 ? '✓ Strong password' : `⚠ At least 8 characters (${newPassword.length}/8)`}
+                    </p>
+                  )}
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
+                    Confirm Password
+                  </label>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm new password"
+                      style={{
+                        width: '100%',
+                        padding: '10px 40px 10px 10px',
+                        border: '2px solid #ddd',
+                        borderRadius: '8px',
+                        fontSize: '1rem',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '0',
+                        color: '#6b6b6b',
+                      }}
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                  <button
+                    type="submit"
+                    disabled={changingPassword}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      backgroundColor: '#ff6fa3',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      fontSize: '0.9rem',
+                      cursor: changingPassword ? 'not-allowed' : 'pointer',
+                      opacity: changingPassword ? 0.7 : 1,
+                    }}
+                  >
+                    {changingPassword ? 'Changing...' : 'Change Password'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowChangePassword(false)}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      backgroundColor: '#f0f0f0',
+                      color: '#333',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      fontSize: '0.9rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1003,
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '32px',
+            maxWidth: '450px',
+            width: '90%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ color: '#333', margin: 0, fontSize: '1.3rem' }}>🔐 Forgot Password</h2>
+              <button
+                onClick={() => setShowForgotPassword(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#999',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {forgotPasswordSuccess ? (
+              <div style={{
+                backgroundColor: '#d4edda',
+                color: '#155724',
+                padding: '16px',
+                borderRadius: '8px',
+                textAlign: 'center',
+              }}>
+                <h3 style={{ margin: '0 0 12px 0', color: '#155724' }}>✅ Check Your Email</h3>
+                <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                  We've sent a password reset link to your inbox. The link expires in 1 hour.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword}>
+                {forgotPasswordError && (
+                  <div style={{
+                    backgroundColor: '#f8d7da',
+                    color: '#c33',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                  }}>
+                    ❌ {forgotPasswordError}
+                  </div>
+                )}
+
+                <p style={{ color: '#666', marginBottom: '16px', fontSize: '0.95rem' }}>
+                  Enter your email address and we'll send you a link to reset your password.
+                </p>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '2px solid #ddd',
+                      borderRadius: '8px',
+                      fontSize: '1rem',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    type="submit"
+                    disabled={sendingReset}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      backgroundColor: '#ff6fa3',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      fontSize: '0.9rem',
+                      cursor: sendingReset ? 'not-allowed' : 'pointer',
+                      opacity: sendingReset ? 0.7 : 1,
+                    }}
+                  >
+                    {sendingReset ? 'Sending...' : 'Send Reset Link'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(false)}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      backgroundColor: '#f0f0f0',
+                      color: '#333',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      fontSize: '0.9rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
