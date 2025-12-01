@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import bookingRoutes from './routes/bookingRoutes';
 import authRoutes from './routes/authRoutes';
 import adminRoutes from './routes/adminRoutes';
+import reviewRoutes from './routes/reviewRoutes';
 
 dotenv.config();
 
@@ -46,6 +47,9 @@ app.use('/api/auth', authRoutes);
 
 // Use booking routes
 app.use('/api', bookingRoutes);
+
+// Use review routes
+app.use('/api', reviewRoutes);
 
 // Use admin routes
 app.use('/api/admin', adminRoutes);
