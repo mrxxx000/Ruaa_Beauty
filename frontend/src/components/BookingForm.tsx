@@ -10,6 +10,7 @@ type FormData = {
   services: string[];
   mehendiHours: number; // Hours for Mehendi service
   lashLiftTint: boolean; // Tint add-on for Lash Lift
+  browLiftTint: boolean; // Tint add-on for Brow Lift
   date: string;
   time: string;
   location: string;
@@ -24,6 +25,7 @@ const defaultData: FormData = {
   services: [],
   mehendiHours: 0,
   lashLiftTint: false,
+  browLiftTint: false,
   date: '',
   time: '',
   location: '',
@@ -52,6 +54,7 @@ const BookingForm: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string; phone?: string } | null>(null);
   const [expandedLashLift, setExpandedLashLift] = useState<boolean>(false);
+  const [expandedBrowLift, setExpandedBrowLift] = useState<boolean>(false);
 
   // Check if user is logged in on component mount
   useEffect(() => {
@@ -174,7 +177,7 @@ const BookingForm: React.FC = () => {
   }, []);
 
   // Calculate total price
-  const calculateTotalPrice = (services: string[], mehendiHours: number = 0, lashLiftTint: boolean = false): number => {
+  const calculateTotalPrice = (services: string[], mehendiHours: number = 0, lashLiftTint: boolean = false, browLiftTint: boolean = false): number => {
     let total = services.reduce((sum, service) => {
       if (service === 'mehendi' && mehendiHours > 0) {
         // Mehendi is priced per hour (400 kr/hour)
@@ -188,10 +191,15 @@ const BookingForm: React.FC = () => {
       total += 20;
     }
     
+    // Add tint add-on if brow lift is selected and tint is enabled
+    if (services.includes('brow-lift') && browLiftTint) {
+      total += 20;
+    }
+    
     return total;
   };
 
-  const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours, formData.lashLiftTint);
+  const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours, formData.lashLiftTint, formData.browLiftTint);
 
   // Fetch available times when date or services change
   const fetchAvailableTimes = async (date: string, services: string[], mehendiHours: number = 0) => {
@@ -271,12 +279,13 @@ const BookingForm: React.FC = () => {
         notes: formData.notes,
         mehendiHours: formData.mehendiHours,
         lashLiftTint: formData.lashLiftTint,
+        browLiftTint: formData.browLiftTint,
         totalPrice: totalPrice,
         servicePricing: formData.services.map(s => ({
           name: s,
           price: s === 'mehendi' ? (SERVICES_PRICING[s] * formData.mehendiHours) : (SERVICES_PRICING[s] || 0),
           hours: s === 'mehendi' ? formData.mehendiHours : undefined,
-          tint: s === 'lash-lift' && formData.lashLiftTint ? 20 : undefined
+          tint: s === 'lash-lift' && formData.lashLiftTint ? 20 : s === 'brow-lift' && formData.browLiftTint ? 20 : undefined
         })),
       };
 
@@ -427,7 +436,7 @@ const BookingForm: React.FC = () => {
           <div className="pricing-grid">
             {[
               { icon: '🌸', name: t('bookingForm.serviceLashLift'), price: '300 kr', value: 'lash-lift', description: t('bookingForm.priceLashLift') || 'Natural lift and curl', details: { duration: t('bookingForm.lashLiftDuration'), fullDescription: t('bookingForm.lashLiftDescription'), how: t('bookingForm.lashLiftHow'), result: t('bookingForm.lashLiftResult'), tint: t('bookingForm.lashLiftTint') } },
-              { icon: '✨', name: t('bookingForm.serviceBrowLift'), price: '300 kr', value: 'brow-lift', description: t('bookingForm.priceBrowLift') || 'Perfectly shaped brows' },
+              { icon: '✨', name: t('bookingForm.serviceBrowLift'), price: '300 kr', value: 'brow-lift', description: t('bookingForm.priceBrowLift') || 'Perfectly shaped brows', details: { duration: t('bookingForm.browLiftDuration'), fullDescription: t('bookingForm.browLiftDescription'), how: t('bookingForm.browLiftHow'), result: t('bookingForm.browLiftResult'), tint: t('bookingForm.browLiftTint') } },
               { icon: '💄', name: t('bookingForm.serviceMakeup'), price: '1000 kr', value: 'makeup', description: t('bookingForm.priceMakeup') || 'Professional makeup artistry' },
               { icon: '👰', name: t('bookingForm.serviceBridalMakeup'), price: '4000 kr', value: 'bridal-makeup', description: t('bookingForm.priceBridalMakeup') || 'Your special day, perfected' },
               { icon: '🎨', name: t('bookingForm.serviceMehendi'), price: '400 kr/hr', value: 'mehendi', description: t('bookingForm.priceMehendi') || 'Intricate henna designs' },
@@ -460,10 +469,12 @@ const BookingForm: React.FC = () => {
                     : [...formData.services, service.value];
                   
                   // Reset lashLiftTint if lash-lift is being removed
+                  // Reset browLiftTint if brow-lift is being removed
                   const updatedFormData = { 
                     ...formData, 
                     services: updatedServices,
-                    ...(service.value === 'lash-lift' && isSelected && { lashLiftTint: false })
+                    ...(service.value === 'lash-lift' && isSelected && { lashLiftTint: false }),
+                    ...(service.value === 'brow-lift' && isSelected && { browLiftTint: false })
                   };
                   
                   setFormData(updatedFormData);
@@ -508,7 +519,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>📋 Service Details</span>
+                      <span>Service Details</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedLashLift ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
 
@@ -539,11 +550,11 @@ const BookingForm: React.FC = () => {
                             }
                           }
                         `}</style>
-                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details.duration}</p>
-                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details.fullDescription}</p>
-                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details.how}</p>
-                        <p style={{ margin: '0 0 8px 0' }}><strong>✨</strong> {service.details.result}</p>
-                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>➕ {service.details.tint}</p>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details?.duration}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details?.fullDescription}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details?.how}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✨</strong> {service.details?.result}</p>
+                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>➕ {service.details?.tint}</p>
                       </div>
                     )}
                   </>
@@ -607,6 +618,140 @@ const BookingForm: React.FC = () => {
                         border: '2px solid #ff6fa3',
                         background: formData.lashLiftTint ? '#ff6fa3' : 'white',
                         color: formData.lashLiftTint ? 'white' : '#ff6fa3',
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+
+                {/* Brow Lift Details Section */}
+                {service.value === 'brow-lift' && service.details && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedBrowLift(!expandedBrowLift)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: expandedBrowLift ? '0' : '16px',
+                        fontSize: '0.95rem',
+                        color: '#ff6fa3',
+                        border: '1px solid #ffe0e8',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <span>Service Details</span>
+                      <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedBrowLift ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </button>
+                    {expandedBrowLift && (
+                      <div style={{
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '0 0 8px 8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '0.85rem',
+                        color: '#4b5563',
+                        lineHeight: '1.6',
+                        textAlign: 'left',
+                        border: '1px solid #ffe0e8',
+                        borderTop: 'none',
+                        animation: 'slideDown 0.3s ease'
+                      }}>
+                        <style>{`
+                          @keyframes slideDown {
+                            from {
+                              opacity: 0;
+                              max-height: 0;
+                            }
+                            to {
+                              opacity: 1;
+                              max-height: 500px;
+                            }
+                          }
+                        `}</style>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details?.duration}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details?.fullDescription}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details?.how}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✨</strong> {service.details?.result}</p>
+                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>➕ {service.details?.tint}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Brow Lift Tint Add-on Selector */}
+                {service.value === 'brow-lift' && formData.services.includes('brow-lift') && (
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    backgroundColor: '#fff6f8',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData({ ...formData, browLiftTint: false });
+                      }}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '6px',
+                        border: '2px solid #ff6fa3',
+                        background: formData.browLiftTint ? 'white' : '#ff6fa3',
+                        color: formData.browLiftTint ? '#ff6fa3' : 'white',
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      −
+                    </button>
+                    <div style={{
+                      minWidth: '80px',
+                      textAlign: 'center',
+                      fontSize: '0.95rem',
+                      fontWeight: '600',
+                      color: '#ff6fa3'
+                    }}>
+                      {formData.browLiftTint ? '+20 kr' : 'No Tint'}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData({ ...formData, browLiftTint: true });
+                      }}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '6px',
+                        border: '2px solid #ff6fa3',
+                        background: formData.browLiftTint ? '#ff6fa3' : 'white',
+                        color: formData.browLiftTint ? 'white' : '#ff6fa3',
                         fontSize: '1rem',
                         fontWeight: 'bold',
                         cursor: 'pointer',
@@ -1198,6 +1343,26 @@ const BookingForm: React.FC = () => {
                                   }}
                                 >
                                   <span style={{ color: '#6b7280' }}>  ➕ {t('bookingForm.lashLiftTint') || 'Tint Add-on'}</span>
+                                  <span style={{ fontWeight: '600', color: '#ff6fa3' }}>+20 kr</span>
+                                </div>
+                              )}
+                              
+                              {/* Brow Lift Tint Add-on in Pricing */}
+                              {serviceValue === 'brow-lift' && formData.browLiftTint && (
+                                <div 
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    padding: '6px 0 8px 16px',
+                                    borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
+                                    fontSize: '0.9rem',
+                                    flexWrap: 'wrap',
+                                    gap: '8px',
+                                    fontStyle: 'italic',
+                                    color: '#ff6fa3'
+                                  }}
+                                >
+                                  <span style={{ color: '#6b7280' }}>  ➕ {t('bookingForm.browLiftTint') || 'Tint Add-on'}</span>
                                   <span style={{ fontWeight: '600', color: '#ff6fa3' }}>+20 kr</span>
                                 </div>
                               )}
