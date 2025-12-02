@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Star, MessageCircle, Trash2 } from 'lucide-react';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
-import ReviewCard from '../components/ReviewCard';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AuthModal from '../components/AuthModal';
 import { getAllReviews, deleteReview, addReplyToReview, getReviewWithReplies, deleteReply } from '../reviewApi';
@@ -73,6 +72,9 @@ const Reviews: React.FC = () => {
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<number | undefined>();
+  const [replyingToId, setReplyingToId] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [submittingReply, setSubmittingReply] = useState(false);
 
   // Initialize review updates hook
   useReviewUpdates();
@@ -87,10 +89,8 @@ const Reviews: React.FC = () => {
         const { type, reviewId, replyId } = e.detail;
         
         if (type === 'review_deleted') {
-          // Remove deleted review
           setReviews(prev => prev.filter(r => r.id !== reviewId));
         } else if (type === 'reply_deleted') {
-          // Remove deleted reply from all reviews
           setReviews(prev =>
             prev.map(review => ({
               ...review,
@@ -102,7 +102,6 @@ const Reviews: React.FC = () => {
       }
     };
 
-    // Listen for login events to instantly show review form
     const handleUserLogin = (e: Event) => {
       if (e instanceof CustomEvent) {
         const { user } = e.detail;
@@ -111,7 +110,6 @@ const Reviews: React.FC = () => {
       }
     };
 
-    // Listen for logout events to instantly hide review form
     const handleUserLogout = (e: Event) => {
       setIsAuthenticated(false);
       setCurrentUserId(undefined);
@@ -149,7 +147,6 @@ const Reviews: React.FC = () => {
       setError('');
       const data = await getAllReviews(100, 0);
       
-      // Map review_replies to replies field for ReviewCard compatibility
       const reviewsWithReplies = (data.reviews || []).map((review: Review) => ({
         ...review,
         replies: review.review_replies || review.replies || []
@@ -172,12 +169,13 @@ const Reviews: React.FC = () => {
     }
   };
 
-  const handleReply = async (reviewId: number, reply: string) => {
+  const handleReply = async (reviewId: number) => {
+    if (!replyText.trim()) return;
+
     try {
-      await addReplyToReview(reviewId, reply);
-      // Fetch the updated review with its replies
+      setSubmittingReply(true);
+      await addReplyToReview(reviewId, replyText);
       const updatedReview = await getReviewWithReplies(reviewId);
-      // Update the reviews list with the new replies (map review_replies to replies)
       setReviews((prevReviews) =>
         prevReviews.map((r) =>
           r.id === reviewId
@@ -189,18 +187,19 @@ const Reviews: React.FC = () => {
             : r
         )
       );
+      setReplyingToId(null);
+      setReplyText('');
     } catch (err) {
       console.error('Failed to add reply:', err);
-      throw err;
+    } finally {
+      setSubmittingReply(false);
     }
   };
 
   const handleDeleteReply = async (reviewId: number, replyId: number) => {
     try {
       await deleteReply(reviewId, replyId);
-      // Fetch the updated review with its replies
       const updatedReview = await getReviewWithReplies(reviewId);
-      // Update the reviews list with the updated replies
       setReviews((prevReviews) =>
         prevReviews.map((r) =>
           r.id === reviewId
@@ -214,9 +213,12 @@ const Reviews: React.FC = () => {
       );
     } catch (err) {
       console.error('Failed to delete reply:', err);
-      throw err;
     }
   };
+
+  const averageRating = reviews.length > 0 
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : 0;
 
   return (
     <div className="reviews-page">
@@ -281,36 +283,207 @@ const Reviews: React.FC = () => {
       </div>
 
       <main>
+        {/* Header Section with Stats */}
         <div className="reviews-header">
-          <h1>{t('reviews.title', 'Our Reviews')}</h1>
-          <p>{t('reviews.subtitle', 'See what our clients have to say')}</p>
+          <h1>Client Reviews</h1>
+          <p>Trusted by hundreds of satisfied clients</p>
+          
+          {!loading && reviews.length > 0 && (
+            <div className="reviews-stats">
+              <div className="stat">
+                <div className="stat-rating">{averageRating}</div>
+                <div className="stat-label">Average Rating</div>
+                <div className="stars-sm">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      size={16}
+                      fill={i < Math.round(parseFloat(averageRating as string)) ? '#ff6fa3' : '#ddd'}
+                      color={i < Math.round(parseFloat(averageRating as string)) ? '#ff6fa3' : '#ddd'}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="stat">
+                <div className="stat-number">{reviews.length}</div>
+                <div className="stat-label">Total Reviews</div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {loading && <p className="loading">Loading reviews...</p>}
-        {error && <p className="error">{error}</p>}
-
-        {!loading && reviews.length === 0 && !error && (
-          <p className="no-reviews">No reviews yet. Be the first to leave a review!</p>
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '3rem' }}>
+            <div style={{ color: '#ff6fa3', fontSize: '1.2rem' }}>Loading reviews...</div>
+          </div>
         )}
 
-        <div className="reviews-container">
-          {reviews.map((review) => (
-            <ReviewCard
-              key={review.id}
-              id={review.id}
-              rating={review.rating}
-              comment={review.comment}
-              created_at={review.created_at}
-              service={review.service}
-              user={review.user}
-              users={review.users}
-              replies={review.replies}
-              currentUserId={currentUserId}
-              onDelete={handleDeleteReview}
-              onReply={handleReply}
-              onDeleteReply={handleDeleteReply}
-            />
-          ))}
+        {error && (
+          <div style={{
+            maxWidth: '900px',
+            margin: '0 auto 2rem',
+            padding: '1.5rem',
+            backgroundColor: '#ffebee',
+            color: '#d32f2f',
+            borderRadius: '12px',
+            textAlign: 'center'
+          }}>
+            {error}
+          </div>
+        )}
+
+        {!loading && reviews.length === 0 && !error && (
+          <div style={{
+            textAlign: 'center',
+            padding: '3rem',
+            color: '#999'
+          }}>
+            <p>No reviews yet. Be the first to leave a review!</p>
+          </div>
+        )}
+
+        {/* Reviews List */}
+        <div className="reviews-list">
+          {reviews.map((review) => {
+            const reviewUser = review.user || review.users;
+            const replies = review.replies || review.review_replies || [];
+            
+            return (
+              <div key={review.id} className="review-item">
+                {/* Review Header */}
+                <div className="review-header">
+                  <div className="reviewer-info">
+                    <div className="reviewer-avatar">
+                      {reviewUser?.name?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                    <div>
+                      <div className="reviewer-name">{reviewUser?.name || 'Anonymous'}</div>
+                      <div className="review-date">
+                        {new Date(review.created_at).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
+                      </div>
+                      {review.service && (
+                        <div className="review-service">Service: {review.service}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="review-actions">
+                    <div className="rating-stars">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          size={18}
+                          fill={i < review.rating ? '#ff6fa3' : '#ddd'}
+                          color={i < review.rating ? '#ff6fa3' : '#ddd'}
+                        />
+                      ))}
+                    </div>
+                    {currentUserId === reviewUser?.id && (
+                      <button
+                        onClick={() => handleDeleteReview(review.id)}
+                        className="delete-btn"
+                        title="Delete review"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Review Comment */}
+                <div className="review-comment">{review.comment}</div>
+
+                {/* Replies */}
+                {replies.length > 0 && (
+                  <div className="replies-section">
+                    <div className="replies-label">
+                      <MessageCircle size={16} />
+                      {replies.length} {replies.length === 1 ? 'Reply' : 'Replies'}
+                    </div>
+                    <div className="replies-list">
+                      {replies.map((reply) => {
+                        const replyUser = reply.user || reply.users;
+                        const replyContent = reply.reply_text || reply.reply;
+                        return (
+                          <div key={reply.id} className="reply-item">
+                            <div className="reply-header">
+                              <div className="reply-info">
+                                <strong>{replyUser?.name || 'Admin'}</strong>
+                                <span className="reply-date">
+                                  {new Date(reply.created_at).toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'short', 
+                                    day: 'numeric' 
+                                  })}
+                                </span>
+                              </div>
+                              {currentUserId === reply.user_id && (
+                                <button
+                                  onClick={() => handleDeleteReply(review.id, reply.id)}
+                                  className="delete-reply-btn"
+                                  title="Delete reply"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
+                            </div>
+                            <div className="reply-text">{replyContent}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Reply Form */}
+                {currentUserId && currentUserId !== reviewUser?.id && (
+                  <div className="reply-form-section">
+                    {replyingToId !== review.id ? (
+                      <button
+                        onClick={() => setReplyingToId(review.id)}
+                        className="reply-btn"
+                      >
+                        <MessageCircle size={16} />
+                        Reply
+                      </button>
+                    ) : (
+                      <div className="reply-form">
+                        <textarea
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder="Write your reply..."
+                          rows={3}
+                          disabled={submittingReply}
+                        />
+                        <div className="reply-form-actions">
+                          <button
+                            onClick={() => {
+                              setReplyingToId(null);
+                              setReplyText('');
+                            }}
+                            disabled={submittingReply}
+                            className="cancel-btn"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleReply(review.id)}
+                            disabled={submittingReply || !replyText.trim()}
+                            className="submit-btn"
+                          >
+                            {submittingReply ? 'Sending...' : 'Send Reply'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </main>
 
