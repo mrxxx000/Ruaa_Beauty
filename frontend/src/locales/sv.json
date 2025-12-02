@@ -140,7 +140,10 @@
     "submitting": "Skickar...",
     "successTitle": "Bokningsförfrågan Mottagen! ✨",
     "successMessage": "Vi kontaktar dig inom kort för att bekräfta din tid och svara på eventuella frågor.",
-    "footerNote": "💖 Vi återkommer inom 24 timmar med en bekräftelse."
+    "footerNote": "💖 Vi återkommer inom 24 timmar med en bekräftelse.",
+    "serviceDetails": "Tjänstdetaljer",
+    "supportMessageTitle": "Hittar du ingen tid som passar dig?",
+    "supportMessageContent": "Tveka inte att kontakta oss. Vi gör vårt bästa för att justera schemat och hitta en tid som passar dig — din komfort och din glädje är vår högsta prioritet."
   },
 
   "mehendi": {
@@ -178,9 +181,77 @@
   },
 
   "reviews": {
-    "title": "Våra Recensioner",
-    "subtitle": "Se vad våra klienter säger",
+    "title": "Kundrecensioner",
+    "subtitle": "Se vad våra kunder säger",
+    "totalReviews": "Totala recensioner",
+    "averageRating": "Genomsnittligt betyg",
+    "loadingMessage": "Laddar recensioner...",
     "signInMessage": "👤 Logga in för att dela din upplevelse och lämna en recension"
+  },
+  "auth": {
+    "logout": "Logga ut",
+    "greeting": "Hej"
+  },
+  "profile": {
+    "title": "Min profil",
+    "userDetails": "Användaruppgifter",
+    "edit": "Redigera",
+    "fullName": "Fullständigt namn",
+    "email": "E-post",
+    "phoneNumber": "Telefonnummer",
+    "myBookings": "Mina bokningar",
+    "viewMyBookings": "Visa mina bokningar",
+    "security": "Säkerhet",
+    "changePassword": "Byt lösenord",
+    "close": "Stäng"
+  },
+  "myBookings": {
+    "title": "Mina bokningar",
+    "loading": "Laddar dina bokningar",
+    "all": "Alla",
+    "pending": "Pågående",
+    "done": "Utfört",
+    "cancelled": "Avbrutet",
+    "newBooking": "Ny bokning",
+    "reviewed": "Recenserad",
+    "contactDetails": "Kontaktuppgifter",
+    "name": "Namn:",
+    "email": "E-post:",
+    "phone": "Telefon:",
+    "total": "Totalt:",
+    "writeReview": "Skriv recension",
+    "shareExperience": "Dela din upplevelse",
+    "rating": "Betyg",
+    "yourReview": "Din recension",
+    "reviewPlaceholder": "Berätta om din upplevelse...",
+    "cancel": "Avbryt",
+    "submitReview": "Skicka recension",
+    "reviewSuccess": "Recension skickad!"
+  },
+  "date": {
+    "days": {
+      "sunday": "Söndag",
+      "monday": "Måndag",
+      "tuesday": "Tisdag",
+      "wednesday": "Onsdag",
+      "thursday": "Torsdag",
+      "friday": "Fredag",
+      "saturday": "Lördag"
+    },
+    "months": {
+      "january": "Januari",
+      "february": "Februari",
+      "march": "Mars",
+      "april": "April",
+      "may": "Maj",
+      "june": "Juni",
+      "july": "Juli",
+      "august": "Augusti",
+      "september": "September",
+      "october": "Oktober",
+      "november": "November",
+      "december": "December"
+    }
   },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. Alla rättigheter förbehållna."

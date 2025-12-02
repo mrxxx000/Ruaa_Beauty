@@ -46,7 +46,7 @@ const SERVICES_PRICING: { [key: string]: number } = {
 };
 
 const BookingForm: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>(defaultData);
   const [submitted, setSubmitted] = useState(false);
@@ -302,7 +302,7 @@ const BookingForm: React.FC = () => {
     try {
       // Determine the address based on location choice
       const address = formData.location === 'studio' 
-        ? 'Serenagatan 123, Malmö 21000'
+        ? 'Odengatan 56274 31 Skurup'
         : formData.customAddress;
 
       // Prepare booking data - only send fields the API expects
@@ -402,8 +402,8 @@ const BookingForm: React.FC = () => {
   return (
     <section
       id="booking"
-      className="min-h-screen py-16 px-4 relative overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, #fff6f8 0%, #fff1f3 100%)' }}
+      className="min-h-screen py-16 px-4 relative"
+      style={{ background: 'linear-gradient(180deg, #fff6f8 0%, #fff1f3 100%)', overflow: 'visible' }}
     >
       {/* Decorative background elements (purely decorative, class names assume CSS/tailwind exists) */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-primary opacity-10 rounded-full blur-3xl animate-float" />
@@ -448,6 +448,9 @@ const BookingForm: React.FC = () => {
               display: grid;
               gap: 20px;
               margin-bottom: 32px;
+              width: 100%;
+              box-sizing: border-box;
+              max-width: 100%;
             }
             
             /* Desktop: 3-4 cards per row */
@@ -457,14 +460,31 @@ const BookingForm: React.FC = () => {
               }
             }
             
-            /* Mobile: 2 cards per row with smaller sizing */
-            @media (max-width: 768px) {
+            /* Tablet: 2 cards per row */
+            @media (min-width: 641px) and (max-width: 768px) {
               .pricing-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 12px;
+                width: 100%;
+              }
+            }
+            
+            /* Mobile: 2 cards per row with smaller sizing */
+            @media (max-width: 640px) {
+              .pricing-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                width: 100%;
+                max-width: 100%;
               }
               .service-card {
                 padding: 16px !important;
+                box-sizing: border-box !important;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                width: 100%;
+                max-width: 100%;
+                overflow: hidden;
               }
               .service-card-icon {
                 font-size: 2rem !important;
@@ -562,7 +582,10 @@ const BookingForm: React.FC = () => {
                     {/* Header with Toggle Button */}
                     <button
                       type="button"
-                      onClick={() => setExpandedLashLift(!expandedLashLift)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedLashLift(!expandedLashLift);
+                      }}
                       style={{
                         width: '100%',
                         backgroundColor: '#fff6f8',
@@ -580,7 +603,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>Service Details</span>
+                      <span>{t('bookingForm.serviceDetails')}</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedLashLift ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
 
@@ -698,7 +721,10 @@ const BookingForm: React.FC = () => {
                   <>
                     <button
                       type="button"
-                      onClick={() => setExpandedBrowLift(!expandedBrowLift)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedBrowLift(!expandedBrowLift);
+                      }}
                       style={{
                         width: '100%',
                         backgroundColor: '#fff6f8',
@@ -716,7 +742,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>Service Details</span>
+                      <span>{t('bookingForm.serviceDetails')}</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedBrowLift ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
                     {expandedBrowLift && (
@@ -832,7 +858,10 @@ const BookingForm: React.FC = () => {
                   <>
                     <button
                       type="button"
-                      onClick={() => setExpandedCombinedLashBrow(!expandedCombinedLashBrow)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedCombinedLashBrow(!expandedCombinedLashBrow);
+                      }}
                       style={{
                         width: '100%',
                         backgroundColor: '#fff6f8',
@@ -850,7 +879,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>Service Details</span>
+                      <span>{t('bookingForm.serviceDetails')}</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedCombinedLashBrow ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
 
@@ -895,7 +924,10 @@ const BookingForm: React.FC = () => {
                   <>
                     <button
                       type="button"
-                      onClick={() => setExpandedEventMakeup(!expandedEventMakeup)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedEventMakeup(!expandedEventMakeup);
+                      }}
                       style={{
                         width: '100%',
                         backgroundColor: '#fff6f8',
@@ -913,7 +945,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>Service Details</span>
+                      <span>{t('bookingForm.serviceDetails')}</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedEventMakeup ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
 
@@ -958,7 +990,10 @@ const BookingForm: React.FC = () => {
                   <>
                     <button
                       type="button"
-                      onClick={() => setExpandedBridalMakeup(!expandedBridalMakeup)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedBridalMakeup(!expandedBridalMakeup);
+                      }}
                       style={{
                         width: '100%',
                         backgroundColor: '#fff6f8',
@@ -976,7 +1011,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>Service Details</span>
+                      <span>{t('bookingForm.serviceDetails')}</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedBridalMakeup ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
 
@@ -1022,7 +1057,10 @@ const BookingForm: React.FC = () => {
                   <>
                     <button
                       type="button"
-                      onClick={() => setExpandedThreading(!expandedThreading)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedThreading(!expandedThreading);
+                      }}
                       style={{
                         width: '100%',
                         backgroundColor: '#fff6f8',
@@ -1040,7 +1078,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>Service Details</span>
+                      <span>{t('bookingForm.serviceDetails')}</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedThreading ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
 
@@ -1163,19 +1201,28 @@ const BookingForm: React.FC = () => {
                     borderRadius: '8px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '12px'
+                    gap: '12px',
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    maxWidth: '100%',
+                    overflow: 'hidden'
                   }}>
                     <div style={{
                       fontSize: '0.9rem',
                       fontWeight: '600',
-                      color: '#ff6fa3'
+                      color: '#ff6fa3',
+                      width: '100%',
+                      boxSizing: 'border-box'
                     }}>
                       {t('bookingForm.threadingAreas') || 'Select threading areas (3+ auto-selects full face):'}
                     </div>
                     <div style={{
                       display: 'grid',
                       gridTemplateColumns: '1fr 1fr',
-                      gap: '8px'
+                      gap: '8px',
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      maxWidth: '100%'
                     }}>
                       {[
                         { id: 'eyebrows', label: t('bookingForm.threadingEyebrows') || 'Eyebrows - 120 kr' },
@@ -1229,7 +1276,12 @@ const BookingForm: React.FC = () => {
                               cursor: isDisabled ? 'not-allowed' : 'pointer',
                               transition: 'all 0.2s',
                               textAlign: 'center',
-                              opacity: isDisabled ? 0.5 : 1
+                              opacity: isDisabled ? 0.5 : 1,
+                              width: '100%',
+                              boxSizing: 'border-box',
+                              wordWrap: 'break-word',
+                              overflowWrap: 'break-word',
+                              wordBreak: 'break-word'
                             }}
                             onMouseEnter={(e) => {
                               if (!isSelected && !isDisabled) {
@@ -1689,6 +1741,196 @@ const BookingForm: React.FC = () => {
                           </button>
                         </div>
                       )}
+
+                      {/* Brow Lift Tint Add-on Selector */}
+                      {service.value === 'brow-lift' && formData.services.includes('brow-lift') && (
+                        <div style={{
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: '#fff6f8',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
+                        }}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setFormData({ ...formData, browLiftTint: false });
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '2px solid #ff6fa3',
+                              background: formData.browLiftTint ? 'white' : '#ff6fa3',
+                              color: formData.browLiftTint ? '#ff6fa3' : 'white',
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            −
+                          </button>
+                          <div style={{
+                            minWidth: '80px',
+                            textAlign: 'center',
+                            fontSize: '0.95rem',
+                            fontWeight: '600',
+                            color: '#ff6fa3'
+                          }}>
+                            {formData.browLiftTint ? '+20 kr' : 'No Tint'}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setFormData({ ...formData, browLiftTint: true });
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '2px solid #ff6fa3',
+                              background: formData.browLiftTint ? '#ff6fa3' : 'white',
+                              color: formData.browLiftTint ? 'white' : '#ff6fa3',
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Area selector for Threading in checkbox */}
+                      {service.value === 'threading' && formData.services.includes('threading') && (
+                        <div style={{
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: '#fff6f8',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px',
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          maxWidth: '100%',
+                          overflow: 'hidden'
+                        }}>
+                          <div style={{
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            color: '#ff6fa3',
+                            width: '100%',
+                            boxSizing: 'border-box'
+                          }}>
+                            {t('bookingForm.threadingAreas') || 'Select areas:'}
+                          </div>
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '6px',
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            maxWidth: '100%'
+                          }}>
+                            {[
+                              { id: 'eyebrows', label: t('bookingForm.threadingEyebrows') || 'Eyebrows - 120 kr' },
+                              { id: 'upper-lip', label: t('bookingForm.threadingUpperLip') || 'Upper Lip - 80 kr' },
+                              { id: 'chin', label: t('bookingForm.threadingChin') || 'Chin - 80 kr' },
+                              { id: 'full-face', label: t('bookingForm.threadingFullFace') || 'Full Face - 250 kr' }
+                            ].map((option) => {
+                              const isSelected = formData.threadingAreas.includes(option.id);
+                              const hasFullFace = formData.threadingAreas.includes('full-face');
+                              const isIndividualArea = option.id !== 'full-face';
+                              const isDisabled = (isIndividualArea && hasFullFace) || (!isIndividualArea && formData.threadingAreas.length > 0 && !hasFullFace);
+                              
+                              return (
+                                <button
+                                  key={option.id}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    if (isDisabled) return;
+                                    
+                                    let updatedAreas: string[] = [];
+                                    
+                                    if (option.id === 'full-face') {
+                                      updatedAreas = isSelected ? [] : ['full-face'];
+                                    } else if (isSelected) {
+                                      updatedAreas = formData.threadingAreas.filter(a => a !== option.id);
+                                    } else {
+                                      updatedAreas = [...formData.threadingAreas, option.id];
+                                      if (updatedAreas.length >= 3) {
+                                        updatedAreas = ['full-face'];
+                                      }
+                                    }
+                                    
+                                    setFormData({ ...formData, threadingAreas: updatedAreas });
+                                  }}
+                                  style={{
+                                    padding: '8px 10px',
+                                    borderRadius: '6px',
+                                    border: isSelected ? 'none' : '2px solid #ff6fa3',
+                                    background: isSelected 
+                                      ? 'linear-gradient(90deg, #ff6fa3 0%, #ff9ccf 100%)'
+                                      : isDisabled ? '#e5e7eb' : 'white',
+                                    color: isSelected ? 'white' : isDisabled ? '#9ca3af' : '#ff6fa3',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.2s',
+                                    textAlign: 'center',
+                                    opacity: isDisabled ? 0.5 : 1,
+                                    width: '100%',
+                                    boxSizing: 'border-box',
+                                    wordWrap: 'break-word',
+                                    overflowWrap: 'break-word',
+                                    wordBreak: 'break-word'
+                                  }}
+                                >
+                                  {isSelected && '✓ '}
+                                  {option.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {formData.threadingAreas.length > 0 && (
+                            <div style={{
+                              fontSize: '0.75rem',
+                              color: '#6b7280',
+                              fontStyle: 'italic',
+                              paddingTop: '4px',
+                              borderTop: '1px solid #ffe0e8',
+                              width: '100%',
+                              boxSizing: 'border-box'
+                            }}>
+                              Selected: {formData.threadingAreas.includes('full-face') 
+                                ? (t('bookingForm.threadingFullFace') || 'Full Face')
+                                : formData.threadingAreas.map(a => {
+                                    const areaNames: { [key: string]: string } = {
+                                      'eyebrows': t('bookingForm.threadingEyebrows') || 'Eyebrows',
+                                      'upper-lip': t('bookingForm.threadingUpperLip') || 'Upper Lip',
+                                      'chin': t('bookingForm.threadingChin') || 'Chin'
+                                    };
+                                    return areaNames[a] || a;
+                                  }).join(' + ')}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1896,33 +2138,115 @@ const BookingForm: React.FC = () => {
                     marginBottom: '8px',
                     fontSize: '1rem'
                   }}>
-                    Don't find a time that works for you?
+                    {t('bookingForm.supportMessageTitle')}
                   </p>
                   <p style={{
                     color: '#4b5563',
                     fontSize: '0.95rem',
                     lineHeight: '1.5'
                   }}>
-                    Please feel free to{' '}
-                    <button
-                      type="button"
-                      onClick={() => navigate('/contact')}
-                      style={{
-                        color: '#2563EB',
-                        fontWeight: '600',
-                        textDecoration: 'none',
-                        cursor: 'pointer',
-                        border: 'none',
-                        background: 'none',
-                        padding: '0',
-                        transition: 'text-decoration 0.2s'
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
-                      onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
-                    >
-                      contact us
-                    </button>
-                    . We'll do our best to adjust the schedule and find a time that suits you — your comfort and happiness are our top priority.
+                    {(() => {
+                      const content = t('bookingForm.supportMessageContent');
+                      const currentLanguage = i18n.language;
+                      
+                      if (currentLanguage === 'en') {
+                        const parts = content.split('contact us');
+                        if (parts.length > 1) {
+                          return (
+                            <>
+                              {parts[0]}
+                              <button
+                                type="button"
+                                onClick={() => navigate('/contact')}
+                                style={{
+                                  color: '#2563EB',
+                                  fontWeight: '600',
+                                  textDecoration: 'none',
+                                  cursor: 'pointer',
+                                  border: 'none',
+                                  background: 'none',
+                                  padding: '0',
+                                  transition: 'text-decoration 0.2s',
+                                  display: 'inline',
+                                  fontSize: 'inherit'
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                                onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                              >
+                                contact us
+                              </button>
+                              {parts[1]}
+                            </>
+                          );
+                        }
+                      } else if (currentLanguage === 'sv') {
+                        const parts = content.split('kontakta oss');
+                        if (parts.length > 1) {
+                          return (
+                            <>
+                              {parts[0]}
+                              <button
+                                type="button"
+                                onClick={() => navigate('/contact')}
+                                style={{
+                                  color: '#2563EB',
+                                  fontWeight: '600',
+                                  textDecoration: 'none',
+                                  cursor: 'pointer',
+                                  border: 'none',
+                                  background: 'none',
+                                  padding: '0',
+                                  transition: 'text-decoration 0.2s',
+                                  display: 'inline',
+                                  fontSize: 'inherit'
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                                onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                              >
+                                kontakta oss
+                              </button>
+                              {parts[1]}
+                            </>
+                          );
+                        }
+                      } else if (currentLanguage === 'arb' || content.includes('الاتصال بنا')) {
+                        // Arabic: hardcode detection for الاتصال بنا
+                        const arabicLink = 'الاتصال بنا';
+                        const index = content.indexOf(arabicLink);
+                        if (index !== -1) {
+                          const beforeText = content.substring(0, index);
+                          const afterText = content.substring(index + arabicLink.length);
+                          return (
+                            <>
+                              {beforeText}
+                              <button
+                                type="button"
+                                onClick={() => navigate('/contact')}
+                                style={{
+                                  color: '#2563EB',
+                                  fontWeight: '600',
+                                  textDecoration: 'none',
+                                  cursor: 'pointer',
+                                  border: 'none',
+                                  background: 'none',
+                                  padding: '0',
+                                  transition: 'text-decoration 0.2s',
+                                  display: 'inline',
+                                  fontSize: 'inherit'
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                                onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                              >
+                                الاتصال بنا
+                              </button>
+                              {afterText}
+                            </>
+                          );
+                        }
+                      }
+                      
+                      return content;
+                    })()}
                   </p>
                 </div>
               </div>
@@ -2042,7 +2366,7 @@ const BookingForm: React.FC = () => {
                   <input
                     type="text"
                     readOnly
-                    value="Serenagatan 123, Malmö 21000"
+                    value="Odengatan 56274 31 Skurup"
                     className="w-full px-6 py-4 text-lg bg-background border-2 border-border rounded-2xl outline-none cursor-default text-foreground"
                   />
                 </div>

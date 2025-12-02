@@ -19,11 +19,11 @@
     box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     padding-bottom: env(safe-area-inset-bottom);
-    overflow: visible;
+    overflow: visible !important;
     margin: 0;
     padding-top: 0;
     padding-left: 1rem;
-    padding-right: 0rem;
+    padding-right: 1rem;
     max-height: fit-content;
   }
 
@@ -33,7 +33,7 @@
     align-items: center;
     height: 60px;
     overflow-x: auto;
-    overflow-y: visible;
+    overflow-y: visible !important;
     position: relative;
     scroll-behavior: smooth;
     padding: 0;
@@ -106,7 +106,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: visible;
+    overflow: visible !important;
   }
 
   .dropdown-btn {
@@ -161,22 +161,23 @@
     border-radius: 8px;
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
     min-width: 140px;
-    z-index: 1002;
+    z-index: 2000;
     margin-bottom: 0;
     animation: slideUp 0.2s ease;
-    overflow: hidden;
-    transform: translateX(-50%);
+    overflow: visible !important;
     left: var(--menu-left, 50px);
+    transform: translateX(calc(-50% + var(--menu-offset, 0px)));
+    pointer-events: auto !important;
   }
 
   @keyframes slideUp {
     from {
       opacity: 0;
-      transform: translateX(-50%) translateY(8px);
+      transform: translateX(calc(-50% + var(--menu-offset, 0px))) translateY(8px);
     }
     to {
       opacity: 1;
-      transform: translateX(-50%) translateY(0);
+      transform: translateX(calc(-50% + var(--menu-offset, 0px))) translateY(0);
     }
   }
 
@@ -254,9 +255,9 @@
 }
 
 [dir="rtl"] .bottom-nav-dropdown-menu {
-  left: auto;
-  right: 50%;
-  transform: translateX(50%);
+  left: var(--menu-left, 50px);
+  right: auto;
+  transform: translateX(calc(-50% + var(--menu-offset, 0px)));
 }
 
 [dir="rtl"] .dropdown-chevron {

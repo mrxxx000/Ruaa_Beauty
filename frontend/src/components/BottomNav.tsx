@@ -6,7 +6,7 @@ import '../styles/bottom-nav.css';
 
 const BottomNav: React.FC = () => {
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const [salonDropdownPos, setSalonDropdownPos] = useState<number>(0);
@@ -35,7 +35,9 @@ const BottomNav: React.FC = () => {
   const handleSalonDropdownClick = () => {
     if (salonBtnRef.current) {
       const rect = salonBtnRef.current.getBoundingClientRect();
-      setSalonDropdownPos(rect.left + rect.width / 2);
+      // Calculate center position of button
+      const centerPos = rect.left + rect.width / 2;
+      setSalonDropdownPos(centerPos);
     }
     setSalonDropdownOpen(!salonDropdownOpen);
     setProductsDropdownOpen(false);
@@ -44,7 +46,9 @@ const BottomNav: React.FC = () => {
   const handleProductsDropdownClick = () => {
     if (productsBtnRef.current) {
       const rect = productsBtnRef.current.getBoundingClientRect();
-      setProductsDropdownPos(rect.left + rect.width / 2);
+      // Calculate center position of button
+      const centerPos = rect.left + rect.width / 2;
+      setProductsDropdownPos(centerPos);
     }
     setProductsDropdownOpen(!productsDropdownOpen);
     setSalonDropdownOpen(false);

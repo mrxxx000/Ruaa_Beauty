@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, Calendar, MapPin, Clock, Phone, AlertCircle, Loader, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { formatBookingDate } from '../utils/dateFormatter';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import LanguageSwitcher from '../components/LanguageSwitcher';
@@ -24,7 +25,7 @@ interface Booking {
 }
 
 const MyBookings: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -328,7 +329,7 @@ const MyBookings: React.FC = () => {
       <main>
         <section style={{ padding: '60px 0', minHeight: '70vh' }}>
           <div className="container">
-            <h1 style={{ color: '#ff6fa3', marginBottom: '32px', textAlign: 'center' }}>My Bookings</h1>
+            <h1 style={{ color: '#ff6fa3', marginBottom: '32px', textAlign: 'center' }}>{t('myBookings.title')}</h1>
 
             {!isAuthenticated ? (
               <div style={{
@@ -358,7 +359,7 @@ const MyBookings: React.FC = () => {
             ) : loading ? (
               <div style={{ textAlign: 'center', padding: '40px' }}>
                 <Loader className="w-8 h-8" style={{ color: '#ff6fa3', margin: '0 auto', animation: 'spin 1s linear infinite' }} />
-                <p style={{ color: '#666', marginTop: '16px' }}>Loading your bookings...</p>
+                <p style={{ color: '#666', marginTop: '16px' }}>{t('myBookings.loading')}</p>
               </div>
             ) : error ? (
               <div style={{
@@ -416,7 +417,7 @@ const MyBookings: React.FC = () => {
                       transition: 'all 0.2s ease',
                     }}
                   >
-                    All ({bookings.length})
+                    {t('myBookings.all')} ({bookings.length})
                   </button>
                   <button
                     onClick={() => setBookingFilter('pending')}
@@ -432,7 +433,7 @@ const MyBookings: React.FC = () => {
                       transition: 'all 0.2s ease',
                     }}
                   >
-                    Pending ({bookings.filter(b => b.status !== 'completed' && b.status !== 'cancelled').length})
+                    {t('myBookings.pending')} ({bookings.filter(b => b.status !== 'completed' && b.status !== 'cancelled').length})
                   </button>
                   <button
                     onClick={() => setBookingFilter('completed')}
@@ -448,7 +449,7 @@ const MyBookings: React.FC = () => {
                       transition: 'all 0.2s ease',
                     }}
                   >
-                    Done ({bookings.filter(b => b.status === 'completed').length})
+                    {t('myBookings.done')} ({bookings.filter(b => b.status === 'completed').length})
                   </button>
                   <button
                     onClick={() => setBookingFilter('cancelled')}
@@ -464,7 +465,7 @@ const MyBookings: React.FC = () => {
                       transition: 'all 0.2s ease',
                     }}
                   >
-                    Cancelled ({bookings.filter(b => b.status === 'cancelled').length})
+                    {t('myBookings.cancelled')} ({bookings.filter(b => b.status === 'cancelled').length})
                   </button>
                   
                   {/* New Booking Button */}
@@ -485,7 +486,7 @@ const MyBookings: React.FC = () => {
                       display: 'inline-block',
                     }}
                   >
-                    + New Booking
+                    + {t('myBookings.newBooking')}
                   </Link>
                 </div>
 
@@ -535,13 +536,13 @@ const MyBookings: React.FC = () => {
                                   fontSize: '0.8rem',
                                   fontWeight: '600'
                                 }}>
-                                  ✓ Reviewed
+                                  ✓ {t('myBookings.reviewed')}
                                 </div>
                               )}
                               {booking.status === 'completed' && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2ed573', fontWeight: '600', fontSize: '0.9rem' }}>
                                   <Check className="w-5 h-5" />
-                                  Done
+                                  {t('myBookings.done')}
                                 </div>
                               )}
                               {booking.status === 'cancelled' && (
@@ -570,7 +571,7 @@ const MyBookings: React.FC = () => {
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#666' }}>
                               <Calendar className="w-4 h-4" />
-                              <span>{new Date(booking.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                              <span>{formatBookingDate(booking.date)}</span>
                             </div>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#666' }}>
@@ -593,26 +594,26 @@ const MyBookings: React.FC = () => {
 
                       {/* Right column */}
                       <div>
-                        <h4 style={{ color: '#333', marginBottom: '12px', fontSize: '0.95rem', fontWeight: '600' }}>Contact Details</h4>
+                        <h4 style={{ color: '#333', marginBottom: '12px', fontSize: '0.95rem', fontWeight: '600' }}>{t('myBookings.contactDetails')}</h4>
 
                         <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.9rem' }}>
-                          <strong>Name:</strong> {booking.name}
+                          <strong>{t('myBookings.name')}</strong> {booking.name}
                         </p>
 
                         <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.9rem' }}>
-                          <strong>Email:</strong> {booking.email}
+                          <strong>{t('myBookings.email')}</strong> {booking.email}
                         </p>
 
                         {booking.phone && (
                           <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <Phone className="w-4 h-4" />
-                            <strong>Phone:</strong> {booking.phone}
+                            <strong>{t('myBookings.phone')}</strong> {booking.phone}
                           </p>
                         )}
 
                         {booking.total_price && (
                           <p style={{ margin: '0', color: '#ff6fa3', fontSize: '1rem', fontWeight: '600' }}>
-                            Total: {booking.total_price} Kr
+                            {t('myBookings.total')}: {booking.total_price} Kr
                           </p>
                         )}
                       </div>
@@ -665,7 +666,7 @@ const MyBookings: React.FC = () => {
                             fontSize: '0.9rem',
                           }}
                         >
-                          Write Review
+                          {t('myBookings.writeReview')}
                         </button>
                       )}
                     </div>
@@ -679,10 +680,10 @@ const MyBookings: React.FC = () => {
                         borderRadius: '12px',
                         border: '2px solid #ff6fa3',
                       }}>
-                        <h4 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem' }}>Share Your Experience</h4>
+                        <h4 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem' }}>{t('myBookings.shareExperience')}</h4>
                         
                         <div style={{ marginBottom: '16px' }}>
-                          <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '600' }}>Rating</label>
+                          <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '600' }}>{t('myBookings.rating')}</label>
                           <div style={{ display: 'flex', gap: '8px' }}>
                             {[1, 2, 3, 4, 5].map((star) => (
                               <button
@@ -706,11 +707,11 @@ const MyBookings: React.FC = () => {
                         </div>
 
                         <div style={{ marginBottom: '16px' }}>
-                          <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '600' }}>Your Review</label>
+                          <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '600' }}>{t('myBookings.yourReview')}</label>
                           <textarea
                             value={reviewComment}
                             onChange={(e) => setReviewComment(e.target.value)}
-                            placeholder="Tell us about your experience..."
+                            placeholder={t('myBookings.reviewPlaceholder')}
                             style={{
                               width: '100%',
                               padding: '12px',
@@ -742,7 +743,7 @@ const MyBookings: React.FC = () => {
                               fontSize: '0.9rem',
                             }}
                           >
-                            Cancel
+                            {t('myBookings.cancel')}
                           </button>
                           <button
                             onClick={() => handleSubmitReview(booking.id)}
@@ -759,7 +760,7 @@ const MyBookings: React.FC = () => {
                               opacity: submittingReview ? 0.7 : 1,
                             }}
                           >
-                            {submittingReview ? 'Submitting...' : 'Submit Review'}
+                            {submittingReview ? 'Submitting...' : t('myBookings.submitReview')}
                           </button>
                         </div>
                       </div>

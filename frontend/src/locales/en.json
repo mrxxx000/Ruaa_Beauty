@@ -141,7 +141,10 @@
     "submitting": "Sending...",
     "successTitle": "Booking Request Received! ✨",
     "successMessage": "We'll contact you shortly to confirm your appointment and answer any questions.",
-    "footerNote": "💖 We'll contact you within 24 hours to confirm your booking"
+    "footerNote": "💖 We'll contact you within 24 hours to confirm your booking",
+    "serviceDetails": "Service Details",
+    "supportMessageTitle": "Don't find a time that works for you?",
+    "supportMessageContent": "Please feel free to contact us. We'll do our best to adjust the schedule and find a time that suits you — your comfort and happiness are our top priority."
   },
   "mehendi": {
     "heroTitle": "Exquisite Mehendi Designs for Every Occasion",
@@ -175,9 +178,77 @@
     "notFoundMessage": "The cancellation link is invalid or has expired."
   },
   "reviews": {
-    "title": "Our Reviews",
+    "title": "Client Reviews",
     "subtitle": "See what our clients have to say",
+    "totalReviews": "Total Reviews",
+    "averageRating": "Average Rating",
+    "loadingMessage": "Loading reviews...",
     "signInMessage": "👤 Sign in to share your experience and leave a review"
+  },
+  "auth": {
+    "logout": "Log out",
+    "greeting": "Hey"
+  },
+  "profile": {
+    "title": "My Profile",
+    "userDetails": "User Details",
+    "edit": "Edit",
+    "fullName": "Full Name",
+    "email": "Email",
+    "phoneNumber": "Phone Number",
+    "myBookings": "My Bookings",
+    "viewMyBookings": "View My Bookings",
+    "security": "Security",
+    "changePassword": "Change Password",
+    "close": "Close"
+  },
+  "myBookings": {
+    "title": "My Bookings",
+    "loading": "Loading your bookings",
+    "all": "All",
+    "pending": "Pending",
+    "done": "Done",
+    "cancelled": "Cancelled",
+    "newBooking": "New Booking",
+    "reviewed": "Reviewed",
+    "contactDetails": "Contact Details",
+    "name": "Name:",
+    "email": "Email:",
+    "phone": "Phone:",
+    "total": "Total:",
+    "writeReview": "Write Review",
+    "shareExperience": "Share Your Experience",
+    "rating": "Rating",
+    "yourReview": "Your Review",
+    "reviewPlaceholder": "Tell us about your experience...",
+    "cancel": "Cancel",
+    "submitReview": "Submit Review",
+    "reviewSuccess": "Review submitted successfully!"
+  },
+  "date": {
+    "days": {
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
+    },
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    }
   },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. All rights reserved."

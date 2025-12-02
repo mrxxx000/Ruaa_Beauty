@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { LogIn, LogOut, User, Eye, EyeOff, X, Edit2, Check, Lock } from 'lucide-react';
 import '../styles/App.css';
 import { getUserProfile, updateUserProfile } from '../profileApi';
 
 const AuthModal: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
@@ -341,7 +343,7 @@ const AuthModal: React.FC = () => {
             }}
           >
             <User className="w-5 h-5" />
-            <span>Hey {currentUser.name}</span>
+            <span>{t('auth.greeting')} {currentUser.name}</span>
           </button>
           <button
             onClick={handleLogout}
@@ -360,7 +362,7 @@ const AuthModal: React.FC = () => {
             }}
           >
             <LogOut className="w-4 h-4" />
-            Logout
+            {t('auth.logout')}
           </button>
         </div>
       ) : (
@@ -722,7 +724,7 @@ const AuthModal: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ color: '#ff6fa3', margin: 0 }}>My Profile</h2>
+              <h2 style={{ color: '#ff6fa3', margin: 0 }}>{t('profile.title')}</h2>
               <button
                 onClick={() => setShowProfileModal(false)}
                 style={{
@@ -767,7 +769,7 @@ const AuthModal: React.FC = () => {
 
             <div style={{ marginBottom: '32px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ color: '#333', margin: 0, fontSize: '1rem', fontWeight: '600' }}>User Details</h3>
+                <h3 style={{ color: '#333', margin: 0, fontSize: '1rem', fontWeight: '600' }}>{t('profile.userDetails')}</h3>
                 {!isEditingProfile && (
                   <button
                     onClick={handleEditProfile}
@@ -784,7 +786,7 @@ const AuthModal: React.FC = () => {
                     }}
                   >
                     <Edit2 className="w-4 h-4" />
-                    Edit
+                    {t('profile.edit')}
                   </button>
                 )}
               </div>
@@ -798,7 +800,7 @@ const AuthModal: React.FC = () => {
                     marginBottom: '12px',
                     borderLeft: '4px solid #ff6fa3'
                   }}>
-                    <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>Full Name</p>
+                    <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>{t('profile.fullName')}</p>
                     <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600' }}>{currentUser.name}</p>
                   </div>
 
@@ -809,7 +811,7 @@ const AuthModal: React.FC = () => {
                     marginBottom: '12px',
                     borderLeft: '4px solid #ff6fa3'
                   }}>
-                    <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>Email</p>
+                    <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>{t('profile.email')}</p>
                     <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600', wordBreak: 'break-all' }}>{currentUser.email}</p>
                   </div>
 
@@ -821,7 +823,7 @@ const AuthModal: React.FC = () => {
                       marginBottom: '12px',
                       borderLeft: '4px solid #ff6fa3'
                     }}>
-                      <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>Phone Number</p>
+                      <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>{t('profile.phoneNumber')}</p>
                       <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600' }}>{currentUser.phone_number}</p>
                     </div>
                   )}
@@ -830,7 +832,7 @@ const AuthModal: React.FC = () => {
                 <>
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333', fontSize: '0.9rem' }}>
-                      Full Name
+                      {t('profile.fullName')}
                     </label>
                     <input
                       type="text"
@@ -850,7 +852,7 @@ const AuthModal: React.FC = () => {
 
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333', fontSize: '0.9rem' }}>
-                      Phone Number <span style={{ color: '#999', fontSize: '0.85rem' }}>(Optional)</span>
+                      {t('profile.phoneNumber')} <span style={{ color: '#999', fontSize: '0.85rem' }}>(Optional)</span>
                     </label>
                     <input
                       type="tel"
@@ -914,7 +916,7 @@ const AuthModal: React.FC = () => {
             </div>
 
             <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem', fontWeight: '600' }}>My Bookings</h3>
+              <h3 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem', fontWeight: '600' }}>{t('profile.myBookings')}</h3>
               <a 
                 href="/my-bookings"
                 style={{
@@ -928,12 +930,12 @@ const AuthModal: React.FC = () => {
                   fontSize: '0.95rem',
                 }}
               >
-                View My Bookings
+                {t('profile.viewMyBookings')}
               </a>
             </div>
 
             <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem', fontWeight: '600' }}>Security</h3>
+              <h3 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem', fontWeight: '600' }}>{t('profile.security')}</h3>
               <button
                 onClick={() => setShowChangePassword(true)}
                 style={{
@@ -951,7 +953,7 @@ const AuthModal: React.FC = () => {
                 }}
               >
                 <Lock className="w-4 h-4" />
-                 Change Password
+                 {t('profile.changePassword')}
               </button>
             </div>
 
@@ -969,7 +971,7 @@ const AuthModal: React.FC = () => {
                 fontWeight: '600',
               }}
             >
-              Close
+              {t('profile.close')}
             </button>
           </div>
         </div>
