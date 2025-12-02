@@ -185,6 +185,10 @@
     "loadingMessage": "Loading reviews...",
     "signInMessage": "👤 Sign in to share your experience and leave a review"
   },
+  "auth": {
+    "logout": "Log out",
+    "greeting": "Hey"
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. All rights reserved."
   }

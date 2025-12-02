@@ -188,6 +188,10 @@
     "loadingMessage": "Laddar recensioner...",
     "signInMessage": "👤 Logga in för att dela din upplevelse och lämna en recension"
   },
+  "auth": {
+    "logout": "Logga ut",
+    "greeting": "Hej"
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. Alla rättigheter förbehållna."
   }

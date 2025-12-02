@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { LogIn, LogOut, User, Eye, EyeOff, X, Edit2, Check, Lock } from 'lucide-react';
 import '../styles/App.css';
 import { getUserProfile, updateUserProfile } from '../profileApi';
 
 const AuthModal: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
@@ -341,7 +343,7 @@ const AuthModal: React.FC = () => {
             }}
           >
             <User className="w-5 h-5" />
-            <span>Hey {currentUser.name}</span>
+            <span>{t('auth.greeting')} {currentUser.name}</span>
           </button>
           <button
             onClick={handleLogout}
@@ -360,7 +362,7 @@ const AuthModal: React.FC = () => {
             }}
           >
             <LogOut className="w-4 h-4" />
-            Logout
+            {t('auth.logout')}
           </button>
         </div>
       ) : (
