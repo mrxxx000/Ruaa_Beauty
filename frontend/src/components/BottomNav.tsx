@@ -169,12 +169,12 @@ const BottomNav: React.FC = () => {
       {/* Products Dropdown Portal */}
       {productsDropdownOpen && (
         <div
-          className="bottom-nav-menu-wrapper"
+          className="products-dropdown-menu"
           style={{
             '--menu-left': `${productsDropdownPos}px`,
           } as React.CSSProperties & { '--menu-left': string }}
         >
-          <div className="bottom-nav-dropdown-menu">
+          <div className="products-dropdown-content">
             {productItems.map(({ path, label }) => (
               <Link
                 key={path}

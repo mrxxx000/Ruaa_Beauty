@@ -156,12 +156,14 @@
   /* Dropup Menu */
   .bottom-nav-menu-wrapper {
     position: fixed;
-    bottom: 65px;
+    bottom: 153px;
     width: 100%;
     z-index: 3000;
     pointer-events: none;
     left: 0;
     right: 0;
+    padding: 0 1rem;
+    box-sizing: border-box;
   }
 
   .bottom-nav-dropdown-menu {
@@ -171,12 +173,15 @@
     border-radius: 8px;
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
     min-width: 140px;
+    max-width: 160px;
     margin-bottom: 0;
     animation: slideUp 0.2s ease;
-    overflow: visible !important;
+    overflow-y: auto;
+    overflow-x: hidden;
     transform: translateX(-50%);
     pointer-events: auto !important;
     will-change: transform;
+    max-height: 300px;
   }
 
   @keyframes slideUp {
@@ -190,6 +195,32 @@
     }
   }
 
+  /* Products Dropdown Menu - Compact Single Item */
+  .products-dropdown-menu {
+    position: fixed;
+    bottom: 100px;
+    width: 100%;
+    z-index: 3000;
+    pointer-events: none;
+    left: 0;
+    right: 0;
+    padding: 0 1rem;
+    box-sizing: border-box;
+  }
+
+  .products-dropdown-content {
+    position: absolute;
+    left: var(--menu-left, 50px);
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+    width: auto;
+    animation: slideUp 0.2s ease;
+    transform: translateX(-50%);
+    pointer-events: auto !important;
+    will-change: transform;
+  }
+
   .dropdown-menu-item {
     display: block;
     padding: 12px 16px;
@@ -201,12 +232,25 @@
     font-weight: 500;
   }
 
+  .products-dropdown-content .dropdown-menu-item {
+    border-radius: 8px;
+    padding: 8px 14px;
+  }
+
   .dropdown-menu-item:first-child {
     border-radius: 8px 8px 0 0;
   }
 
   .dropdown-menu-item:last-child {
     border-radius: 0 0 8px 8px;
+  }
+
+  .products-dropdown-content .dropdown-menu-item:first-child {
+    border-radius: 8px;
+  }
+
+  .products-dropdown-content .dropdown-menu-item:last-child {
+    border-radius: 8px;
   }
 
   .dropdown-menu-item:hover,
@@ -265,6 +309,11 @@
   margin-right: -10px;
 }
 
+[dir="rtl"] .bottom-nav-menu-wrapper {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
 [dir="rtl"] .bottom-nav-dropdown-menu {
   left: auto;
   right: var(--menu-left, 50px);
@@ -272,6 +321,18 @@
 }
 
 [dir="ltr"] .bottom-nav-dropdown-menu {
+  left: var(--menu-left, 50px);
+  right: auto;
+  transform: translateX(-50%);
+}
+
+[dir="rtl"] .products-dropdown-content {
+  left: auto;
+  right: var(--menu-left, 50px);
+  transform: translateX(50%);
+}
+
+[dir="ltr"] .products-dropdown-content {
   left: var(--menu-left, 50px);
   right: auto;
   transform: translateX(-50%);
