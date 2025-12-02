@@ -402,8 +402,8 @@ const BookingForm: React.FC = () => {
   return (
     <section
       id="booking"
-      className="min-h-screen py-16 px-4 relative overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, #fff6f8 0%, #fff1f3 100%)' }}
+      className="min-h-screen py-16 px-4 relative"
+      style={{ background: 'linear-gradient(180deg, #fff6f8 0%, #fff1f3 100%)', overflow: 'visible' }}
     >
       {/* Decorative background elements (purely decorative, class names assume CSS/tailwind exists) */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-primary opacity-10 rounded-full blur-3xl animate-float" />
@@ -448,6 +448,9 @@ const BookingForm: React.FC = () => {
               display: grid;
               gap: 20px;
               margin-bottom: 32px;
+              width: 100%;
+              box-sizing: border-box;
+              max-width: 100%;
             }
             
             /* Desktop: 3-4 cards per row */
@@ -457,14 +460,31 @@ const BookingForm: React.FC = () => {
               }
             }
             
-            /* Mobile: 2 cards per row with smaller sizing */
-            @media (max-width: 768px) {
+            /* Tablet: 2 cards per row */
+            @media (min-width: 641px) and (max-width: 768px) {
               .pricing-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 12px;
+                width: 100%;
+              }
+            }
+            
+            /* Mobile: 2 cards per row with smaller sizing */
+            @media (max-width: 640px) {
+              .pricing-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                width: 100%;
+                max-width: 100%;
               }
               .service-card {
                 padding: 16px !important;
+                box-sizing: border-box !important;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                width: 100%;
+                max-width: 100%;
+                overflow: hidden;
               }
               .service-card-icon {
                 font-size: 2rem !important;
