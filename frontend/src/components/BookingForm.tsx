@@ -582,7 +582,10 @@ const BookingForm: React.FC = () => {
                     {/* Header with Toggle Button */}
                     <button
                       type="button"
-                      onClick={() => setExpandedLashLift(!expandedLashLift)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedLashLift(!expandedLashLift);
+                      }}
                       style={{
                         width: '100%',
                         backgroundColor: '#fff6f8',
@@ -718,7 +721,10 @@ const BookingForm: React.FC = () => {
                   <>
                     <button
                       type="button"
-                      onClick={() => setExpandedBrowLift(!expandedBrowLift)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedBrowLift(!expandedBrowLift);
+                      }}
                       style={{
                         width: '100%',
                         backgroundColor: '#fff6f8',
@@ -852,7 +858,10 @@ const BookingForm: React.FC = () => {
                   <>
                     <button
                       type="button"
-                      onClick={() => setExpandedCombinedLashBrow(!expandedCombinedLashBrow)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedCombinedLashBrow(!expandedCombinedLashBrow);
+                      }}
                       style={{
                         width: '100%',
                         backgroundColor: '#fff6f8',
@@ -915,7 +924,10 @@ const BookingForm: React.FC = () => {
                   <>
                     <button
                       type="button"
-                      onClick={() => setExpandedEventMakeup(!expandedEventMakeup)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedEventMakeup(!expandedEventMakeup);
+                      }}
                       style={{
                         width: '100%',
                         backgroundColor: '#fff6f8',
@@ -978,7 +990,10 @@ const BookingForm: React.FC = () => {
                   <>
                     <button
                       type="button"
-                      onClick={() => setExpandedBridalMakeup(!expandedBridalMakeup)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedBridalMakeup(!expandedBridalMakeup);
+                      }}
                       style={{
                         width: '100%',
                         backgroundColor: '#fff6f8',
@@ -1042,7 +1057,10 @@ const BookingForm: React.FC = () => {
                   <>
                     <button
                       type="button"
-                      onClick={() => setExpandedThreading(!expandedThreading)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedThreading(!expandedThreading);
+                      }}
                       style={{
                         width: '100%',
                         backgroundColor: '#fff6f8',
