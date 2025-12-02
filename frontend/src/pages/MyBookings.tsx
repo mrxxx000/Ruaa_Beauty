@@ -294,7 +294,7 @@ const MyBookings: React.FC = () => {
               </div>
             ) : (
               <div>
-                <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                   <button
                     onClick={() => setBookingFilter('all')}
                     style={{
@@ -359,6 +359,27 @@ const MyBookings: React.FC = () => {
                   >
                     Cancelled ({bookings.filter(b => b.status === 'cancelled').length})
                   </button>
+                  
+                  {/* New Booking Button */}
+                  <Link
+                    to="/book"
+                    style={{
+                      padding: '0.5rem 1rem',
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: '#4CAF50',
+                      color: '#fff',
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      fontSize: '0.9rem',
+                      transition: 'all 0.2s ease',
+                      marginLeft: 'auto',
+                      display: 'inline-block',
+                    }}
+                  >
+                    + New Booking
+                  </Link>
                 </div>
 
                 <div style={{ display: 'grid', gap: '20px' }}>
