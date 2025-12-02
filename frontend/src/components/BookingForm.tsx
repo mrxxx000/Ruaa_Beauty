@@ -37,7 +37,7 @@ const SERVICES_PRICING: { [key: string]: number } = {
   'lash-lift': 300,
   'brow-lift': 300,
   'makeup': 1000,
-  'bridal-makeup': 4000,
+  'bridal-makeup': 2000,
   'mehendi': 400,
   'threading': 200,
 };
@@ -55,6 +55,7 @@ const BookingForm: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string; phone?: string } | null>(null);
   const [expandedLashLift, setExpandedLashLift] = useState<boolean>(false);
   const [expandedBrowLift, setExpandedBrowLift] = useState<boolean>(false);
+  const [expandedBridalMakeup, setExpandedBridalMakeup] = useState<boolean>(false);
 
   // Check if user is logged in on component mount
   useEffect(() => {
@@ -438,7 +439,7 @@ const BookingForm: React.FC = () => {
               { icon: '🌸', name: t('bookingForm.serviceLashLift'), price: '300 kr', value: 'lash-lift', description: t('bookingForm.priceLashLift') || 'Natural lift and curl', details: { duration: t('bookingForm.lashLiftDuration'), fullDescription: t('bookingForm.lashLiftDescription'), how: t('bookingForm.lashLiftHow'), result: t('bookingForm.lashLiftResult'), tint: t('bookingForm.lashLiftTint') } },
               { icon: '✨', name: t('bookingForm.serviceBrowLift'), price: '300 kr', value: 'brow-lift', description: t('bookingForm.priceBrowLift') || 'Perfectly shaped brows', details: { duration: t('bookingForm.browLiftDuration'), fullDescription: t('bookingForm.browLiftDescription'), how: t('bookingForm.browLiftHow'), result: t('bookingForm.browLiftResult'), tint: t('bookingForm.browLiftTint') } },
               { icon: '💄', name: t('bookingForm.serviceMakeup'), price: '1000 kr', value: 'makeup', description: t('bookingForm.priceMakeup') || 'Professional makeup artistry' },
-              { icon: '👰', name: t('bookingForm.serviceBridalMakeup'), price: '4000 kr', value: 'bridal-makeup', description: t('bookingForm.priceBridalMakeup') || 'Your special day, perfected' },
+              { icon: '👰', name: t('bookingForm.serviceBridalMakeup'), price: '2000 kr', value: 'bridal-makeup', description: t('bookingForm.priceBridalMakeup') || 'Your special day, perfected', details: { duration: t('bookingForm.bridalMakeupDuration'), fullDescription: t('bookingForm.bridalMakeupDescription'), how: t('bookingForm.bridalMakeupHow'), result: t('bookingForm.bridalMakeupResult') } },
               { icon: '🎨', name: t('bookingForm.serviceMehendi'), price: '400 kr/hr', value: 'mehendi', description: t('bookingForm.priceMehendi') || 'Intricate henna designs' },
               { icon: '🧵', name: t('bookingForm.serviceThreading'), price: '200 kr', value: 'threading', description: t('bookingForm.priceThreading') || 'Precise facial threading' },
             ].map((service) => (
@@ -470,11 +471,13 @@ const BookingForm: React.FC = () => {
                   
                   // Reset lashLiftTint if lash-lift is being removed
                   // Reset browLiftTint if brow-lift is being removed
+                  // Reset bridalMakeupTint if bridal-makeup is being removed
                   const updatedFormData = { 
                     ...formData, 
                     services: updatedServices,
                     ...(service.value === 'lash-lift' && isSelected && { lashLiftTint: false }),
-                    ...(service.value === 'brow-lift' && isSelected && { browLiftTint: false })
+                    ...(service.value === 'brow-lift' && isSelected && { browLiftTint: false }),
+                    ...(service.value === 'bridal-makeup' && isSelected && { bridalMakeupTint: false })
                   };
                   
                   setFormData(updatedFormData);
@@ -764,6 +767,70 @@ const BookingForm: React.FC = () => {
                       +
                     </button>
                   </div>
+                )}
+
+                {/* Bridal Makeup Details Section */}
+                {service.value === 'bridal-makeup' && service.details && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedBridalMakeup(!expandedBridalMakeup)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: expandedBridalMakeup ? '0' : '16px',
+                        fontSize: '0.95rem',
+                        color: '#ff6fa3',
+                        border: '1px solid #ffe0e8',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <span>Service Details</span>
+                      <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedBridalMakeup ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </button>
+
+                    {/* Expandable Details Content */}
+                    {expandedBridalMakeup && (
+                      <div style={{
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '0 0 8px 8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '0.85rem',
+                        color: '#4b5563',
+                        lineHeight: '1.6',
+                        textAlign: 'left',
+                        border: '1px solid #ffe0e8',
+                        borderTop: 'none',
+                        animation: 'slideDown 0.3s ease'
+                      }}>
+                        <style>{`
+                          @keyframes slideDown {
+                            from {
+                              opacity: 0;
+                              max-height: 0;
+                            }
+                            to {
+                              opacity: 1;
+                              max-height: 500px;
+                            }
+                          }
+                        `}</style>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details?.duration}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details?.fullDescription}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details?.how}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✨</strong> {service.details?.result}</p>
+                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>➕ {service.details?.tint}</p>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {/* Hours selector for Mehendi */}
