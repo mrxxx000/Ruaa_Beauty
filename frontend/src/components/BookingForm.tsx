@@ -1709,6 +1709,78 @@ const BookingForm: React.FC = () => {
                           </button>
                         </div>
                       )}
+
+                      {/* Brow Lift Tint Add-on Selector */}
+                      {service.value === 'brow-lift' && formData.services.includes('brow-lift') && (
+                        <div style={{
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: '#fff6f8',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
+                        }}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setFormData({ ...formData, browLiftTint: false });
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '2px solid #ff6fa3',
+                              background: formData.browLiftTint ? 'white' : '#ff6fa3',
+                              color: formData.browLiftTint ? '#ff6fa3' : 'white',
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            −
+                          </button>
+                          <div style={{
+                            minWidth: '80px',
+                            textAlign: 'center',
+                            fontSize: '0.95rem',
+                            fontWeight: '600',
+                            color: '#ff6fa3'
+                          }}>
+                            {formData.browLiftTint ? '+20 kr' : 'No Tint'}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setFormData({ ...formData, browLiftTint: true });
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '2px solid #ff6fa3',
+                              background: formData.browLiftTint ? '#ff6fa3' : 'white',
+                              color: formData.browLiftTint ? 'white' : '#ff6fa3',
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
