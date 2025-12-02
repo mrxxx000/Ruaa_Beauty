@@ -35,6 +35,11 @@ const MyBookings: React.FC = () => {
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const [bookingFilter, setBookingFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all');
+  const [reviewingBookingId, setReviewingBookingId] = useState<string | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<string[]>([]);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -119,6 +124,26 @@ const MyBookings: React.FC = () => {
 
       const data = await response.json();
       setBookings(data.bookings || []);
+
+      // Fetch user's existing reviews to hide "Write Review" button
+      try {
+        const reviewsResponse = await fetch(`${backendUrl}/api/reviews/user/my-reviews`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (reviewsResponse.ok) {
+          const reviewsData = await reviewsResponse.json();
+          const reviewedBookingIds = (reviewsData.reviews || []).map((review: any) => review.booking_id);
+          setReviewedBookingIds(reviewedBookingIds);
+        }
+      } catch (err) {
+        console.error('Failed to fetch reviews:', err);
+        // Continue without reviews data if fetch fails
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error loading bookings');
     } finally {
@@ -155,6 +180,49 @@ const MyBookings: React.FC = () => {
       setError(err instanceof Error ? err.message : 'Error cancelling booking');
     } finally {
       setCancellingId(null);
+    }
+  };
+
+  const handleSubmitReview = async (bookingId: string) => {
+    if (!reviewComment.trim()) {
+      alert('Please write a review');
+      return;
+    }
+
+    try {
+      setSubmittingReview(true);
+      const token = localStorage.getItem('authToken');
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+
+      const response = await fetch(`${backendUrl}/api/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          bookingId,
+          rating: reviewRating,
+          comment: reviewComment,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.details || 'Failed to submit review');
+      }
+
+      // Mark booking as reviewed and update UI immediately
+      setReviewedBookingIds(prev => [...prev, bookingId]);
+      setReviewingBookingId(null);
+      setReviewComment('');
+      setReviewRating(5);
+      
+      alert('Review submitted successfully!');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error submitting review');
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -508,7 +576,119 @@ const MyBookings: React.FC = () => {
                           {cancellingId === booking.id ? 'Cancelling...' : 'Cancel Booking'}
                         </button>
                       )}
+                      {booking.status === 'completed' && !reviewedBookingIds.includes(booking.id) && (
+                        <button
+                          onClick={() => setReviewingBookingId(booking.id)}
+                          style={{
+                            padding: '10px 20px',
+                            backgroundColor: '#ff6fa3',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            fontSize: '0.9rem',
+                          }}
+                        >
+                          Write Review
+                        </button>
+                      )}
                     </div>
+
+                    {/* Review Form */}
+                    {reviewingBookingId === booking.id && (
+                      <div style={{
+                        marginTop: '20px',
+                        padding: '20px',
+                        backgroundColor: '#fff9fc',
+                        borderRadius: '12px',
+                        border: '2px solid #ff6fa3',
+                      }}>
+                        <h4 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem' }}>Share Your Experience</h4>
+                        
+                        <div style={{ marginBottom: '16px' }}>
+                          <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '600' }}>Rating</label>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                onClick={() => setReviewRating(star)}
+                                style={{
+                                  padding: '10px 15px',
+                                  backgroundColor: reviewRating >= star ? '#ff6fa3' : '#f0f0f0',
+                                  color: reviewRating >= star ? 'white' : '#999',
+                                  border: 'none',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  fontWeight: '600',
+                                  fontSize: '0.9rem',
+                                }}
+                              >
+                                {star}★
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                          <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '600' }}>Your Review</label>
+                          <textarea
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                            placeholder="Tell us about your experience..."
+                            style={{
+                              width: '100%',
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: '1px solid #ddd',
+                              fontFamily: 'inherit',
+                              fontSize: '0.95rem',
+                              minHeight: '120px',
+                              resize: 'vertical',
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={() => {
+                              setReviewingBookingId(null);
+                              setReviewComment('');
+                              setReviewRating(5);
+                            }}
+                            style={{
+                              padding: '10px 20px',
+                              backgroundColor: '#f0f0f0',
+                              color: '#333',
+                              border: 'none',
+                              borderRadius: '8px',
+                              cursor: 'pointer',
+                              fontWeight: '600',
+                              fontSize: '0.9rem',
+                            }}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleSubmitReview(booking.id)}
+                            disabled={submittingReview}
+                            style={{
+                              padding: '10px 20px',
+                              backgroundColor: '#ff6fa3',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              cursor: submittingReview ? 'not-allowed' : 'pointer',
+                              fontWeight: '600',
+                              fontSize: '0.9rem',
+                              opacity: submittingReview ? 0.7 : 1,
+                            }}
+                          >
+                            {submittingReview ? 'Submitting...' : 'Submit Review'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Cancellation Confirmation Modal */}
                     {showCancelConfirm === booking.id && (
