@@ -37,7 +37,7 @@ const BottomNav: React.FC = () => {
   const handleSalonDropdownClick = () => {
     if (salonBtnRef.current) {
       const rect = salonBtnRef.current.getBoundingClientRect();
-      // Calculate center position of button
+      // Calculate center position of button - same for both LTR and RTL
       const centerPos = rect.left + rect.width / 2;
       setSalonDropdownPos(centerPos);
       setSalonDropdownWidth(rect.width);
@@ -49,7 +49,7 @@ const BottomNav: React.FC = () => {
   const handleProductsDropdownClick = () => {
     if (productsBtnRef.current) {
       const rect = productsBtnRef.current.getBoundingClientRect();
-      // Calculate center position of button
+      // Calculate center position of button - same for both LTR and RTL
       const centerPos = rect.left + rect.width / 2;
       setProductsDropdownPos(centerPos);
       setProductsDropdownWidth(rect.width);

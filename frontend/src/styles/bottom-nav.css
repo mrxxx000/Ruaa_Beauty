@@ -309,35 +309,6 @@
   margin-right: -10px;
 }
 
-[dir="rtl"] .bottom-nav-menu-wrapper {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-[dir="rtl"] .bottom-nav-dropdown-menu {
-  left: auto;
-  right: var(--menu-left, 50px);
-  transform: translateX(50%);
-}
-
-[dir="ltr"] .bottom-nav-dropdown-menu {
-  left: var(--menu-left, 50px);
-  right: auto;
-  transform: translateX(-50%);
-}
-
-[dir="rtl"] .products-dropdown-content {
-  left: auto;
-  right: var(--menu-left, 50px);
-  transform: translateX(50%);
-}
-
-[dir="ltr"] .products-dropdown-content {
-  left: var(--menu-left, 50px);
-  right: auto;
-  transform: translateX(-50%);
-}
-
 [dir="rtl"] .dropdown-chevron {
   left: -5px;
   right: auto;
