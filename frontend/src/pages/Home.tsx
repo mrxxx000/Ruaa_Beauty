@@ -7,9 +7,19 @@ import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import Hero from '../components/Hero';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AuthModal from '../components/AuthModal';
+import { 
+  injectSchemaMarkup, 
+  organizationSchema, 
+  createBreadcrumbSchema
+} from '../utils/schemaMarkup';
+import {
+  setCanonicalURL,
+  setMetaDescription,
+  setOpenGraphTags,
+  sitemapPages
+} from '../utils/seoHelpers';
 
 const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
-  // If caller provides videos prop, use it; otherwise use the default lashes shorts
   const defaultVideos = [
     process.env.PUBLIC_URL + '/assets/short1.mp4',
     process.env.PUBLIC_URL + '/assets/short2.mp4',
@@ -22,7 +32,6 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
   const [active, setActive] = useState<number | null>(null);
 
   useEffect(() => {
-    // Lazy-load videos when they enter the viewport to avoid loading all at once
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -30,21 +39,17 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
           if (!vid) return;
 
           if (entry.isIntersecting) {
-            // If not loaded yet, set the src from data-src and load
             if (!vid.dataset.loaded) {
               const src = vid.dataset.src;
               if (src) {
                 vid.src = src;
-                // allow browser to fetch
                 try { vid.load(); } catch (e) {}
                 vid.dataset.loaded = '1';
               }
             }
-            // try to play the muted video for preview
             vid.muted = true;
             vid.play().catch(() => {});
           } else {
-            // pause videos that leave viewport to save CPU/bandwidth
             try { vid.pause(); } catch (e) {}
           }
         });
@@ -52,7 +57,6 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
       { threshold: 0.5 }
     );
 
-    // observe current refs
     videoRefs.current.forEach((v) => {
       if (v) observer.observe(v);
     });
@@ -65,7 +69,6 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
     if (!clicked) return;
 
     if (clicked.muted) {
-      // unmute clicked, mute/pause others
       videoRefs.current.forEach((v, i) => {
         if (!v) return;
         if (i === index) {
@@ -90,7 +93,6 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
         <div className="video-card" key={i} onClick={() => handleClick(i)}>
           <video
             ref={(el) => { videoRefs.current[i] = el; }}
-            // do not set src initially; use data-src for lazy loading
             data-src={src}
             preload="none"
             playsInline
@@ -114,7 +116,6 @@ const Home: React.FC = () => {
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
 
-  // Redirect admin users to admin dashboard
   useEffect(() => {
     const user = localStorage.getItem('currentUser');
     if (user) {
@@ -130,23 +131,35 @@ const Home: React.FC = () => {
   }, [navigate]);
 
   useEffect(() => {
+    setCanonicalURL('/');
+    setMetaDescription('Ruaa Beauty - Professional beauty salon offering bridal mehendi, lashes, makeup, and more. Book your appointment online today.');
+    setOpenGraphTags(
+      'Ruaa Beauty - Professional Beauty Services',
+      'Professional beauty salon offering bridal mehendi, lashes, makeup, and more in Skurup, Sweden.',
+      'https://www.ruaa-beauty.eu/assets/logo.png',
+      '/'
+    );
+    injectSchemaMarkup(organizationSchema);
+    injectSchemaMarkup(createBreadcrumbSchema([
+      { name: 'Home', url: 'https://www.ruaa-beauty.eu/' }
+    ]));
+  }, []);
+
+  useEffect(() => {
     if (location.hash) {
       const id = location.hash.replace('#', '');
-      // scroll to the element with matching id, if present
       const el = document.getElementById(id);
       if (el) {
-        // small timeout to allow layout/paint after navigation
         setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
       }
     }
   }, [location]);
+
   return (
     <div className="home-landing">
       <header className="site-header">
         <div className="container header-inner">
           <div className="brand">
-
-            {/* Using the image imported from src so the bundler serves it correctly; sizing controlled via CSS */}
             <img src={logoImg} alt="Ruaa Beauty logo" />
             <span className="brand-title">Ruaa Beauty</span>
           </div>
@@ -198,7 +211,6 @@ const Home: React.FC = () => {
         </div>
       </header>
 
-      {/* Language Switcher - Below navbar, centered */}
       <div className="lang-switcher-container">
         <LanguageSwitcher />
       </div>
@@ -206,13 +218,11 @@ const Home: React.FC = () => {
       <main>
         <Hero />
 
-        {/* Lashes video grid: 2 videos per row. Place your short video files in public/assets and update the `videos` array in VideoGrid. */}
         <section className="videos container" id="Lashes">
           <h2 style={{ marginTop: 18, marginBottom: 18 }}>{t('home.lashesTitle')}</h2>
           <VideoGrid />
         </section>
 
-        {/* Mehendi shorts - same layout as Lashes, using specific mehendi videos */}
         <section className="videos container" id="mehendi-shorts">
           <h2 style={{ marginTop: 18, marginBottom: 18 }}>{t('home.mehendiTitle')}</h2>
           <VideoGrid
@@ -229,12 +239,73 @@ const Home: React.FC = () => {
             <p>{t('home.ctaDescription')}</p>
           </div>
         </section>
+
+        <section className="internal-links-section" style={{ padding: '2rem 0', borderTop: '1px solid #eee' }}>
+          <div className="container">
+            <h3 style={{ marginBottom: '1rem', textAlign: 'center', fontSize: '1rem', color: '#666' }}>
+              {t('nav.explore') || 'Explore Our Services'}
+            </h3>
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              justifyContent: 'center', 
+              gap: '1rem' 
+            }}>
+              {sitemapPages.map((page) => (
+                <Link
+                  key={page.path}
+                  to={page.path}
+                  title={page.description}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '4px',
+                    textDecoration: 'none',
+                    color: '#ff6fa3',
+                    transition: 'all 0.3s ease',
+                    fontSize: '0.9rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#ff6fa3';
+                    e.currentTarget.style.color = '#fff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f5f5f5';
+                    e.currentTarget.style.color = '#ff6fa3';
+                  }}
+                >
+                  {page.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
 
-      
-
       <footer className="site-footer">
-        <div className="container text-center">
+        <div className="container">
+          <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+            <div style={{ marginBottom: '1rem' }}>
+              {sitemapPages.slice(0, 3).map((page, index) => (
+                <React.Fragment key={page.path}>
+                  <Link to={page.path} style={{ color: '#ff6fa3', marginRight: '1.5rem', textDecoration: 'none' }}>
+                    {page.label}
+                  </Link>
+                  {index < 2 && <span style={{ color: '#ccc' }}>|</span>}
+                </React.Fragment>
+              ))}
+            </div>
+            <div>
+              {sitemapPages.slice(3).map((page, index) => (
+                <React.Fragment key={page.path}>
+                  <Link to={page.path} style={{ color: '#ff6fa3', marginRight: '1.5rem', textDecoration: 'none' }}>
+                    {page.label}
+                  </Link>
+                  {index < 3 && <span style={{ color: '#ccc' }}>|</span>}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
           <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
         </div>
       </footer>

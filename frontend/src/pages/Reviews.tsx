@@ -8,6 +8,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 import AuthModal from '../components/AuthModal';
 import { getAllReviews, deleteReview, addReplyToReview, getReviewWithReplies, deleteReply } from '../reviewApi';
 import { useReviewUpdates } from '../hooks/useReviewUpdates';
+import { injectSchemaMarkup, createReviewSchema, createBreadcrumbSchema } from '../utils/schemaMarkup';
 import '../styles/reviews.css';
 
 interface Review {
@@ -82,6 +83,12 @@ const Reviews: React.FC = () => {
   useEffect(() => {
     fetchReviews();
     checkAuthentication();
+
+    // Inject schema markup for SEO
+    injectSchemaMarkup(createBreadcrumbSchema([
+      { name: 'Home', url: 'https://www.ruaa-beauty.eu/' },
+      { name: 'Reviews', url: 'https://www.ruaa-beauty.eu/reviews' }
+    ]));
 
     // Listen for real-time review updates from other parts of the app (e.g., admin dashboard)
     const handleReviewUpdate = (e: Event) => {
@@ -215,6 +222,14 @@ const Reviews: React.FC = () => {
       console.error('Failed to delete reply:', err);
     }
   };
+
+  useEffect(() => {
+    // Update schema markup when reviews load
+    if (!loading && reviews.length > 0) {
+      const avgRating = parseFloat((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1));
+      injectSchemaMarkup(createReviewSchema(avgRating, reviews.length));
+    }
+  }, [reviews, loading]);
 
   const averageRating = reviews.length > 0 
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
