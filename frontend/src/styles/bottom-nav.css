@@ -265,5 +265,6 @@
 }
 
 [dir="rtl"] .bottom-nav-dropdown:nth-child(3) .dropdown-chevron {
-  left: -6px;
+  left: 2px;
+  right: auto;
 }
