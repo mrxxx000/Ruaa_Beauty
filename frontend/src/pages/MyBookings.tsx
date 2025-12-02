@@ -40,6 +40,7 @@ const MyBookings: React.FC = () => {
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewedBookingIds, setReviewedBookingIds] = useState<string[]>([]);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -185,7 +186,8 @@ const MyBookings: React.FC = () => {
 
   const handleSubmitReview = async (bookingId: string) => {
     if (!reviewComment.trim()) {
-      alert('Please write a review');
+      setNotification({ message: 'Please write a review', type: 'error' });
+      setTimeout(() => setNotification(null), 3000);
       return;
     }
 
@@ -218,9 +220,11 @@ const MyBookings: React.FC = () => {
       setReviewComment('');
       setReviewRating(5);
       
-      alert('Review submitted successfully!');
+      setNotification({ message: 'Review submitted successfully!', type: 'success' });
+      setTimeout(() => setNotification(null), 3000);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error submitting review');
+      setNotification({ message: err instanceof Error ? err.message : 'Error submitting review', type: 'error' });
+      setTimeout(() => setNotification(null), 3000);
     } finally {
       setSubmittingReview(false);
     }
@@ -228,6 +232,39 @@ const MyBookings: React.FC = () => {
 
   return (
     <div className="home-landing">
+      {/* Notification Toast */}
+      {notification && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          padding: '16px 24px',
+          backgroundColor: notification.type === 'success' ? '#2ed573' : '#ff4444',
+          color: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 9999,
+          animation: 'slideIn 0.3s ease-out',
+          maxWidth: '400px',
+          fontWeight: '500',
+        }}>
+          {notification.message}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
+
       <header className="site-header">
         <div className="container header-inner">
           <div className="brand">
