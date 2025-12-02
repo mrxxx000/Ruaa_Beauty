@@ -189,6 +189,19 @@
     "logout": "Log out",
     "greeting": "Hey"
   },
+  "profile": {
+    "title": "My Profile",
+    "userDetails": "User Details",
+    "edit": "Edit",
+    "fullName": "Full Name",
+    "email": "Email",
+    "phoneNumber": "Phone Number",
+    "myBookings": "My Bookings",
+    "viewMyBookings": "View My Bookings",
+    "security": "Security",
+    "changePassword": "Change Password",
+    "close": "Close"
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. All rights reserved."
   }

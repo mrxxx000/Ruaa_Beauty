@@ -193,6 +193,19 @@
     "logout": "تسجيل الخروج",
     "greeting": "مرحباً"
   },
+  "profile": {
+    "title": "ملفي الشخصي",
+    "userDetails": "بيانات المستخدم",
+    "edit": "تعديل",
+    "fullName": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
+    "phoneNumber": "رقم الهاتف",
+    "myBookings": "حجوزاتي",
+    "viewMyBookings": "عرض حجوزاتي",
+    "security": "الأمان",
+    "changePassword": "تغيير كلمة المرور",
+    "close": "إغلاق"
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. جميع الحقوق محفوظة."
   }

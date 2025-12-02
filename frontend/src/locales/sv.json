@@ -192,6 +192,19 @@
     "logout": "Logga ut",
     "greeting": "Hej"
   },
+  "profile": {
+    "title": "Min profil",
+    "userDetails": "Användaruppgifter",
+    "edit": "Redigera",
+    "fullName": "Fullständigt namn",
+    "email": "E-post",
+    "phoneNumber": "Telefonnummer",
+    "myBookings": "Mina bokningar",
+    "viewMyBookings": "Visa mina bokningar",
+    "security": "Säkerhet",
+    "changePassword": "Byt lösenord",
+    "close": "Stäng"
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. Alla rättigheter förbehållna."
   }
