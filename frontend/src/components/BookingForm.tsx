@@ -51,6 +51,7 @@ const BookingForm: React.FC = () => {
   const [unavailableHours, setUnavailableHours] = useState<number[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string; phone?: string } | null>(null);
+  const [expandedLashLift, setExpandedLashLift] = useState<boolean>(false);
 
   // Check if user is logged in on component mount
   useEffect(() => {
@@ -483,25 +484,69 @@ const BookingForm: React.FC = () => {
                   {service.description}
                 </p>
                 
-                {/* Lash Lift Detailed Information */}
+                {/* Lash Lift Detailed Information - Expandable */}
                 {service.value === 'lash-lift' && service.details && (
-                  <div style={{
-                    backgroundColor: '#fff6f8',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    marginBottom: '16px',
-                    fontSize: '0.85rem',
-                    color: '#4b5563',
-                    lineHeight: '1.6',
-                    textAlign: 'left',
-                    border: '1px solid #ffe0e8'
-                  }}>
-                    <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details.duration}</p>
-                    <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details.fullDescription}</p>
-                    <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details.how}</p>
-                    <p style={{ margin: '0 0 8px 0' }}><strong>✨</strong> {service.details.result}</p>
-                    <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>➕ {service.details.tint}</p>
-                  </div>
+                  <>
+                    {/* Header with Toggle Button */}
+                    <button
+                      type="button"
+                      onClick={() => setExpandedLashLift(!expandedLashLift)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: expandedLashLift ? '0' : '16px',
+                        fontSize: '0.95rem',
+                        color: '#ff6fa3',
+                        border: '1px solid #ffe0e8',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <span>📋 Service Details</span>
+                      <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedLashLift ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </button>
+
+                    {/* Expandable Details Content */}
+                    {expandedLashLift && (
+                      <div style={{
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '0 0 8px 8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '0.85rem',
+                        color: '#4b5563',
+                        lineHeight: '1.6',
+                        textAlign: 'left',
+                        border: '1px solid #ffe0e8',
+                        borderTop: 'none',
+                        animation: 'slideDown 0.3s ease'
+                      }}>
+                        <style>{`
+                          @keyframes slideDown {
+                            from {
+                              opacity: 0;
+                              max-height: 0;
+                            }
+                            to {
+                              opacity: 1;
+                              max-height: 500px;
+                            }
+                          }
+                        `}</style>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details.duration}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details.fullDescription}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details.how}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✨</strong> {service.details.result}</p>
+                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>➕ {service.details.tint}</p>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {/* Lash Lift Tint Add-on Selector */}
