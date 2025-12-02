@@ -1183,19 +1183,28 @@ const BookingForm: React.FC = () => {
                     borderRadius: '8px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '12px'
+                    gap: '12px',
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    maxWidth: '100%',
+                    overflow: 'hidden'
                   }}>
                     <div style={{
                       fontSize: '0.9rem',
                       fontWeight: '600',
-                      color: '#ff6fa3'
+                      color: '#ff6fa3',
+                      width: '100%',
+                      boxSizing: 'border-box'
                     }}>
                       {t('bookingForm.threadingAreas') || 'Select threading areas (3+ auto-selects full face):'}
                     </div>
                     <div style={{
                       display: 'grid',
                       gridTemplateColumns: '1fr 1fr',
-                      gap: '8px'
+                      gap: '8px',
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      maxWidth: '100%'
                     }}>
                       {[
                         { id: 'eyebrows', label: t('bookingForm.threadingEyebrows') || 'Eyebrows - 120 kr' },
@@ -1249,7 +1258,12 @@ const BookingForm: React.FC = () => {
                               cursor: isDisabled ? 'not-allowed' : 'pointer',
                               transition: 'all 0.2s',
                               textAlign: 'center',
-                              opacity: isDisabled ? 0.5 : 1
+                              opacity: isDisabled ? 0.5 : 1,
+                              width: '100%',
+                              boxSizing: 'border-box',
+                              wordWrap: 'break-word',
+                              overflowWrap: 'break-word',
+                              wordBreak: 'break-word'
                             }}
                             onMouseEnter={(e) => {
                               if (!isSelected && !isDisabled) {
