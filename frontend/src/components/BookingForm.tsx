@@ -2209,13 +2209,13 @@ const BookingForm: React.FC = () => {
                             </>
                           );
                         }
-                      } else if (currentLanguage === 'arb') {
-                        // Handle Arabic: search for الاتصال بنا
-                        const targetPhrase = 'الاتصال بنا';
-                        const index = content.indexOf(targetPhrase);
+                      } else if (currentLanguage === 'arb' || content.includes('الاتصال بنا')) {
+                        // Arabic: hardcode detection for الاتصال بنا
+                        const arabicLink = 'الاتصال بنا';
+                        const index = content.indexOf(arabicLink);
                         if (index !== -1) {
                           const beforeText = content.substring(0, index);
-                          const afterText = content.substring(index + targetPhrase.length);
+                          const afterText = content.substring(index + arabicLink.length);
                           return (
                             <>
                               {beforeText}
