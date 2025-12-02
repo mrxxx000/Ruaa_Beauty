@@ -6,7 +6,7 @@ const getAuthToken = () => {
 };
 
 // Create a new review
-export async function submitReview(rating: number, comment: string) {
+export async function submitReview(bookingId: string, rating: number, comment: string) {
   const token = getAuthToken();
   if (!token) {
     throw new Error('You must be logged in to submit a review');
@@ -19,6 +19,7 @@ export async function submitReview(rating: number, comment: string) {
       'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify({
+      bookingId,
       rating,
       comment,
     }),
@@ -100,7 +101,7 @@ export async function getReviewWithReplies(reviewId: number) {
 }
 
 // Add reply to review
-export async function addReplyToReview(reviewId: number, reply: string) {
+export async function addReplyToReview(reviewId: number, replyText: string) {
   const token = getAuthToken();
   if (!token) {
     throw new Error('You must be logged in to reply');
@@ -113,7 +114,7 @@ export async function addReplyToReview(reviewId: number, reply: string) {
       'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify({
-      reply,
+      replyText,
     }),
   });
 
