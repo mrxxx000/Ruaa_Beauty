@@ -38,6 +38,7 @@
     scroll-behavior: smooth;
     padding: 0;
     margin: 0;
+    margin-left: -10px;
     z-index: 1000;
   }
 
@@ -252,6 +253,8 @@
 /* RTL Support */
 [dir="rtl"] .bottom-nav-inner {
   flex-direction: row-reverse;
+  margin-left: 0;
+  margin-right: -10px;
 }
 
 [dir="rtl"] .bottom-nav-dropdown-menu {
