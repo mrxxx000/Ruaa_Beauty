@@ -353,7 +353,7 @@ const Reviews: React.FC = () => {
         {/* Login Prompt - Only for non-logged in users */}
         {!isAuthenticated && (
           <div className="login-prompt">
-            <p>👤 Sign in to share your experience and leave a review</p>
+            <p>{t('reviews.signInMessage')}</p>
           </div>
         )}
 

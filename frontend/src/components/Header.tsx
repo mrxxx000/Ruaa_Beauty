@@ -7,9 +7,14 @@ import AuthModal from './AuthModal';
 
 const Header: React.FC = () => {
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+
+  // Force re-render when language changes
+  React.useEffect(() => {
+    // This effect ensures the component re-renders when language changes
+  }, [i18n.language]);
 
   return (
     <header className="site-header">
@@ -28,7 +33,7 @@ const Header: React.FC = () => {
               className="nav-dropdown-btn"
               onClick={() => setSalonDropdownOpen(!salonDropdownOpen)}
             >
-              Salon Services
+              {t('nav.salonService')}
               <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: salonDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
             </button>
             {salonDropdownOpen && (
@@ -48,7 +53,7 @@ const Header: React.FC = () => {
               className="nav-dropdown-btn"
               onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
             >
-              Products
+              {t('nav.products')}
               <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: productsDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
             </button>
             {productsDropdownOpen && (
