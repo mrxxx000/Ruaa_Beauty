@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 
 const sitemapRouter = Router();
 
@@ -14,32 +14,46 @@ const routes = [
   { url: '/contact', priority: '0.7', changefreq: 'monthly' },
 ];
 
-sitemapRouter.get('/sitemap.xml', (req, res) => {
-  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-  xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+sitemapRouter.get('/sitemap.xml', (req: Request, res: Response) => {
+  try {
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
-  routes.forEach((route) => {
-    xml += '  <url>\n';
-    xml += `    <loc>${BASE_URL}${route.url}</loc>\n`;
-    xml += `    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n`;
-    xml += `    <changefreq>${route.changefreq}</changefreq>\n`;
-    xml += `    <priority>${route.priority}</priority>\n`;
-    xml += '  </url>\n';
-  });
+    routes.forEach((route) => {
+      xml += '  <url>\n';
+      xml += `    <loc>${BASE_URL}${route.url}</loc>\n`;
+      xml += `    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n`;
+      xml += `    <changefreq>${route.changefreq}</changefreq>\n`;
+      xml += `    <priority>${route.priority}</priority>\n`;
+      xml += '  </url>\n';
+    });
 
-  xml += '</urlset>';
+    xml += '</urlset>';
 
-  res.header('Content-Type', 'application/xml');
-  res.send(xml);
+    res.set('Content-Type', 'application/xml; charset=utf-8');
+    res.set('Content-Length', Buffer.byteLength(xml, 'utf-8').toString());
+    res.status(200).send(xml);
+    console.log('✅ Sitemap served successfully');
+  } catch (error) {
+    console.error('❌ Error generating sitemap:', error);
+    res.status(500).send('Error generating sitemap');
+  }
 });
 
-sitemapRouter.get('/robots.txt', (req, res) => {
-  let robots = 'User-agent: *\n';
-  robots += 'Allow: /\n';
-  robots += `Sitemap: ${BASE_URL}/sitemap.xml\n`;
+sitemapRouter.get('/robots.txt', (req: Request, res: Response) => {
+  try {
+    let robots = 'User-agent: *\n';
+    robots += 'Allow: /\n';
+    robots += `Sitemap: ${BASE_URL}/sitemap.xml\n`;
 
-  res.header('Content-Type', 'text/plain');
-  res.send(robots);
+    res.set('Content-Type', 'text/plain; charset=utf-8');
+    res.set('Content-Length', Buffer.byteLength(robots, 'utf-8').toString());
+    res.status(200).send(robots);
+    console.log('✅ Robots.txt served successfully');
+  } catch (error) {
+    console.error('❌ Error generating robots.txt:', error);
+    res.status(500).send('Error generating robots.txt');
+  }
 });
 
 export default sitemapRouter;

@@ -11,6 +11,7 @@ const bookingRoutes_1 = __importDefault(require("./routes/bookingRoutes"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 const reviewRoutes_1 = __importDefault(require("./routes/reviewRoutes"));
+const sitemap_1 = __importDefault(require("./sitemap"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT ? Number(process.env.PORT) : 10000;
@@ -61,6 +62,8 @@ app.use('/api', bookingRoutes_1.default);
 app.use('/api', reviewRoutes_1.default);
 // Use admin routes
 app.use('/api/admin', adminRoutes_1.default);
+// Use sitemap routes (for SEO)
+app.use('/', sitemap_1.default);
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('❌ Error:', err);

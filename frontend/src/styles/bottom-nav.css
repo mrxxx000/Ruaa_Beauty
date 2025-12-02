@@ -169,6 +169,7 @@
     left: var(--menu-left, 50px);
     transform: translateX(calc(-50% + var(--menu-offset, 0px)));
     pointer-events: auto !important;
+    right: auto;
   }
 
   @keyframes slideUp {
@@ -258,6 +259,12 @@
 }
 
 [dir="rtl"] .bottom-nav-dropdown-menu {
+  left: auto;
+  right: var(--menu-left, 50px);
+  transform: translateX(calc(50% + var(--menu-offset, 0px)));
+}
+
+[dir="ltr"] .bottom-nav-dropdown-menu {
   left: var(--menu-left, 50px);
   right: auto;
   transform: translateX(calc(-50% + var(--menu-offset, 0px)));
