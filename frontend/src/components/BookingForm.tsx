@@ -11,6 +11,7 @@ type FormData = {
   mehendiHours: number; // Hours for Mehendi service
   lashLiftTint: boolean; // Tint add-on for Lash Lift
   browLiftTint: boolean; // Tint add-on for Brow Lift
+  threadingAreas: string[]; // Multiple threading area selections
   date: string;
   time: string;
   location: string;
@@ -26,6 +27,7 @@ const defaultData: FormData = {
   mehendiHours: 0,
   lashLiftTint: false,
   browLiftTint: false,
+  threadingAreas: [],
   date: '',
   time: '',
   location: '',
@@ -56,6 +58,7 @@ const BookingForm: React.FC = () => {
   const [expandedLashLift, setExpandedLashLift] = useState<boolean>(false);
   const [expandedBrowLift, setExpandedBrowLift] = useState<boolean>(false);
   const [expandedBridalMakeup, setExpandedBridalMakeup] = useState<boolean>(false);
+  const [expandedThreading, setExpandedThreading] = useState<boolean>(false);
 
   // Check if user is logged in on component mount
   useEffect(() => {
@@ -177,12 +180,44 @@ const BookingForm: React.FC = () => {
     };
   }, []);
 
+  // Helper function to determine final threading area(s)
+  const getThreadingAreaPrice = (areas: string[]): number => {
+    if (areas.length === 0) return 0;
+    
+    // If 3 or more areas are selected, automatically use full-face
+    if (areas.length >= 3) {
+      return 250; // Full Face price
+    }
+    
+    // If 1-2 areas selected, sum their prices
+    const areaPrices: { [key: string]: number } = {
+      'eyebrows': 120,
+      'upper-lip': 80,
+      'chin': 80,
+      'full-face': 250
+    };
+    
+    return areas.reduce((sum, area) => sum + (areaPrices[area] || 0), 0);
+  };
+
+  // Helper function to get final threading area selection (auto-convert to full-face if 3+)
+  const getFinalThreadingAreas = (areas: string[]): string[] => {
+    if (areas.length >= 3) {
+      return ['full-face'];
+    }
+    return areas;
+  };
+
   // Calculate total price
-  const calculateTotalPrice = (services: string[], mehendiHours: number = 0, lashLiftTint: boolean = false, browLiftTint: boolean = false): number => {
+  const calculateTotalPrice = (services: string[], mehendiHours: number = 0, lashLiftTint: boolean = false, browLiftTint: boolean = false, threadingAreas: string[] = []): number => {
     let total = services.reduce((sum, service) => {
       if (service === 'mehendi' && mehendiHours > 0) {
         // Mehendi is priced per hour (400 kr/hour)
         return sum + (SERVICES_PRICING[service] * mehendiHours);
+      }
+      if (service === 'threading' && threadingAreas.length > 0) {
+        // Threading price based on selected areas
+        return sum + getThreadingAreaPrice(threadingAreas);
       }
       return sum + (SERVICES_PRICING[service] || 0);
     }, 0);
@@ -200,7 +235,7 @@ const BookingForm: React.FC = () => {
     return total;
   };
 
-  const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours, formData.lashLiftTint, formData.browLiftTint);
+  const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours, formData.lashLiftTint, formData.browLiftTint, formData.threadingAreas);
 
   // Fetch available times when date or services change
   const fetchAvailableTimes = async (date: string, services: string[], mehendiHours: number = 0) => {
@@ -268,6 +303,7 @@ const BookingForm: React.FC = () => {
         : formData.customAddress;
 
       // Prepare booking data - only send fields the API expects
+      const finalThreadingAreas = getFinalThreadingAreas(formData.threadingAreas);
       const bookingData = {
         name: formData.name,
         email: formData.email,
@@ -281,13 +317,29 @@ const BookingForm: React.FC = () => {
         mehendiHours: formData.mehendiHours,
         lashLiftTint: formData.lashLiftTint,
         browLiftTint: formData.browLiftTint,
+        threadingAreas: finalThreadingAreas,
         totalPrice: totalPrice,
-        servicePricing: formData.services.map(s => ({
-          name: s,
-          price: s === 'mehendi' ? (SERVICES_PRICING[s] * formData.mehendiHours) : (SERVICES_PRICING[s] || 0),
-          hours: s === 'mehendi' ? formData.mehendiHours : undefined,
-          tint: s === 'lash-lift' && formData.lashLiftTint ? 20 : s === 'brow-lift' && formData.browLiftTint ? 20 : undefined
-        })),
+        servicePricing: formData.services.map(s => {
+          if (s === 'mehendi') {
+            return {
+              name: s,
+              price: SERVICES_PRICING[s] * formData.mehendiHours,
+              hours: formData.mehendiHours
+            };
+          }
+          if (s === 'threading') {
+            return {
+              name: s,
+              price: getThreadingAreaPrice(formData.threadingAreas),
+              areas: finalThreadingAreas
+            };
+          }
+          return {
+            name: s,
+            price: SERVICES_PRICING[s] || 0,
+            tint: s === 'lash-lift' && formData.lashLiftTint ? 20 : s === 'brow-lift' && formData.browLiftTint ? 20 : undefined
+          };
+        }),
       };
 
       console.log('Submitting booking data:', bookingData);
@@ -441,7 +493,7 @@ const BookingForm: React.FC = () => {
               { icon: '💄', name: t('bookingForm.serviceMakeup'), price: '1000 kr', value: 'makeup', description: t('bookingForm.priceMakeup') || 'Professional makeup artistry' },
               { icon: '👰', name: t('bookingForm.serviceBridalMakeup'), price: '2000 kr', value: 'bridal-makeup', description: t('bookingForm.priceBridalMakeup') || 'Your special day, perfected', details: { duration: t('bookingForm.bridalMakeupDuration'), fullDescription: t('bookingForm.bridalMakeupDescription'), how: t('bookingForm.bridalMakeupHow'), result: t('bookingForm.bridalMakeupResult') } },
               { icon: '🎨', name: t('bookingForm.serviceMehendi'), price: '400 kr/hr', value: 'mehendi', description: t('bookingForm.priceMehendi') || 'Intricate henna designs' },
-              { icon: '🧵', name: t('bookingForm.serviceThreading'), price: '200 kr', value: 'threading', description: t('bookingForm.priceThreading') || 'Precise facial threading' },
+              { icon: '🧵', name: t('bookingForm.serviceThreading'), price: '200 kr', value: 'threading', description: t('bookingForm.priceThreading') || 'Precise facial threading', details: { duration: t('bookingForm.threadingDuration'), fullDescription: t('bookingForm.threadingDescription'), how: t('bookingForm.threadingHow'), result: t('bookingForm.threadingResult') } },
             ].map((service) => (
               <div
                 key={service.value}
@@ -472,12 +524,14 @@ const BookingForm: React.FC = () => {
                   // Reset lashLiftTint if lash-lift is being removed
                   // Reset browLiftTint if brow-lift is being removed
                   // Reset bridalMakeupTint if bridal-makeup is being removed
+                  // Reset threadingAreas if threading is being removed
                   const updatedFormData = { 
                     ...formData, 
                     services: updatedServices,
                     ...(service.value === 'lash-lift' && isSelected && { lashLiftTint: false }),
                     ...(service.value === 'brow-lift' && isSelected && { browLiftTint: false }),
-                    ...(service.value === 'bridal-makeup' && isSelected && { bridalMakeupTint: false })
+                    ...(service.value === 'bridal-makeup' && isSelected && { bridalMakeupTint: false }),
+                    ...(service.value === 'threading' && isSelected && { threadingAreas: [] })
                   };
                   
                   setFormData(updatedFormData);
@@ -833,6 +887,69 @@ const BookingForm: React.FC = () => {
                   </>
                 )}
 
+                {/* Threading Details Section */}
+                {service.value === 'threading' && service.details && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedThreading(!expandedThreading)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: expandedThreading ? '0' : '16px',
+                        fontSize: '0.95rem',
+                        color: '#ff6fa3',
+                        border: '1px solid #ffe0e8',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <span>Service Details</span>
+                      <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedThreading ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </button>
+
+                    {/* Expandable Details Content */}
+                    {expandedThreading && (
+                      <div style={{
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '0 0 8px 8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '0.85rem',
+                        color: '#4b5563',
+                        lineHeight: '1.6',
+                        textAlign: 'left',
+                        border: '1px solid #ffe0e8',
+                        borderTop: 'none',
+                        animation: 'slideDown 0.3s ease'
+                      }}>
+                        <style>{`
+                          @keyframes slideDown {
+                            from {
+                              opacity: 0;
+                              max-height: 0;
+                            }
+                            to {
+                              opacity: 1;
+                              max-height: 500px;
+                            }
+                          }
+                        `}</style>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details?.duration}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details?.fullDescription}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details?.how}</p>
+                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>✨ {service.details?.result}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+
                 {/* Hours selector for Mehendi */}
                 {service.value === 'mehendi' && formData.services.includes('mehendi') && (
                   <div style={{
@@ -904,6 +1021,123 @@ const BookingForm: React.FC = () => {
                     >
                       +
                     </button>
+                  </div>
+                )}
+
+                {/* Area selector for Threading */}
+                {service.value === 'threading' && formData.services.includes('threading') && (
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    backgroundColor: '#fff6f8',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
+                  }}>
+                    <div style={{
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      color: '#ff6fa3'
+                    }}>
+                      {t('bookingForm.threadingAreas') || 'Select threading areas (3+ auto-selects full face):'}
+                    </div>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '8px'
+                    }}>
+                      {[
+                        { id: 'eyebrows', label: t('bookingForm.threadingEyebrows') || 'Eyebrows - 120 kr' },
+                        { id: 'upper-lip', label: t('bookingForm.threadingUpperLip') || 'Upper Lip - 80 kr' },
+                        { id: 'chin', label: t('bookingForm.threadingChin') || 'Chin - 80 kr' },
+                        { id: 'full-face', label: t('bookingForm.threadingFullFace') || 'Full Face - 250 kr' }
+                      ].map((option) => {
+                        const isSelected = formData.threadingAreas.includes(option.id);
+                        const hasFullFace = formData.threadingAreas.includes('full-face');
+                        const isIndividualArea = option.id !== 'full-face';
+                        // Disable individual areas if full-face is selected, and disable full-face if individual areas are selected
+                        const isDisabled = (isIndividualArea && hasFullFace) || (!isIndividualArea && formData.threadingAreas.length > 0 && !hasFullFace);
+                        
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isDisabled) return;
+                              
+                              let updatedAreas: string[] = [];
+                              
+                              if (option.id === 'full-face') {
+                                // If full-face is clicked, toggle it alone
+                                updatedAreas = isSelected ? [] : ['full-face'];
+                              } else if (isSelected) {
+                                // Remove the area if already selected
+                                updatedAreas = formData.threadingAreas.filter(a => a !== option.id);
+                              } else {
+                                // Add the area
+                                updatedAreas = [...formData.threadingAreas, option.id];
+                                // If 3 areas are now selected, auto-convert to full-face
+                                if (updatedAreas.length >= 3) {
+                                  updatedAreas = ['full-face'];
+                                }
+                              }
+                              
+                              setFormData({ ...formData, threadingAreas: updatedAreas });
+                            }}
+                            style={{
+                              padding: '10px 12px',
+                              borderRadius: '6px',
+                              border: isSelected ? 'none' : '2px solid #ff6fa3',
+                              background: isSelected 
+                                ? 'linear-gradient(90deg, #ff6fa3 0%, #ff9ccf 100%)'
+                                : isDisabled ? '#e5e7eb' : 'white',
+                              color: isSelected ? 'white' : isDisabled ? '#9ca3af' : '#ff6fa3',
+                              fontSize: '0.85rem',
+                              fontWeight: '600',
+                              cursor: isDisabled ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.2s',
+                              textAlign: 'center',
+                              opacity: isDisabled ? 0.5 : 1
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected && !isDisabled) {
+                                e.currentTarget.style.background = '#fff0f5';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected && !isDisabled) {
+                                e.currentTarget.style.background = 'white';
+                              }
+                            }}
+                          >
+                            {isSelected && '✓ '}
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {formData.threadingAreas.length > 0 && (
+                      <div style={{
+                        fontSize: '0.85rem',
+                        color: '#6b7280',
+                        fontStyle: 'italic',
+                        paddingTop: '4px',
+                        borderTop: '1px solid #ffe0e8'
+                      }}>
+                        Selected: {formData.threadingAreas.includes('full-face') 
+                          ? (t('bookingForm.threadingFullFace') || 'Full Face')
+                          : formData.threadingAreas.map(a => {
+                              const areaNames: { [key: string]: string } = {
+                                'eyebrows': t('bookingForm.threadingEyebrows') || 'Eyebrows',
+                                'upper-lip': t('bookingForm.threadingUpperLip') || 'Upper Lip',
+                                'chin': t('bookingForm.threadingChin') || 'Chin'
+                              };
+                              return areaNames[a] || a;
+                            }).join(' + ')}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1377,6 +1611,11 @@ const BookingForm: React.FC = () => {
                             priceLabel = `${SERVICES_PRICING[serviceValue]} kr × ${formData.mehendiHours}h = ${servicePrice} kr`;
                           }
                           
+                          if (serviceValue === 'threading' && formData.threadingAreas.length > 0) {
+                            servicePrice = getThreadingAreaPrice(formData.threadingAreas);
+                            priceLabel = `${servicePrice} kr`;
+                          }
+                          
                           return (
                             <div key={serviceValue}>
                               <div 
@@ -1431,6 +1670,34 @@ const BookingForm: React.FC = () => {
                                 >
                                   <span style={{ color: '#6b7280' }}>  ➕ {t('bookingForm.browLiftTint') || 'Tint Add-on'}</span>
                                   <span style={{ fontWeight: '600', color: '#ff6fa3' }}>+20 kr</span>
+                                </div>
+                              )}
+                              
+                              {/* Threading Areas in Pricing */}
+                              {serviceValue === 'threading' && formData.threadingAreas.length > 0 && (
+                                <div 
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    padding: '6px 0 8px 16px',
+                                    borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
+                                    fontSize: '0.9rem',
+                                    flexWrap: 'wrap',
+                                    gap: '8px',
+                                    fontStyle: 'italic',
+                                    color: '#ff6fa3'
+                                  }}
+                                >
+                                  <span style={{ color: '#6b7280' }}>  🧵 {(() => {
+                                    const areaNames: { [key: string]: string } = {
+                                      'eyebrows': t('bookingForm.threadingEyebrows') || 'Eyebrows',
+                                      'upper-lip': t('bookingForm.threadingUpperLip') || 'Upper Lip',
+                                      'chin': t('bookingForm.threadingChin') || 'Chin',
+                                      'full-face': t('bookingForm.threadingFullFace') || 'Full Face'
+                                    };
+                                    const finalAreas = getFinalThreadingAreas(formData.threadingAreas);
+                                    return finalAreas.map(a => areaNames[a] || a).join(' + ');
+                                  })()}</span>
                                 </div>
                               )}
                             </div>
