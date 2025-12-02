@@ -185,6 +185,7 @@
     "subtitle": "Se vad våra kunder säger",
     "totalReviews": "Totala recensioner",
     "averageRating": "Genomsnittligt betyg",
+    "loadingMessage": "Laddar recensioner...",
     "signInMessage": "👤 Logga in för att dela din upplevelse och lämna en recension"
   },
   "footer": {

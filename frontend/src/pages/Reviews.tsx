@@ -314,7 +314,7 @@ const Reviews: React.FC = () => {
 
         {loading && (
           <div style={{ textAlign: 'center', padding: '3rem' }}>
-            <div style={{ color: '#ff6fa3', fontSize: '1.2rem' }}>Loading reviews...</div>
+            <div style={{ color: '#ff6fa3', fontSize: '1.2rem' }}>{t('reviews.loadingMessage')}</div>
           </div>
         )}
 

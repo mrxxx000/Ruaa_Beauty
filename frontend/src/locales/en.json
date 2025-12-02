@@ -182,6 +182,7 @@
     "subtitle": "See what our clients have to say",
     "totalReviews": "Total Reviews",
     "averageRating": "Average Rating",
+    "loadingMessage": "Loading reviews...",
     "signInMessage": "👤 Sign in to share your experience and leave a review"
   },
   "footer": {
