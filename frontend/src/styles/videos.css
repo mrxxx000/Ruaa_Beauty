@@ -105,8 +105,28 @@
   direction: rtl;
   margin-left: 0;
   margin-right: 16%;
+  width: 100%;
+}
+
+[dir="rtl"] .videos .video-grid {
+  margin: 0 auto;
 }
 
 [dir="rtl"] .shorts-grid {
   direction: rtl;
+}
+
+@media (max-width: 640px) {
+  [dir="rtl"] .videos {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  [dir="rtl"] .videos .video-grid {
+    width: 95%;
+    margin: 0 auto;
+  }
 }
