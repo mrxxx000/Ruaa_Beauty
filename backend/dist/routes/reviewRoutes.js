@@ -53,15 +53,19 @@ router.get('/reviews', async (req, res) => {
     const limit = req.query.limit ? parseInt(req.query.limit) : 10;
     const offset = req.query.offset ? parseInt(req.query.offset) : 0;
     try {
+        console.log(`📊 GET /api/reviews - limit: ${limit}, offset: ${offset}`);
         const result = await reviewService.getAllReviews(limit, offset);
+        console.log(`✅ Successfully returned ${result.reviews.length} reviews`);
         res.status(200).json(result);
     }
     catch (err) {
-        console.error('Error fetching reviews:', err);
+        console.error('❌ Error in GET /api/reviews:', err);
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        const errorStack = err instanceof Error ? err.stack : '';
         res.status(500).json({
             message: 'Error fetching reviews',
             details: errorMessage,
+            stack: process.env.NODE_ENV === 'development' ? errorStack : undefined,
         });
     }
 });

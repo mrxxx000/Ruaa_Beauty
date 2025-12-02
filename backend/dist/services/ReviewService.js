@@ -116,7 +116,7 @@ class ReviewService {
                 .range(offset, offset + limit - 1);
             if (error) {
                 console.error('❌ Failed to fetch reviews:', error);
-                throw error;
+                throw new Error(`Failed to fetch reviews: ${error.message}`);
             }
             // If no reviews, return empty result
             if (!reviews || reviews.length === 0) {
@@ -136,7 +136,7 @@ class ReviewService {
                         .eq('id', review.user_id)
                         .single();
                     if (userError) {
-                        console.warn(`⚠️ Could not fetch user ${review.user_id}:`, userError);
+                        console.warn(`⚠️ Could not fetch user ${review.user_id}:`, userError.message);
                     }
                     // Get replies for this review
                     const { data: replies, error: repliesError } = await supabase
@@ -145,7 +145,7 @@ class ReviewService {
                         .eq('review_id', review.id)
                         .order('created_at', { ascending: true });
                     if (repliesError) {
-                        console.warn(`⚠️ Could not fetch replies for review ${review.id}:`, repliesError);
+                        console.warn(`⚠️ Could not fetch replies for review ${review.id}:`, repliesError.message);
                     }
                     // Enrich replies with user data
                     const enrichedReplies = await Promise.all((replies || []).map(async (reply) => {
@@ -155,7 +155,7 @@ class ReviewService {
                             .eq('id', reply.user_id)
                             .single();
                         if (replyUserError) {
-                            console.warn(`⚠️ Could not fetch reply user ${reply.user_id}:`, replyUserError);
+                            console.warn(`⚠️ Could not fetch reply user ${reply.user_id}:`, replyUserError.message);
                         }
                         return {
                             ...reply,
@@ -169,7 +169,7 @@ class ReviewService {
                     };
                 }
                 catch (reviewError) {
-                    console.error(`❌ Error processing review ${review.id}:`, reviewError);
+                    console.error(`❌ Error processing review ${review.id}:`, reviewError?.message || reviewError);
                     // Return review with minimal data on error
                     return {
                         ...review,
@@ -185,7 +185,7 @@ class ReviewService {
             };
         }
         catch (err) {
-            console.error('❌ Error fetching reviews:', err);
+            console.error('❌ Error fetching reviews:', err?.message || err);
             throw err;
         }
     }

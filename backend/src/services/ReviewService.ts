@@ -142,7 +142,7 @@ export class ReviewService {
 
       if (error) {
         console.error('❌ Failed to fetch reviews:', error);
-        throw error;
+        throw new Error(`Failed to fetch reviews: ${error.message}`);
       }
 
       // If no reviews, return empty result
@@ -166,7 +166,7 @@ export class ReviewService {
               .single();
 
             if (userError) {
-              console.warn(`⚠️ Could not fetch user ${review.user_id}:`, userError);
+              console.warn(`⚠️ Could not fetch user ${review.user_id}:`, userError.message);
             }
 
             // Get replies for this review
@@ -177,7 +177,7 @@ export class ReviewService {
               .order('created_at', { ascending: true });
 
             if (repliesError) {
-              console.warn(`⚠️ Could not fetch replies for review ${review.id}:`, repliesError);
+              console.warn(`⚠️ Could not fetch replies for review ${review.id}:`, repliesError.message);
             }
 
             // Enrich replies with user data
@@ -190,7 +190,7 @@ export class ReviewService {
                   .single();
 
                 if (replyUserError) {
-                  console.warn(`⚠️ Could not fetch reply user ${reply.user_id}:`, replyUserError);
+                  console.warn(`⚠️ Could not fetch reply user ${reply.user_id}:`, replyUserError.message);
                 }
 
                 return {
@@ -205,8 +205,8 @@ export class ReviewService {
               user: user || null,
               replies: enrichedReplies,
             };
-          } catch (reviewError) {
-            console.error(`❌ Error processing review ${review.id}:`, reviewError);
+          } catch (reviewError: any) {
+            console.error(`❌ Error processing review ${review.id}:`, reviewError?.message || reviewError);
             // Return review with minimal data on error
             return {
               ...review,
@@ -222,8 +222,8 @@ export class ReviewService {
         reviews: enrichedReviews,
         total: count || 0,
       };
-    } catch (err) {
-      console.error('❌ Error fetching reviews:', err);
+    } catch (err: any) {
+      console.error('❌ Error fetching reviews:', err?.message || err);
       throw err;
     }
   }
