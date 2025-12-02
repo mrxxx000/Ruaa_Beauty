@@ -35,9 +35,8 @@
     overflow-x: auto;
     overflow-y: visible !important;
     scroll-behavior: smooth;
-    padding: 0;
+    padding: 0 10px 0 0;
     margin: 0;
-    margin-left: -10px;
     z-index: 1000;
   }
 
@@ -305,8 +304,8 @@
 /* RTL Support */
 [dir="rtl"] .bottom-nav-inner {
   flex-direction: row-reverse;
-  margin-left: 0;
-  margin-right: -10px;
+  padding: 0 0 0 10px;
+  margin: 0;
 }
 
 [dir="rtl"] .dropdown-chevron {
