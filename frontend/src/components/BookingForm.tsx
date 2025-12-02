@@ -39,6 +39,7 @@ const SERVICES_PRICING: { [key: string]: number } = {
   'lash-lift': 300,
   'brow-lift': 300,
   'makeup': 700,
+  'combined-lash-brow': 500,
   'bridal-makeup': 2000,
   'mehendi': 400,
   'threading': 200,
@@ -57,6 +58,7 @@ const BookingForm: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string; phone?: string } | null>(null);
   const [expandedLashLift, setExpandedLashLift] = useState<boolean>(false);
   const [expandedBrowLift, setExpandedBrowLift] = useState<boolean>(false);
+  const [expandedCombinedLashBrow, setExpandedCombinedLashBrow] = useState<boolean>(false);
   const [expandedEventMakeup, setExpandedEventMakeup] = useState<boolean>(false);
   const [expandedBridalMakeup, setExpandedBridalMakeup] = useState<boolean>(false);
   const [expandedThreading, setExpandedThreading] = useState<boolean>(false);
@@ -492,6 +494,7 @@ const BookingForm: React.FC = () => {
               { icon: '🌸', name: t('bookingForm.serviceLashLift'), price: '300 kr', value: 'lash-lift', description: t('bookingForm.priceLashLift') || 'Natural lift and curl', details: { duration: t('bookingForm.lashLiftDuration'), fullDescription: t('bookingForm.lashLiftDescription'), how: t('bookingForm.lashLiftHow'), result: t('bookingForm.lashLiftResult'), tint: t('bookingForm.lashLiftTint') } },
               { icon: '✨', name: t('bookingForm.serviceBrowLift'), price: '300 kr', value: 'brow-lift', description: t('bookingForm.priceBrowLift') || 'Perfectly shaped brows', details: { duration: t('bookingForm.browLiftDuration'), fullDescription: t('bookingForm.browLiftDescription'), how: t('bookingForm.browLiftHow'), result: t('bookingForm.browLiftResult'), tint: t('bookingForm.browLiftTint') } },
               { icon: '💄', name: t('bookingForm.serviceMakeup'), price: '700 kr', value: 'makeup', description: t('bookingForm.priceMakeup') || 'Customized event makeup', details: { duration: t('bookingForm.eventMakeupDuration'), fullDescription: t('bookingForm.eventMakeupDescription'), how: t('bookingForm.eventMakeupHow'), result: t('bookingForm.eventMakeupResult') } },
+              { icon: '⭐', name: t('bookingForm.combinedLashBrowTitle'), price: '500 kr', value: 'combined-lash-brow', description: t('bookingForm.combinedLashBrowDescription') || 'Lash Lift + Brow Lift', details: { duration: t('bookingForm.combinedLashBrowDuration'), fullDescription: t('bookingForm.combinedLashBrowDescription'), how: t('bookingForm.combinedLashBrowHow'), result: t('bookingForm.combinedLashBrowResult') } },
               { icon: '👰', name: t('bookingForm.serviceBridalMakeup'), price: '2000 kr', value: 'bridal-makeup', description: t('bookingForm.priceBridalMakeup') || 'Your special day, perfected', details: { duration: t('bookingForm.bridalMakeupDuration'), fullDescription: t('bookingForm.bridalMakeupDescription'), how: t('bookingForm.bridalMakeupHow'), result: t('bookingForm.bridalMakeupResult') } },
               { icon: '🎨', name: t('bookingForm.serviceMehendi'), price: '400 kr/hr', value: 'mehendi', description: t('bookingForm.priceMehendi') || 'Intricate henna designs' },
               { icon: '🧵', name: t('bookingForm.serviceThreading'), price: '200 kr', value: 'threading', description: t('bookingForm.priceThreading') || 'Precise facial threading', details: { duration: t('bookingForm.threadingDuration'), fullDescription: t('bookingForm.threadingDescription'), how: t('bookingForm.threadingHow'), result: t('bookingForm.threadingResult') } },
@@ -822,6 +825,69 @@ const BookingForm: React.FC = () => {
                       +
                     </button>
                   </div>
+                )}
+
+                {/* Combined Lash + Brow Lift Details Section */}
+                {service.value === 'combined-lash-brow' && service.details && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedCombinedLashBrow(!expandedCombinedLashBrow)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: expandedCombinedLashBrow ? '0' : '16px',
+                        fontSize: '0.95rem',
+                        color: '#ff6fa3',
+                        border: '1px solid #ffe0e8',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <span>Service Details</span>
+                      <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedCombinedLashBrow ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </button>
+
+                    {/* Expandable Details Content */}
+                    {expandedCombinedLashBrow && (
+                      <div style={{
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '0 0 8px 8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '0.85rem',
+                        color: '#4b5563',
+                        lineHeight: '1.6',
+                        textAlign: 'left',
+                        border: '1px solid #ffe0e8',
+                        borderTop: 'none',
+                        animation: 'slideDown 0.3s ease'
+                      }}>
+                        <style>{`
+                          @keyframes slideDown {
+                            from {
+                              opacity: 0;
+                              max-height: 0;
+                            }
+                            to {
+                              opacity: 1;
+                              max-height: 500px;
+                            }
+                          }
+                        `}</style>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details?.duration}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details?.fullDescription}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details?.how}</p>
+                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>✨ {service.details?.result}</p>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {/* Event Makeup Details Section */}
