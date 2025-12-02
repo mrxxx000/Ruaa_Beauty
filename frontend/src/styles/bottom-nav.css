@@ -34,7 +34,6 @@
     height: 60px;
     overflow-x: auto;
     overflow-y: visible !important;
-    position: relative;
     scroll-behavior: smooth;
     padding: 0;
     margin: 0;
@@ -155,31 +154,39 @@
   }
 
   /* Dropup Menu */
-  .bottom-nav-dropdown-menu {
+  .bottom-nav-menu-wrapper {
     position: fixed;
     bottom: 65px;
+    width: 100%;
+    z-index: 3000;
+    pointer-events: none;
+    left: 0;
+    right: 0;
+  }
+
+  .bottom-nav-dropdown-menu {
+    position: absolute;
+    left: var(--menu-left, 50px);
     background: white;
     border-radius: 8px;
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
     min-width: 140px;
-    z-index: 2000;
     margin-bottom: 0;
     animation: slideUp 0.2s ease;
     overflow: visible !important;
-    left: var(--menu-left, 50px);
-    transform: translateX(calc(-50% + var(--menu-offset, 0px)));
+    transform: translateX(-50%);
     pointer-events: auto !important;
-    right: auto;
+    will-change: transform;
   }
 
   @keyframes slideUp {
     from {
       opacity: 0;
-      transform: translateX(calc(-50% + var(--menu-offset, 0px))) translateY(8px);
+      transform: translateX(-50%) translateY(8px);
     }
     to {
       opacity: 1;
-      transform: translateX(calc(-50% + var(--menu-offset, 0px))) translateY(0);
+      transform: translateX(-50%) translateY(0);
     }
   }
 
@@ -261,13 +268,13 @@
 [dir="rtl"] .bottom-nav-dropdown-menu {
   left: auto;
   right: var(--menu-left, 50px);
-  transform: translateX(calc(50% + var(--menu-offset, 0px)));
+  transform: translateX(50%);
 }
 
 [dir="ltr"] .bottom-nav-dropdown-menu {
   left: var(--menu-left, 50px);
   right: auto;
-  transform: translateX(calc(-50% + var(--menu-offset, 0px)));
+  transform: translateX(-50%);
 }
 
 [dir="rtl"] .dropdown-chevron {
