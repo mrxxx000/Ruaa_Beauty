@@ -28,12 +28,12 @@ const verifyToken = (req, res, next) => {
 // POST /api/reviews - Create a new review (requires authentication)
 router.post('/reviews', verifyToken, async (req, res) => {
     const userId = req.userId;
-    const { rating, comment } = req.body;
-    if (!rating || !comment) {
-        return res.status(400).json({ message: 'Rating and comment are required' });
+    const { bookingId, rating, comment } = req.body;
+    if (!bookingId || !rating || !comment) {
+        return res.status(400).json({ message: 'Booking ID, rating and comment are required' });
     }
     try {
-        const review = await reviewService.createReview(userId, rating, comment);
+        const review = await reviewService.createReview(userId, bookingId, rating, comment);
         res.status(201).json({
             message: 'Review created successfully',
             review,
@@ -124,12 +124,12 @@ router.get('/reviews/:reviewId', async (req, res) => {
 router.post('/reviews/:reviewId/reply', verifyToken, async (req, res) => {
     const userId = req.userId;
     const { reviewId } = req.params;
-    const { reply } = req.body;
-    if (!reviewId || !reply) {
-        return res.status(400).json({ message: 'Review ID and reply are required' });
+    const { replyText } = req.body;
+    if (!reviewId || !replyText) {
+        return res.status(400).json({ message: 'Review ID and reply text are required' });
     }
     try {
-        const replyData = await reviewService.addReplyToReview(parseInt(reviewId), userId, reply);
+        const replyData = await reviewService.addReplyToReview(parseInt(reviewId), userId, replyText);
         res.status(201).json({
             message: 'Reply added successfully',
             reply: replyData,
@@ -144,7 +144,7 @@ router.post('/reviews/:reviewId/reply', verifyToken, async (req, res) => {
         });
     }
 });
-// DELETE /api/reviews/:reviewId/reply/:replyId - Delete reply (requires authentication, only author)
+// DELETE /api/reviews/:reviewId/reply/:replyId - Delete reply (requires authentication, only author or admin)
 router.delete('/reviews/:reviewId/reply/:replyId', verifyToken, async (req, res) => {
     const userId = req.userId;
     const { reviewId, replyId } = req.params;
