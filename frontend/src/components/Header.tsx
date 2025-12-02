@@ -10,11 +10,27 @@ const Header: React.FC = () => {
   const { t, i18n } = useTranslation();
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const navRef = React.useRef<HTMLElement>(null);
 
   // Force re-render when language changes
   React.useEffect(() => {
     // This effect ensures the component re-renders when language changes
   }, [i18n.language]);
+
+  // Close dropdowns when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setSalonDropdownOpen(false);
+        setProductsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="site-header">
@@ -25,13 +41,16 @@ const Header: React.FC = () => {
           </Link>
           <span className="brand-title">Ruaa Beauty</span>
         </div>
-        <nav className="nav">
+        <nav className="nav" ref={navRef}>
           <Link to="/" className={location.pathname === '/' ? 'active' : ''}>{t('nav.home')}</Link>
 
           <div className="nav-dropdown">
             <button
               className="nav-dropdown-btn"
-              onClick={() => setSalonDropdownOpen(!salonDropdownOpen)}
+              onClick={() => {
+                setSalonDropdownOpen(!salonDropdownOpen);
+                setProductsDropdownOpen(false);
+              }}
             >
               {t('nav.salonService')}
               <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: salonDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
@@ -51,7 +70,10 @@ const Header: React.FC = () => {
           <div className="nav-dropdown">
             <button
               className="nav-dropdown-btn"
-              onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
+              onClick={() => {
+                setProductsDropdownOpen(!productsDropdownOpen);
+                setSalonDropdownOpen(false);
+              }}
             >
               {t('nav.products')}
               <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: productsDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />

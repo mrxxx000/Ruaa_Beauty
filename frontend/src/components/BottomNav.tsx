@@ -38,6 +38,7 @@ const BottomNav: React.FC = () => {
       setSalonDropdownPos(rect.left + rect.width / 2);
     }
     setSalonDropdownOpen(!salonDropdownOpen);
+    setProductsDropdownOpen(false);
   };
 
   const handleProductsDropdownClick = () => {
@@ -46,6 +47,7 @@ const BottomNav: React.FC = () => {
       setProductsDropdownPos(rect.left + rect.width / 2);
     }
     setProductsDropdownOpen(!productsDropdownOpen);
+    setSalonDropdownOpen(false);
   };
 
   return (
