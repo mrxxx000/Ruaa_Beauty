@@ -6,6 +6,7 @@ import bookingRoutes from './routes/bookingRoutes';
 import authRoutes from './routes/authRoutes';
 import adminRoutes from './routes/adminRoutes';
 import reviewRoutes from './routes/reviewRoutes';
+import sitemapRouter from './sitemap';
 
 dotenv.config();
 
@@ -67,6 +68,9 @@ app.use('/api', reviewRoutes);
 
 // Use admin routes
 app.use('/api/admin', adminRoutes);
+
+// Use sitemap routes (for SEO)
+app.use('/', sitemapRouter);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
