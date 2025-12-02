@@ -2148,47 +2148,103 @@ const BookingForm: React.FC = () => {
                     {(() => {
                       const content = t('bookingForm.supportMessageContent');
                       const currentLanguage = i18n.language;
-                      let linkText = '';
-                      let splitPattern = '';
                       
                       if (currentLanguage === 'en') {
-                        linkText = 'contact us';
-                        splitPattern = 'contact us';
+                        const parts = content.split('contact us');
+                        if (parts.length > 1) {
+                          return (
+                            <>
+                              {parts[0]}
+                              <button
+                                type="button"
+                                onClick={() => navigate('/contact')}
+                                style={{
+                                  color: '#2563EB',
+                                  fontWeight: '600',
+                                  textDecoration: 'none',
+                                  cursor: 'pointer',
+                                  border: 'none',
+                                  background: 'none',
+                                  padding: '0',
+                                  transition: 'text-decoration 0.2s',
+                                  display: 'inline',
+                                  fontSize: 'inherit'
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                                onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                              >
+                                contact us
+                              </button>
+                              {parts[1]}
+                            </>
+                          );
+                        }
                       } else if (currentLanguage === 'sv') {
-                        linkText = 'kontakta oss';
-                        splitPattern = 'kontakta oss';
+                        const parts = content.split('kontakta oss');
+                        if (parts.length > 1) {
+                          return (
+                            <>
+                              {parts[0]}
+                              <button
+                                type="button"
+                                onClick={() => navigate('/contact')}
+                                style={{
+                                  color: '#2563EB',
+                                  fontWeight: '600',
+                                  textDecoration: 'none',
+                                  cursor: 'pointer',
+                                  border: 'none',
+                                  background: 'none',
+                                  padding: '0',
+                                  transition: 'text-decoration 0.2s',
+                                  display: 'inline',
+                                  fontSize: 'inherit'
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                                onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                              >
+                                kontakta oss
+                              </button>
+                              {parts[1]}
+                            </>
+                          );
+                        }
                       } else if (currentLanguage === 'arb') {
-                        linkText = 'التواصل معنا';
-                        splitPattern = 'التواصل معنا';
+                        // Handle Arabic: search for الاتصال بنا
+                        const targetPhrase = 'الاتصال بنا';
+                        const index = content.indexOf(targetPhrase);
+                        if (index !== -1) {
+                          const beforeText = content.substring(0, index);
+                          const afterText = content.substring(index + targetPhrase.length);
+                          return (
+                            <>
+                              {beforeText}
+                              <button
+                                type="button"
+                                onClick={() => navigate('/contact')}
+                                style={{
+                                  color: '#2563EB',
+                                  fontWeight: '600',
+                                  textDecoration: 'none',
+                                  cursor: 'pointer',
+                                  border: 'none',
+                                  background: 'none',
+                                  padding: '0',
+                                  transition: 'text-decoration 0.2s',
+                                  display: 'inline',
+                                  fontSize: 'inherit'
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                                onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                              >
+                                الاتصال بنا
+                              </button>
+                              {afterText}
+                            </>
+                          );
+                        }
                       }
                       
-                      const parts = content.split(splitPattern);
-                      if (parts.length > 1) {
-                        return (
-                          <>
-                            {parts[0]}
-                            <button
-                              type="button"
-                              onClick={() => navigate('/contact')}
-                              style={{
-                                color: '#2563EB',
-                                fontWeight: '600',
-                                textDecoration: 'none',
-                                cursor: 'pointer',
-                                border: 'none',
-                                background: 'none',
-                                padding: '0',
-                                transition: 'text-decoration 0.2s'
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
-                              onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
-                            >
-                              {linkText}
-                            </button>
-                            {parts[1]}
-                          </>
-                        );
-                      }
                       return content;
                     })()}
                   </p>
