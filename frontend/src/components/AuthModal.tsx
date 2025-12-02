@@ -50,6 +50,17 @@ const AuthModal: React.FC = () => {
       setCurrentUser(userObj);
       loadFullProfile(token);
     }
+
+    // Listen for event to open auth modal from other components
+    const handleOpenAuthModal = () => {
+      setIsOpen(true);
+    };
+
+    window.addEventListener('openAuthModal', handleOpenAuthModal);
+    
+    return () => {
+      window.removeEventListener('openAuthModal', handleOpenAuthModal);
+    };
   }, []);
 
   const loadFullProfile = async (token: string) => {

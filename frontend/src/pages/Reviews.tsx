@@ -76,6 +76,7 @@ const Reviews: React.FC = () => {
   const [replyingToId, setReplyingToId] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
   const [submittingReply, setSubmittingReply] = useState(false);
+  const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
 
   // Initialize review updates hook
   useReviewUpdates();
@@ -154,12 +155,28 @@ const Reviews: React.FC = () => {
       setError('');
       const data = await getAllReviews(100, 0);
       
-      const reviewsWithReplies = (data.reviews || []).map((review: Review) => ({
-        ...review,
-        replies: review.review_replies || review.replies || []
-      }));
+      // Fetch full details for each review to ensure replies are included
+      const reviewsWithDetails = await Promise.all(
+        (data.reviews || []).map(async (review: Review) => {
+          try {
+            const fullReview = await getReviewWithReplies(review.id);
+            return {
+              ...review,
+              replies: fullReview.replies || fullReview.review_replies || [],
+              review_replies: fullReview.replies || fullReview.review_replies || []
+            };
+          } catch (err) {
+            // Fallback to the initial review data if detailed fetch fails
+            return {
+              ...review,
+              replies: review.review_replies || review.replies || [],
+              review_replies: review.review_replies || review.replies || []
+            };
+          }
+        })
+      );
       
-      setReviews(reviewsWithReplies);
+      setReviews(reviewsWithDetails);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load reviews');
     } finally {
@@ -181,23 +198,40 @@ const Reviews: React.FC = () => {
 
     try {
       setSubmittingReply(true);
+      
+      // Add the reply
       await addReplyToReview(reviewId, replyText);
+      
+      // Fetch updated review with all replies
       const updatedReview = await getReviewWithReplies(reviewId);
+      console.log('Updated review from backend:', updatedReview);
+      console.log('Replies in response:', updatedReview.replies);
+      console.log('Review_replies in response:', updatedReview.review_replies);
+      
+      // Update reviews state with new reply data
       setReviews((prevReviews) =>
-        prevReviews.map((r) =>
-          r.id === reviewId
-            ? {
-                ...r,
-                review_replies: updatedReview.review_replies || [],
-                replies: updatedReview.review_replies || [],
-              }
-            : r
-        )
+        prevReviews.map((r) => {
+          if (r.id === reviewId) {
+            const newReview = {
+              ...r,
+              ...updatedReview,
+              replies: updatedReview.review_replies || updatedReview.replies || [],
+              review_replies: updatedReview.review_replies || updatedReview.replies || [],
+            };
+            console.log('New review state:', newReview);
+            console.log('Replies count in new state:', newReview.replies?.length);
+            return newReview;
+          }
+          return r;
+        })
       );
+      
+      // Reset form
       setReplyingToId(null);
       setReplyText('');
     } catch (err) {
       console.error('Failed to add reply:', err);
+      alert('Failed to add reply. Please try again.');
     } finally {
       setSubmittingReply(false);
     }
@@ -212,8 +246,9 @@ const Reviews: React.FC = () => {
           r.id === reviewId
             ? {
                 ...r,
-                review_replies: updatedReview.review_replies || [],
-                replies: updatedReview.review_replies || [],
+                ...updatedReview,
+                replies: updatedReview.replies || [],
+                review_replies: updatedReview.replies || [],
               }
             : r
         )
@@ -363,6 +398,10 @@ const Reviews: React.FC = () => {
             const reviewUser = review.user || review.users;
             const replies = review.replies || review.review_replies || [];
             
+            if (replies.length > 0) {
+              console.log(`Review ${review.id}: Found ${replies.length} replies`, replies);
+            }
+            
             return (
               <div key={review.id} className="review-item">
                 {/* Review Header */}
@@ -412,16 +451,21 @@ const Reviews: React.FC = () => {
                 <div className="review-comment">{review.comment}</div>
 
                 {/* Replies */}
-                {replies.length > 0 && (
+                {replies && replies.length > 0 && (
                   <div className="replies-section">
                     <div className="replies-label">
                       <MessageCircle size={16} />
                       {replies.length} {replies.length === 1 ? 'Reply' : 'Replies'}
                     </div>
                     <div className="replies-list">
-                      {replies.map((reply) => {
+                      {replies.map((reply, index) => {
                         const replyUser = reply.user || reply.users;
                         const replyContent = reply.reply_text || reply.reply;
+                        const isExpanded = expandedReplies.has(review.id);
+                        const showReply = isExpanded || index < 3; // Show first 3 replies by default
+                        
+                        if (!showReply) return null;
+                        
                         return (
                           <div key={reply.id} className="reply-item">
                             <div className="reply-header">
@@ -450,6 +494,43 @@ const Reviews: React.FC = () => {
                         );
                       })}
                     </div>
+                    {replies.length > 3 && (
+                      <button
+                        onClick={() => {
+                          setExpandedReplies(prev => {
+                            const newSet = new Set(prev);
+                            if (newSet.has(review.id)) {
+                              newSet.delete(review.id);
+                            } else {
+                              newSet.add(review.id);
+                            }
+                            return newSet;
+                          });
+                        }}
+                        style={{
+                          marginTop: '0.75rem',
+                          padding: '0.5rem 1rem',
+                          backgroundColor: '#f5f5f5',
+                          border: 'none',
+                          borderRadius: '4px',
+                          color: '#ff6fa3',
+                          cursor: 'pointer',
+                          fontSize: '0.9rem',
+                          fontWeight: '500',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#ff6fa3';
+                          e.currentTarget.style.color = '#fff';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f5f5f5';
+                          e.currentTarget.style.color = '#ff6fa3';
+                        }}
+                      >
+                        {expandedReplies.has(review.id) ? 'Show Less Replies' : `Show All ${replies.length} Replies`}
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -495,6 +576,42 @@ const Reviews: React.FC = () => {
                       </div>
                     )}
                   </div>
+                )}
+
+                {/* Login to Reply Tag */}
+                {!currentUserId && currentUserId !== reviewUser?.id && (
+                  <button
+                    onClick={() => {
+                      // Dispatch event to open auth modal
+                      window.dispatchEvent(new CustomEvent('openAuthModal'));
+                    }}
+                    style={{
+                      marginTop: '1rem',
+                      display: 'inline-block',
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#ffe0ec',
+                      color: '#ff6fa3',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      boxShadow: '0 2px 8px rgba(255, 111, 163, 0.2)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ff6fa3';
+                      e.currentTarget.style.color = '#fff';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 111, 163, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ffe0ec';
+                      e.currentTarget.style.color = '#ff6fa3';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(255, 111, 163, 0.2)';
+                    }}
+                  >
+                    Login to Reply
+                  </button>
                 )}
               </div>
             );

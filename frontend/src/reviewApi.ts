@@ -97,6 +97,8 @@ export async function getReviewWithReplies(reviewId: number) {
     throw new Error(data.message || 'Failed to fetch review');
   }
 
+  // Backend returns the review object directly
+  // It has structure: { id, user_id, rating, comment, replies: [...], user: {...} }
   return data;
 }
 
