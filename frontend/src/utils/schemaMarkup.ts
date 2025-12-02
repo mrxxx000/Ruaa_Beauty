@@ -14,7 +14,17 @@ export const organizationSchema: SchemaMarkup = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
   name: 'Ruaa Beauty',
-  image: 'https://www.ruaa-beauty.eu/assets/logo.png',
+  image: [
+    'https://www.ruaa-beauty.eu/logo512.png',
+    'https://www.ruaa-beauty.eu/logo192.png',
+    'https://www.ruaa-beauty.eu/logo.svg'
+  ],
+  logo: {
+    '@type': 'ImageObject',
+    url: 'https://www.ruaa-beauty.eu/logo512.png',
+    width: 512,
+    height: 512
+  },
   description: 'Professional beauty services including bridal mehendi, lashes, and makeup',
   url: 'https://www.ruaa-beauty.eu',
   telephone: '+46704679469',
