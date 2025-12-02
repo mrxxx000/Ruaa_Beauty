@@ -522,6 +522,21 @@ const MyBookings: React.FC = () => {
                               {booking.service.replace('-', ' ').toUpperCase()}
                             </h3>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              {booking.status === 'completed' && reviewedBookingIds.includes(booking.id) && (
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '4px 12px',
+                                  backgroundColor: '#e8f5e9',
+                                  color: '#2e7d32',
+                                  borderRadius: '20px',
+                                  fontSize: '0.8rem',
+                                  fontWeight: '600'
+                                }}>
+                                  ✓ Reviewed
+                                </div>
+                              )}
                               {booking.status === 'completed' && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2ed573', fontWeight: '600', fontSize: '0.9rem' }}>
                                   <Check className="w-5 h-5" />
