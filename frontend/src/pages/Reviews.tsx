@@ -285,14 +285,14 @@ const Reviews: React.FC = () => {
       <main>
         {/* Header Section with Stats */}
         <div className="reviews-header">
-          <h1>Client Reviews</h1>
-          <p>See what our clients have to say</p>
+          <h1>{t('reviews.title')}</h1>
+          <p>{t('reviews.subtitle')}</p>
           
           {!loading && reviews.length > 0 && (
             <div className="reviews-stats">
               <div className="stat">
                 <div className="stat-rating">{averageRating}</div>
-                <div className="stat-label">Average Rating</div>
+                <div className="stat-label">{t('reviews.averageRating')}</div>
                 <div className="stars-sm">
                   {[...Array(5)].map((_, i) => (
                     <Star
@@ -306,7 +306,7 @@ const Reviews: React.FC = () => {
               </div>
               <div className="stat">
                 <div className="stat-number">{reviews.length}</div>
-                <div className="stat-label">Total Reviews</div>
+                <div className="stat-label">{t('reviews.totalReviews')}</div>
               </div>
             </div>
           )}

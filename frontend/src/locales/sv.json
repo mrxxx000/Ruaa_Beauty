@@ -181,8 +181,10 @@
   },
 
   "reviews": {
-    "title": "Våra Recensioner",
-    "subtitle": "Se vad våra klienter säger",
+    "title": "Kundrecensioner",
+    "subtitle": "Se vad våra kunder säger",
+    "totalReviews": "Totala recensioner",
+    "averageRating": "Genomsnittligt betyg",
     "signInMessage": "👤 Logga in för att dela din upplevelse och lämna en recension"
   },
   "footer": {

@@ -178,8 +178,10 @@
     "notFoundMessage": "The cancellation link is invalid or has expired."
   },
   "reviews": {
-    "title": "Our Reviews",
+    "title": "Client Reviews",
     "subtitle": "See what our clients have to say",
+    "totalReviews": "Total Reviews",
+    "averageRating": "Average Rating",
     "signInMessage": "👤 Sign in to share your experience and leave a review"
   },
   "footer": {
