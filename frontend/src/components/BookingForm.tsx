@@ -9,6 +9,7 @@ type FormData = {
   phone: string;
   services: string[];
   mehendiHours: number; // Hours for Mehendi service
+  lashLiftTint: boolean; // Tint add-on for Lash Lift
   date: string;
   time: string;
   location: string;
@@ -22,6 +23,7 @@ const defaultData: FormData = {
   phone: '',
   services: [],
   mehendiHours: 0,
+  lashLiftTint: false,
   date: '',
   time: '',
   location: '',
@@ -171,17 +173,24 @@ const BookingForm: React.FC = () => {
   }, []);
 
   // Calculate total price
-  const calculateTotalPrice = (services: string[], mehendiHours: number = 0): number => {
-    return services.reduce((total, service) => {
+  const calculateTotalPrice = (services: string[], mehendiHours: number = 0, lashLiftTint: boolean = false): number => {
+    let total = services.reduce((sum, service) => {
       if (service === 'mehendi' && mehendiHours > 0) {
         // Mehendi is priced per hour (400 kr/hour)
-        return total + (SERVICES_PRICING[service] * mehendiHours);
+        return sum + (SERVICES_PRICING[service] * mehendiHours);
       }
-      return total + (SERVICES_PRICING[service] || 0);
+      return sum + (SERVICES_PRICING[service] || 0);
     }, 0);
+    
+    // Add tint add-on if lash lift is selected and tint is enabled
+    if (services.includes('lash-lift') && lashLiftTint) {
+      total += 20;
+    }
+    
+    return total;
   };
 
-  const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours);
+  const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours, formData.lashLiftTint);
 
   // Fetch available times when date or services change
   const fetchAvailableTimes = async (date: string, services: string[], mehendiHours: number = 0) => {
@@ -260,11 +269,13 @@ const BookingForm: React.FC = () => {
         address: address,
         notes: formData.notes,
         mehendiHours: formData.mehendiHours,
+        lashLiftTint: formData.lashLiftTint,
         totalPrice: totalPrice,
         servicePricing: formData.services.map(s => ({
           name: s,
           price: s === 'mehendi' ? (SERVICES_PRICING[s] * formData.mehendiHours) : (SERVICES_PRICING[s] || 0),
-          hours: s === 'mehendi' ? formData.mehendiHours : undefined
+          hours: s === 'mehendi' ? formData.mehendiHours : undefined,
+          tint: s === 'lash-lift' && formData.lashLiftTint ? 20 : undefined
         })),
       };
 
@@ -414,7 +425,7 @@ const BookingForm: React.FC = () => {
           `}</style>
           <div className="pricing-grid">
             {[
-              { icon: '🌸', name: t('bookingForm.serviceLashLift'), price: '300 kr', value: 'lash-lift', description: t('bookingForm.priceLashLift') || 'Natural lift and curl' },
+              { icon: '🌸', name: t('bookingForm.serviceLashLift'), price: '300 kr', value: 'lash-lift', description: t('bookingForm.priceLashLift') || 'Natural lift and curl', details: { duration: t('bookingForm.lashLiftDuration'), fullDescription: t('bookingForm.lashLiftDescription'), how: t('bookingForm.lashLiftHow'), result: t('bookingForm.lashLiftResult'), tint: t('bookingForm.lashLiftTint') } },
               { icon: '✨', name: t('bookingForm.serviceBrowLift'), price: '300 kr', value: 'brow-lift', description: t('bookingForm.priceBrowLift') || 'Perfectly shaped brows' },
               { icon: '💄', name: t('bookingForm.serviceMakeup'), price: '1000 kr', value: 'makeup', description: t('bookingForm.priceMakeup') || 'Professional makeup artistry' },
               { icon: '👰', name: t('bookingForm.serviceBridalMakeup'), price: '4000 kr', value: 'bridal-makeup', description: t('bookingForm.priceBridalMakeup') || 'Your special day, perfected' },
@@ -446,7 +457,15 @@ const BookingForm: React.FC = () => {
                   const updatedServices = isSelected
                     ? formData.services.filter((s) => s !== service.value)
                     : [...formData.services, service.value];
-                  setFormData({ ...formData, services: updatedServices });
+                  
+                  // Reset lashLiftTint if lash-lift is being removed
+                  const updatedFormData = { 
+                    ...formData, 
+                    services: updatedServices,
+                    ...(service.value === 'lash-lift' && isSelected && { lashLiftTint: false })
+                  };
+                  
+                  setFormData(updatedFormData);
                   // Fetch available times with updated services
                   if (formData.date) {
                     fetchAvailableTimes(formData.date, updatedServices, formData.mehendiHours);
@@ -463,6 +482,99 @@ const BookingForm: React.FC = () => {
                 <p className="service-card-description" style={{ fontSize: '0.95rem', color: '#6b7280', marginBottom: '16px', textAlign: 'center', minHeight: '40px' }}>
                   {service.description}
                 </p>
+                
+                {/* Lash Lift Detailed Information */}
+                {service.value === 'lash-lift' && service.details && (
+                  <div style={{
+                    backgroundColor: '#fff6f8',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '16px',
+                    fontSize: '0.85rem',
+                    color: '#4b5563',
+                    lineHeight: '1.6',
+                    textAlign: 'left',
+                    border: '1px solid #ffe0e8'
+                  }}>
+                    <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details.duration}</p>
+                    <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details.fullDescription}</p>
+                    <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details.how}</p>
+                    <p style={{ margin: '0 0 8px 0' }}><strong>✨</strong> {service.details.result}</p>
+                    <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>➕ {service.details.tint}</p>
+                  </div>
+                )}
+
+                {/* Lash Lift Tint Add-on Selector */}
+                {service.value === 'lash-lift' && formData.services.includes('lash-lift') && (
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    backgroundColor: '#fff6f8',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData({ ...formData, lashLiftTint: false });
+                      }}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '6px',
+                        border: '2px solid #ff6fa3',
+                        background: formData.lashLiftTint ? 'white' : '#ff6fa3',
+                        color: formData.lashLiftTint ? '#ff6fa3' : 'white',
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      −
+                    </button>
+                    <div style={{
+                      minWidth: '80px',
+                      textAlign: 'center',
+                      fontSize: '0.95rem',
+                      fontWeight: '600',
+                      color: '#ff6fa3'
+                    }}>
+                      {formData.lashLiftTint ? '+20 kr' : 'No Tint'}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData({ ...formData, lashLiftTint: true });
+                      }}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '6px',
+                        border: '2px solid #ff6fa3',
+                        background: formData.lashLiftTint ? '#ff6fa3' : 'white',
+                        color: formData.lashLiftTint ? 'white' : '#ff6fa3',
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
 
                 {/* Hours selector for Mehendi */}
                 {service.value === 'mehendi' && formData.services.includes('mehendi') && (
@@ -792,7 +904,15 @@ const BookingForm: React.FC = () => {
                             const updatedServices = e.target.checked
                               ? [...formData.services, service.value]
                               : formData.services.filter((s) => s !== service.value);
-                            setFormData({ ...formData, services: updatedServices });
+                            
+                            // Reset lashLiftTint if lash-lift is being removed
+                            const updatedFormData = {
+                              ...formData,
+                              services: updatedServices,
+                              ...(service.value === 'lash-lift' && !e.target.checked && { lashLiftTint: false })
+                            };
+                            
+                            setFormData(updatedFormData);
                             // Fetch available times with updated services
                             if (formData.date) {
                               fetchAvailableTimes(formData.date, updatedServices, formData.mehendiHours);
@@ -876,6 +996,78 @@ const BookingForm: React.FC = () => {
                           </button>
                         </div>
                       )}
+
+                      {/* Lash Lift Tint Add-on Selector */}
+                      {service.value === 'lash-lift' && formData.services.includes('lash-lift') && (
+                        <div style={{
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: '#fff6f8',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
+                        }}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setFormData({ ...formData, lashLiftTint: false });
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '2px solid #ff6fa3',
+                              background: formData.lashLiftTint ? 'white' : '#ff6fa3',
+                              color: formData.lashLiftTint ? '#ff6fa3' : 'white',
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            −
+                          </button>
+                          <div style={{
+                            minWidth: '80px',
+                            textAlign: 'center',
+                            fontSize: '0.95rem',
+                            fontWeight: '600',
+                            color: '#ff6fa3'
+                          }}>
+                            {formData.lashLiftTint ? '+20 kr' : 'No Tint'}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setFormData({ ...formData, lashLiftTint: true });
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '2px solid #ff6fa3',
+                              background: formData.lashLiftTint ? '#ff6fa3' : 'white',
+                              color: formData.lashLiftTint ? 'white' : '#ff6fa3',
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -929,20 +1121,41 @@ const BookingForm: React.FC = () => {
                           }
                           
                           return (
-                            <div 
-                              key={serviceValue}
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                padding: '8px 0',
-                                borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
-                                fontSize: '0.95rem',
-                                flexWrap: 'wrap',
-                                gap: '8px'
-                              }}
-                            >
-                              <span style={{ color: '#374151' }}>{serviceNames[serviceValue] || serviceValue}</span>
-                              <span style={{ fontWeight: '600', color: '#ff6fa3' }}>{priceLabel}</span>
+                            <div key={serviceValue}>
+                              <div 
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  padding: '8px 0',
+                                  borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
+                                  fontSize: '0.95rem',
+                                  flexWrap: 'wrap',
+                                  gap: '8px'
+                                }}
+                              >
+                                <span style={{ color: '#374151' }}>{serviceNames[serviceValue] || serviceValue}</span>
+                                <span style={{ fontWeight: '600', color: '#ff6fa3' }}>{priceLabel}</span>
+                              </div>
+                              
+                              {/* Lash Lift Tint Add-on in Pricing */}
+                              {serviceValue === 'lash-lift' && formData.lashLiftTint && (
+                                <div 
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    padding: '6px 0 8px 16px',
+                                    borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
+                                    fontSize: '0.9rem',
+                                    flexWrap: 'wrap',
+                                    gap: '8px',
+                                    fontStyle: 'italic',
+                                    color: '#ff6fa3'
+                                  }}
+                                >
+                                  <span style={{ color: '#6b7280' }}>  ➕ {t('bookingForm.lashLiftTint') || 'Tint Add-on'}</span>
+                                  <span style={{ fontWeight: '600', color: '#ff6fa3' }}>+20 kr</span>
+                                </div>
+                              )}
                             </div>
                           );
                         })}
