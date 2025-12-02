@@ -165,19 +165,19 @@
     margin-bottom: 0;
     animation: slideUp 0.2s ease;
     overflow: visible !important;
-    transform: translateX(-50%);
     left: var(--menu-left, 50px);
+    transform: translateX(calc(-50% + var(--menu-offset, 0px)));
     pointer-events: auto !important;
   }
 
   @keyframes slideUp {
     from {
       opacity: 0;
-      transform: translateX(-50%) translateY(8px);
+      transform: translateX(calc(-50% + var(--menu-offset, 0px))) translateY(8px);
     }
     to {
       opacity: 1;
-      transform: translateX(-50%) translateY(0);
+      transform: translateX(calc(-50% + var(--menu-offset, 0px))) translateY(0);
     }
   }
 
@@ -255,9 +255,9 @@
 }
 
 [dir="rtl"] .bottom-nav-dropdown-menu {
-  left: auto;
-  right: 50%;
-  transform: translateX(50%);
+  left: var(--menu-left, 50px);
+  right: auto;
+  transform: translateX(calc(-50% + var(--menu-offset, 0px)));
 }
 
 [dir="rtl"] .dropdown-chevron {

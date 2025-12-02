@@ -262,7 +262,7 @@
   }
 
   .nav-dropdown-menu {
-    left: -40px;
+    left: 0;
     right: auto;
     width: 140px;
   }
@@ -319,7 +319,7 @@
   }
 
   [dir="rtl"] .nav-dropdown-menu {
-    left: auto;
-    right: -40px;
+    left: 0;
+    right: auto;
   }
 }
