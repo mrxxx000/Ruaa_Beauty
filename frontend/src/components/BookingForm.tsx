@@ -9,6 +9,9 @@ type FormData = {
   phone: string;
   services: string[];
   mehendiHours: number; // Hours for Mehendi service
+  lashLiftTint: boolean; // Tint add-on for Lash Lift
+  browLiftTint: boolean; // Tint add-on for Brow Lift
+  threadingAreas: string[]; // Multiple threading area selections
   date: string;
   time: string;
   location: string;
@@ -22,6 +25,9 @@ const defaultData: FormData = {
   phone: '',
   services: [],
   mehendiHours: 0,
+  lashLiftTint: false,
+  browLiftTint: false,
+  threadingAreas: [],
   date: '',
   time: '',
   location: '',
@@ -32,8 +38,9 @@ const defaultData: FormData = {
 const SERVICES_PRICING: { [key: string]: number } = {
   'lash-lift': 300,
   'brow-lift': 300,
-  'makeup': 1000,
-  'bridal-makeup': 4000,
+  'makeup': 700,
+  'combined-lash-brow': 500,
+  'bridal-makeup': 2000,
   'mehendi': 400,
   'threading': 200,
 };
@@ -49,6 +56,12 @@ const BookingForm: React.FC = () => {
   const [unavailableHours, setUnavailableHours] = useState<number[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string; phone?: string } | null>(null);
+  const [expandedLashLift, setExpandedLashLift] = useState<boolean>(false);
+  const [expandedBrowLift, setExpandedBrowLift] = useState<boolean>(false);
+  const [expandedCombinedLashBrow, setExpandedCombinedLashBrow] = useState<boolean>(false);
+  const [expandedEventMakeup, setExpandedEventMakeup] = useState<boolean>(false);
+  const [expandedBridalMakeup, setExpandedBridalMakeup] = useState<boolean>(false);
+  const [expandedThreading, setExpandedThreading] = useState<boolean>(false);
 
   // Check if user is logged in on component mount
   useEffect(() => {
@@ -170,18 +183,62 @@ const BookingForm: React.FC = () => {
     };
   }, []);
 
-  // Calculate total price
-  const calculateTotalPrice = (services: string[], mehendiHours: number = 0): number => {
-    return services.reduce((total, service) => {
-      if (service === 'mehendi' && mehendiHours > 0) {
-        // Mehendi is priced per hour (400 kr/hour)
-        return total + (SERVICES_PRICING[service] * mehendiHours);
-      }
-      return total + (SERVICES_PRICING[service] || 0);
-    }, 0);
+  // Helper function to determine final threading area(s)
+  const getThreadingAreaPrice = (areas: string[]): number => {
+    if (areas.length === 0) return 0;
+    
+    // If 3 or more areas are selected, automatically use full-face
+    if (areas.length >= 3) {
+      return 250; // Full Face price
+    }
+    
+    // If 1-2 areas selected, sum their prices
+    const areaPrices: { [key: string]: number } = {
+      'eyebrows': 120,
+      'upper-lip': 80,
+      'chin': 80,
+      'full-face': 250
+    };
+    
+    return areas.reduce((sum, area) => sum + (areaPrices[area] || 0), 0);
   };
 
-  const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours);
+  // Helper function to get final threading area selection (auto-convert to full-face if 3+)
+  const getFinalThreadingAreas = (areas: string[]): string[] => {
+    if (areas.length >= 3) {
+      return ['full-face'];
+    }
+    return areas;
+  };
+
+  // Calculate total price
+  const calculateTotalPrice = (services: string[], mehendiHours: number = 0, lashLiftTint: boolean = false, browLiftTint: boolean = false, threadingAreas: string[] = []): number => {
+    let total = services.reduce((sum, service) => {
+      if (service === 'mehendi' && mehendiHours > 0) {
+        // Mehendi is priced per hour (400 kr/hour)
+        return sum + (SERVICES_PRICING[service] * mehendiHours);
+      }
+      if (service === 'threading' && threadingAreas.length > 0) {
+        // Threading price based on selected areas
+        return sum + getThreadingAreaPrice(threadingAreas);
+      }
+      return sum + (SERVICES_PRICING[service] || 0);
+    }, 0);
+    
+    // Add tint add-on if lash lift is selected and tint is enabled
+    if (services.includes('lash-lift') && lashLiftTint) {
+      total += 20;
+    }
+    
+    // Add tint add-on if brow lift is selected and tint is enabled
+    if (services.includes('brow-lift') && browLiftTint) {
+      total += 20;
+    }
+    
+    return total;
+  };
+
+  const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours, formData.lashLiftTint, formData.browLiftTint, formData.threadingAreas);
 
   // Fetch available times when date or services change
   const fetchAvailableTimes = async (date: string, services: string[], mehendiHours: number = 0) => {
@@ -249,6 +306,7 @@ const BookingForm: React.FC = () => {
         : formData.customAddress;
 
       // Prepare booking data - only send fields the API expects
+      const finalThreadingAreas = getFinalThreadingAreas(formData.threadingAreas);
       const bookingData = {
         name: formData.name,
         email: formData.email,
@@ -260,12 +318,31 @@ const BookingForm: React.FC = () => {
         address: address,
         notes: formData.notes,
         mehendiHours: formData.mehendiHours,
+        lashLiftTint: formData.lashLiftTint,
+        browLiftTint: formData.browLiftTint,
+        threadingAreas: finalThreadingAreas,
         totalPrice: totalPrice,
-        servicePricing: formData.services.map(s => ({
-          name: s,
-          price: s === 'mehendi' ? (SERVICES_PRICING[s] * formData.mehendiHours) : (SERVICES_PRICING[s] || 0),
-          hours: s === 'mehendi' ? formData.mehendiHours : undefined
-        })),
+        servicePricing: formData.services.map(s => {
+          if (s === 'mehendi') {
+            return {
+              name: s,
+              price: SERVICES_PRICING[s] * formData.mehendiHours,
+              hours: formData.mehendiHours
+            };
+          }
+          if (s === 'threading') {
+            return {
+              name: s,
+              price: getThreadingAreaPrice(formData.threadingAreas),
+              areas: finalThreadingAreas
+            };
+          }
+          return {
+            name: s,
+            price: SERVICES_PRICING[s] || 0,
+            tint: s === 'lash-lift' && formData.lashLiftTint ? 20 : s === 'brow-lift' && formData.browLiftTint ? 20 : undefined
+          };
+        }),
       };
 
       console.log('Submitting booking data:', bookingData);
@@ -414,12 +491,13 @@ const BookingForm: React.FC = () => {
           `}</style>
           <div className="pricing-grid">
             {[
-              { icon: '🌸', name: t('bookingForm.serviceLashLift'), price: '300 kr', value: 'lash-lift', description: t('bookingForm.priceLashLift') || 'Natural lift and curl' },
-              { icon: '✨', name: t('bookingForm.serviceBrowLift'), price: '300 kr', value: 'brow-lift', description: t('bookingForm.priceBrowLift') || 'Perfectly shaped brows' },
-              { icon: '💄', name: t('bookingForm.serviceMakeup'), price: '1000 kr', value: 'makeup', description: t('bookingForm.priceMakeup') || 'Professional makeup artistry' },
-              { icon: '👰', name: t('bookingForm.serviceBridalMakeup'), price: '4000 kr', value: 'bridal-makeup', description: t('bookingForm.priceBridalMakeup') || 'Your special day, perfected' },
+              { icon: '🌸', name: t('bookingForm.serviceLashLift'), price: '300 kr', value: 'lash-lift', description: t('bookingForm.priceLashLift') || 'Natural lift and curl', details: { duration: t('bookingForm.lashLiftDuration'), fullDescription: t('bookingForm.lashLiftDescription'), how: t('bookingForm.lashLiftHow'), result: t('bookingForm.lashLiftResult'), tint: t('bookingForm.lashLiftTint') } },
+              { icon: '✨', name: t('bookingForm.serviceBrowLift'), price: '300 kr', value: 'brow-lift', description: t('bookingForm.priceBrowLift') || 'Perfectly shaped brows', details: { duration: t('bookingForm.browLiftDuration'), fullDescription: t('bookingForm.browLiftDescription'), how: t('bookingForm.browLiftHow'), result: t('bookingForm.browLiftResult'), tint: t('bookingForm.browLiftTint') } },
+              { icon: '💄', name: t('bookingForm.serviceMakeup'), price: '700 kr', value: 'makeup', description: t('bookingForm.priceMakeup') || 'Customized event makeup', details: { duration: t('bookingForm.eventMakeupDuration'), fullDescription: t('bookingForm.eventMakeupDescription'), how: t('bookingForm.eventMakeupHow'), result: t('bookingForm.eventMakeupResult') } },
+              { icon: '⭐', name: t('bookingForm.combinedLashBrowTitle'), price: '500 kr', value: 'combined-lash-brow', description: t('bookingForm.combinedLashBrowDescription') || 'Lash Lift + Brow Lift', details: { duration: t('bookingForm.combinedLashBrowDuration'), fullDescription: t('bookingForm.combinedLashBrowDescription'), how: t('bookingForm.combinedLashBrowHow'), result: t('bookingForm.combinedLashBrowResult') } },
+              { icon: '👰', name: t('bookingForm.serviceBridalMakeup'), price: '2000 kr', value: 'bridal-makeup', description: t('bookingForm.priceBridalMakeup') || 'Your special day, perfected', details: { duration: t('bookingForm.bridalMakeupDuration'), fullDescription: t('bookingForm.bridalMakeupDescription'), how: t('bookingForm.bridalMakeupHow'), result: t('bookingForm.bridalMakeupResult') } },
               { icon: '🎨', name: t('bookingForm.serviceMehendi'), price: '400 kr/hr', value: 'mehendi', description: t('bookingForm.priceMehendi') || 'Intricate henna designs' },
-              { icon: '🧵', name: t('bookingForm.serviceThreading'), price: '200 kr', value: 'threading', description: t('bookingForm.priceThreading') || 'Precise facial threading' },
+              { icon: '🧵', name: t('bookingForm.serviceThreading'), price: '200 kr', value: 'threading', description: t('bookingForm.priceThreading') || 'Precise facial threading', details: { duration: t('bookingForm.threadingDuration'), fullDescription: t('bookingForm.threadingDescription'), how: t('bookingForm.threadingHow'), result: t('bookingForm.threadingResult') } },
             ].map((service) => (
               <div
                 key={service.value}
@@ -446,7 +524,21 @@ const BookingForm: React.FC = () => {
                   const updatedServices = isSelected
                     ? formData.services.filter((s) => s !== service.value)
                     : [...formData.services, service.value];
-                  setFormData({ ...formData, services: updatedServices });
+                  
+                  // Reset lashLiftTint if lash-lift is being removed
+                  // Reset browLiftTint if brow-lift is being removed
+                  // Reset bridalMakeupTint if bridal-makeup is being removed
+                  // Reset threadingAreas if threading is being removed
+                  const updatedFormData = { 
+                    ...formData, 
+                    services: updatedServices,
+                    ...(service.value === 'lash-lift' && isSelected && { lashLiftTint: false }),
+                    ...(service.value === 'brow-lift' && isSelected && { browLiftTint: false }),
+                    ...(service.value === 'bridal-makeup' && isSelected && { bridalMakeupTint: false }),
+                    ...(service.value === 'threading' && isSelected && { threadingAreas: [] })
+                  };
+                  
+                  setFormData(updatedFormData);
                   // Fetch available times with updated services
                   if (formData.date) {
                     fetchAvailableTimes(formData.date, updatedServices, formData.mehendiHours);
@@ -463,6 +555,530 @@ const BookingForm: React.FC = () => {
                 <p className="service-card-description" style={{ fontSize: '0.95rem', color: '#6b7280', marginBottom: '16px', textAlign: 'center', minHeight: '40px' }}>
                   {service.description}
                 </p>
+                
+                {/* Lash Lift Detailed Information - Expandable */}
+                {service.value === 'lash-lift' && service.details && (
+                  <>
+                    {/* Header with Toggle Button */}
+                    <button
+                      type="button"
+                      onClick={() => setExpandedLashLift(!expandedLashLift)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: expandedLashLift ? '0' : '16px',
+                        fontSize: '0.95rem',
+                        color: '#ff6fa3',
+                        border: '1px solid #ffe0e8',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <span>Service Details</span>
+                      <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedLashLift ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </button>
+
+                    {/* Expandable Details Content */}
+                    {expandedLashLift && (
+                      <div style={{
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '0 0 8px 8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '0.85rem',
+                        color: '#4b5563',
+                        lineHeight: '1.6',
+                        textAlign: 'left',
+                        border: '1px solid #ffe0e8',
+                        borderTop: 'none',
+                        animation: 'slideDown 0.3s ease'
+                      }}>
+                        <style>{`
+                          @keyframes slideDown {
+                            from {
+                              opacity: 0;
+                              max-height: 0;
+                            }
+                            to {
+                              opacity: 1;
+                              max-height: 500px;
+                            }
+                          }
+                        `}</style>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details?.duration}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details?.fullDescription}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details?.how}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✨</strong> {service.details?.result}</p>
+                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>➕ {service.details?.tint}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Lash Lift Tint Add-on Selector */}
+                {service.value === 'lash-lift' && formData.services.includes('lash-lift') && (
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    backgroundColor: '#fff6f8',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData({ ...formData, lashLiftTint: false });
+                      }}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '6px',
+                        border: '2px solid #ff6fa3',
+                        background: formData.lashLiftTint ? 'white' : '#ff6fa3',
+                        color: formData.lashLiftTint ? '#ff6fa3' : 'white',
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      −
+                    </button>
+                    <div style={{
+                      minWidth: '80px',
+                      textAlign: 'center',
+                      fontSize: '0.95rem',
+                      fontWeight: '600',
+                      color: '#ff6fa3'
+                    }}>
+                      {formData.lashLiftTint ? '+20 kr' : 'No Tint'}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData({ ...formData, lashLiftTint: true });
+                      }}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '6px',
+                        border: '2px solid #ff6fa3',
+                        background: formData.lashLiftTint ? '#ff6fa3' : 'white',
+                        color: formData.lashLiftTint ? 'white' : '#ff6fa3',
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+
+                {/* Brow Lift Details Section */}
+                {service.value === 'brow-lift' && service.details && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedBrowLift(!expandedBrowLift)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: expandedBrowLift ? '0' : '16px',
+                        fontSize: '0.95rem',
+                        color: '#ff6fa3',
+                        border: '1px solid #ffe0e8',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <span>Service Details</span>
+                      <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedBrowLift ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </button>
+                    {expandedBrowLift && (
+                      <div style={{
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '0 0 8px 8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '0.85rem',
+                        color: '#4b5563',
+                        lineHeight: '1.6',
+                        textAlign: 'left',
+                        border: '1px solid #ffe0e8',
+                        borderTop: 'none',
+                        animation: 'slideDown 0.3s ease'
+                      }}>
+                        <style>{`
+                          @keyframes slideDown {
+                            from {
+                              opacity: 0;
+                              max-height: 0;
+                            }
+                            to {
+                              opacity: 1;
+                              max-height: 500px;
+                            }
+                          }
+                        `}</style>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details?.duration}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details?.fullDescription}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details?.how}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✨</strong> {service.details?.result}</p>
+                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>➕ {service.details?.tint}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Brow Lift Tint Add-on Selector */}
+                {service.value === 'brow-lift' && formData.services.includes('brow-lift') && (
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    backgroundColor: '#fff6f8',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData({ ...formData, browLiftTint: false });
+                      }}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '6px',
+                        border: '2px solid #ff6fa3',
+                        background: formData.browLiftTint ? 'white' : '#ff6fa3',
+                        color: formData.browLiftTint ? '#ff6fa3' : 'white',
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      −
+                    </button>
+                    <div style={{
+                      minWidth: '80px',
+                      textAlign: 'center',
+                      fontSize: '0.95rem',
+                      fontWeight: '600',
+                      color: '#ff6fa3'
+                    }}>
+                      {formData.browLiftTint ? '+20 kr' : 'No Tint'}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData({ ...formData, browLiftTint: true });
+                      }}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '6px',
+                        border: '2px solid #ff6fa3',
+                        background: formData.browLiftTint ? '#ff6fa3' : 'white',
+                        color: formData.browLiftTint ? 'white' : '#ff6fa3',
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+
+                {/* Combined Lash + Brow Lift Details Section */}
+                {service.value === 'combined-lash-brow' && service.details && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedCombinedLashBrow(!expandedCombinedLashBrow)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: expandedCombinedLashBrow ? '0' : '16px',
+                        fontSize: '0.95rem',
+                        color: '#ff6fa3',
+                        border: '1px solid #ffe0e8',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <span>Service Details</span>
+                      <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedCombinedLashBrow ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </button>
+
+                    {/* Expandable Details Content */}
+                    {expandedCombinedLashBrow && (
+                      <div style={{
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '0 0 8px 8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '0.85rem',
+                        color: '#4b5563',
+                        lineHeight: '1.6',
+                        textAlign: 'left',
+                        border: '1px solid #ffe0e8',
+                        borderTop: 'none',
+                        animation: 'slideDown 0.3s ease'
+                      }}>
+                        <style>{`
+                          @keyframes slideDown {
+                            from {
+                              opacity: 0;
+                              max-height: 0;
+                            }
+                            to {
+                              opacity: 1;
+                              max-height: 500px;
+                            }
+                          }
+                        `}</style>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details?.duration}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details?.fullDescription}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details?.how}</p>
+                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>✨ {service.details?.result}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Event Makeup Details Section */}
+                {service.value === 'makeup' && service.details && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedEventMakeup(!expandedEventMakeup)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: expandedEventMakeup ? '0' : '16px',
+                        fontSize: '0.95rem',
+                        color: '#ff6fa3',
+                        border: '1px solid #ffe0e8',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <span>Service Details</span>
+                      <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedEventMakeup ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </button>
+
+                    {/* Expandable Details Content */}
+                    {expandedEventMakeup && (
+                      <div style={{
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '0 0 8px 8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '0.85rem',
+                        color: '#4b5563',
+                        lineHeight: '1.6',
+                        textAlign: 'left',
+                        border: '1px solid #ffe0e8',
+                        borderTop: 'none',
+                        animation: 'slideDown 0.3s ease'
+                      }}>
+                        <style>{`
+                          @keyframes slideDown {
+                            from {
+                              opacity: 0;
+                              max-height: 0;
+                            }
+                            to {
+                              opacity: 1;
+                              max-height: 500px;
+                            }
+                          }
+                        `}</style>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details?.duration}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details?.fullDescription}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details?.how}</p>
+                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>✨ {service.details?.result}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Bridal Makeup Details Section */}
+                {service.value === 'bridal-makeup' && service.details && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedBridalMakeup(!expandedBridalMakeup)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: expandedBridalMakeup ? '0' : '16px',
+                        fontSize: '0.95rem',
+                        color: '#ff6fa3',
+                        border: '1px solid #ffe0e8',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <span>Service Details</span>
+                      <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedBridalMakeup ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </button>
+
+                    {/* Expandable Details Content */}
+                    {expandedBridalMakeup && (
+                      <div style={{
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '0 0 8px 8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '0.85rem',
+                        color: '#4b5563',
+                        lineHeight: '1.6',
+                        textAlign: 'left',
+                        border: '1px solid #ffe0e8',
+                        borderTop: 'none',
+                        animation: 'slideDown 0.3s ease'
+                      }}>
+                        <style>{`
+                          @keyframes slideDown {
+                            from {
+                              opacity: 0;
+                              max-height: 0;
+                            }
+                            to {
+                              opacity: 1;
+                              max-height: 500px;
+                            }
+                          }
+                        `}</style>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details?.duration}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details?.fullDescription}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details?.how}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✨</strong> {service.details?.result}</p>
+                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>➕ {service.details?.tint}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Threading Details Section */}
+                {service.value === 'threading' && service.details && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedThreading(!expandedThreading)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: expandedThreading ? '0' : '16px',
+                        fontSize: '0.95rem',
+                        color: '#ff6fa3',
+                        border: '1px solid #ffe0e8',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <span>Service Details</span>
+                      <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedThreading ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </button>
+
+                    {/* Expandable Details Content */}
+                    {expandedThreading && (
+                      <div style={{
+                        backgroundColor: '#fff6f8',
+                        borderRadius: '0 0 8px 8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '0.85rem',
+                        color: '#4b5563',
+                        lineHeight: '1.6',
+                        textAlign: 'left',
+                        border: '1px solid #ffe0e8',
+                        borderTop: 'none',
+                        animation: 'slideDown 0.3s ease'
+                      }}>
+                        <style>{`
+                          @keyframes slideDown {
+                            from {
+                              opacity: 0;
+                              max-height: 0;
+                            }
+                            to {
+                              opacity: 1;
+                              max-height: 500px;
+                            }
+                          }
+                        `}</style>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#ff6fa3' }}>⏱️ {service.details?.duration}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>📝</strong> {service.details?.fullDescription}</p>
+                        <p style={{ margin: '0 0 8px 0' }}><strong>✓</strong> {service.details?.how}</p>
+                        <p style={{ margin: '0', fontWeight: '600', color: '#ff6fa3' }}>✨ {service.details?.result}</p>
+                      </div>
+                    )}
+                  </>
+                )}
 
                 {/* Hours selector for Mehendi */}
                 {service.value === 'mehendi' && formData.services.includes('mehendi') && (
@@ -535,6 +1151,123 @@ const BookingForm: React.FC = () => {
                     >
                       +
                     </button>
+                  </div>
+                )}
+
+                {/* Area selector for Threading */}
+                {service.value === 'threading' && formData.services.includes('threading') && (
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    backgroundColor: '#fff6f8',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
+                  }}>
+                    <div style={{
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      color: '#ff6fa3'
+                    }}>
+                      {t('bookingForm.threadingAreas') || 'Select threading areas (3+ auto-selects full face):'}
+                    </div>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '8px'
+                    }}>
+                      {[
+                        { id: 'eyebrows', label: t('bookingForm.threadingEyebrows') || 'Eyebrows - 120 kr' },
+                        { id: 'upper-lip', label: t('bookingForm.threadingUpperLip') || 'Upper Lip - 80 kr' },
+                        { id: 'chin', label: t('bookingForm.threadingChin') || 'Chin - 80 kr' },
+                        { id: 'full-face', label: t('bookingForm.threadingFullFace') || 'Full Face - 250 kr' }
+                      ].map((option) => {
+                        const isSelected = formData.threadingAreas.includes(option.id);
+                        const hasFullFace = formData.threadingAreas.includes('full-face');
+                        const isIndividualArea = option.id !== 'full-face';
+                        // Disable individual areas if full-face is selected, and disable full-face if individual areas are selected
+                        const isDisabled = (isIndividualArea && hasFullFace) || (!isIndividualArea && formData.threadingAreas.length > 0 && !hasFullFace);
+                        
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isDisabled) return;
+                              
+                              let updatedAreas: string[] = [];
+                              
+                              if (option.id === 'full-face') {
+                                // If full-face is clicked, toggle it alone
+                                updatedAreas = isSelected ? [] : ['full-face'];
+                              } else if (isSelected) {
+                                // Remove the area if already selected
+                                updatedAreas = formData.threadingAreas.filter(a => a !== option.id);
+                              } else {
+                                // Add the area
+                                updatedAreas = [...formData.threadingAreas, option.id];
+                                // If 3 areas are now selected, auto-convert to full-face
+                                if (updatedAreas.length >= 3) {
+                                  updatedAreas = ['full-face'];
+                                }
+                              }
+                              
+                              setFormData({ ...formData, threadingAreas: updatedAreas });
+                            }}
+                            style={{
+                              padding: '10px 12px',
+                              borderRadius: '6px',
+                              border: isSelected ? 'none' : '2px solid #ff6fa3',
+                              background: isSelected 
+                                ? 'linear-gradient(90deg, #ff6fa3 0%, #ff9ccf 100%)'
+                                : isDisabled ? '#e5e7eb' : 'white',
+                              color: isSelected ? 'white' : isDisabled ? '#9ca3af' : '#ff6fa3',
+                              fontSize: '0.85rem',
+                              fontWeight: '600',
+                              cursor: isDisabled ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.2s',
+                              textAlign: 'center',
+                              opacity: isDisabled ? 0.5 : 1
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected && !isDisabled) {
+                                e.currentTarget.style.background = '#fff0f5';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected && !isDisabled) {
+                                e.currentTarget.style.background = 'white';
+                              }
+                            }}
+                          >
+                            {isSelected && '✓ '}
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {formData.threadingAreas.length > 0 && (
+                      <div style={{
+                        fontSize: '0.85rem',
+                        color: '#6b7280',
+                        fontStyle: 'italic',
+                        paddingTop: '4px',
+                        borderTop: '1px solid #ffe0e8'
+                      }}>
+                        Selected: {formData.threadingAreas.includes('full-face') 
+                          ? (t('bookingForm.threadingFullFace') || 'Full Face')
+                          : formData.threadingAreas.map(a => {
+                              const areaNames: { [key: string]: string } = {
+                                'eyebrows': t('bookingForm.threadingEyebrows') || 'Eyebrows',
+                                'upper-lip': t('bookingForm.threadingUpperLip') || 'Upper Lip',
+                                'chin': t('bookingForm.threadingChin') || 'Chin'
+                              };
+                              return areaNames[a] || a;
+                            }).join(' + ')}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -792,7 +1525,15 @@ const BookingForm: React.FC = () => {
                             const updatedServices = e.target.checked
                               ? [...formData.services, service.value]
                               : formData.services.filter((s) => s !== service.value);
-                            setFormData({ ...formData, services: updatedServices });
+                            
+                            // Reset lashLiftTint if lash-lift is being removed
+                            const updatedFormData = {
+                              ...formData,
+                              services: updatedServices,
+                              ...(service.value === 'lash-lift' && !e.target.checked && { lashLiftTint: false })
+                            };
+                            
+                            setFormData(updatedFormData);
                             // Fetch available times with updated services
                             if (formData.date) {
                               fetchAvailableTimes(formData.date, updatedServices, formData.mehendiHours);
@@ -876,6 +1617,78 @@ const BookingForm: React.FC = () => {
                           </button>
                         </div>
                       )}
+
+                      {/* Lash Lift Tint Add-on Selector */}
+                      {service.value === 'lash-lift' && formData.services.includes('lash-lift') && (
+                        <div style={{
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: '#fff6f8',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
+                        }}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setFormData({ ...formData, lashLiftTint: false });
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '2px solid #ff6fa3',
+                              background: formData.lashLiftTint ? 'white' : '#ff6fa3',
+                              color: formData.lashLiftTint ? '#ff6fa3' : 'white',
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            −
+                          </button>
+                          <div style={{
+                            minWidth: '80px',
+                            textAlign: 'center',
+                            fontSize: '0.95rem',
+                            fontWeight: '600',
+                            color: '#ff6fa3'
+                          }}>
+                            {formData.lashLiftTint ? '+20 kr' : 'No Tint'}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setFormData({ ...formData, lashLiftTint: true });
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: '2px solid #ff6fa3',
+                              background: formData.lashLiftTint ? '#ff6fa3' : 'white',
+                              color: formData.lashLiftTint ? 'white' : '#ff6fa3',
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -928,21 +1741,95 @@ const BookingForm: React.FC = () => {
                             priceLabel = `${SERVICES_PRICING[serviceValue]} kr × ${formData.mehendiHours}h = ${servicePrice} kr`;
                           }
                           
+                          if (serviceValue === 'threading' && formData.threadingAreas.length > 0) {
+                            servicePrice = getThreadingAreaPrice(formData.threadingAreas);
+                            priceLabel = `${servicePrice} kr`;
+                          }
+                          
                           return (
-                            <div 
-                              key={serviceValue}
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                padding: '8px 0',
-                                borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
-                                fontSize: '0.95rem',
-                                flexWrap: 'wrap',
-                                gap: '8px'
-                              }}
-                            >
-                              <span style={{ color: '#374151' }}>{serviceNames[serviceValue] || serviceValue}</span>
-                              <span style={{ fontWeight: '600', color: '#ff6fa3' }}>{priceLabel}</span>
+                            <div key={serviceValue}>
+                              <div 
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  padding: '8px 0',
+                                  borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
+                                  fontSize: '0.95rem',
+                                  flexWrap: 'wrap',
+                                  gap: '8px'
+                                }}
+                              >
+                                <span style={{ color: '#374151' }}>{serviceNames[serviceValue] || serviceValue}</span>
+                                <span style={{ fontWeight: '600', color: '#ff6fa3' }}>{priceLabel}</span>
+                              </div>
+                              
+                              {/* Lash Lift Tint Add-on in Pricing */}
+                              {serviceValue === 'lash-lift' && formData.lashLiftTint && (
+                                <div 
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    padding: '6px 0 8px 16px',
+                                    borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
+                                    fontSize: '0.9rem',
+                                    flexWrap: 'wrap',
+                                    gap: '8px',
+                                    fontStyle: 'italic',
+                                    color: '#ff6fa3'
+                                  }}
+                                >
+                                  <span style={{ color: '#6b7280' }}>  ➕ {t('bookingForm.lashLiftTint') || 'Tint Add-on'}</span>
+                                  <span style={{ fontWeight: '600', color: '#ff6fa3' }}>+20 kr</span>
+                                </div>
+                              )}
+                              
+                              {/* Brow Lift Tint Add-on in Pricing */}
+                              {serviceValue === 'brow-lift' && formData.browLiftTint && (
+                                <div 
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    padding: '6px 0 8px 16px',
+                                    borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
+                                    fontSize: '0.9rem',
+                                    flexWrap: 'wrap',
+                                    gap: '8px',
+                                    fontStyle: 'italic',
+                                    color: '#ff6fa3'
+                                  }}
+                                >
+                                  <span style={{ color: '#6b7280' }}>  ➕ {t('bookingForm.browLiftTint') || 'Tint Add-on'}</span>
+                                  <span style={{ fontWeight: '600', color: '#ff6fa3' }}>+20 kr</span>
+                                </div>
+                              )}
+                              
+                              {/* Threading Areas in Pricing */}
+                              {serviceValue === 'threading' && formData.threadingAreas.length > 0 && (
+                                <div 
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    padding: '6px 0 8px 16px',
+                                    borderBottom: '1px solid rgba(255, 111, 163, 0.2)',
+                                    fontSize: '0.9rem',
+                                    flexWrap: 'wrap',
+                                    gap: '8px',
+                                    fontStyle: 'italic',
+                                    color: '#ff6fa3'
+                                  }}
+                                >
+                                  <span style={{ color: '#6b7280' }}>  🧵 {(() => {
+                                    const areaNames: { [key: string]: string } = {
+                                      'eyebrows': t('bookingForm.threadingEyebrows') || 'Eyebrows',
+                                      'upper-lip': t('bookingForm.threadingUpperLip') || 'Upper Lip',
+                                      'chin': t('bookingForm.threadingChin') || 'Chin',
+                                      'full-face': t('bookingForm.threadingFullFace') || 'Full Face'
+                                    };
+                                    const finalAreas = getFinalThreadingAreas(formData.threadingAreas);
+                                    return finalAreas.map(a => areaNames[a] || a).join(' + ');
+                                  })()}</span>
+                                </div>
+                              )}
                             </div>
                           );
                         })}

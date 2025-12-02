@@ -10,9 +10,11 @@ interface User {
 interface ReviewReply {
   id: number;
   user_id: number;
-  reply: string;
+  reply_text?: string;
+  reply?: string;
   created_at: string;
-  users: User;
+  user?: User;
+  users?: User;
 }
 
 interface ReviewCardProps {
@@ -20,7 +22,9 @@ interface ReviewCardProps {
   rating: number;
   comment: string;
   created_at: string;
-  users: User;
+  service?: string;
+  user?: User; // Changed from 'users' to 'user'
+  users?: User; // Keep for backward compatibility
   replies?: ReviewReply[];
   currentUserId?: number;
   onReply?: (reviewId: number, reply: string) => Promise<void>;
@@ -33,6 +37,8 @@ export default function ReviewCard({
   rating,
   comment,
   created_at,
+  service,
+  user,
   users,
   replies = [],
   currentUserId,
@@ -40,6 +46,9 @@ export default function ReviewCard({
   onDelete,
   onDeleteReply,
 }: ReviewCardProps) {
+  // Support both 'user' and 'users' for backward compatibility
+  const reviewUser = user || users;
+
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [reply, setReply] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,7 +56,12 @@ export default function ReviewCard({
   const [visibleReplies, setVisibleReplies] = useState(3);
   const [deletingReplyId, setDeletingReplyId] = useState<number | null>(null);
 
-  const isAuthor = currentUserId === users.id;
+  // Return null if no user data
+  if (!reviewUser) {
+    return null;
+  }
+
+  const isAuthor = currentUserId === reviewUser.id;
   const formattedDate = new Date(created_at).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -110,11 +124,12 @@ export default function ReviewCard({
       <div className="review-header">
         <div className="reviewer-info">
           <div className="reviewer-avatar">
-            {users.name.charAt(0).toUpperCase()}
+            {reviewUser.name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h3 className="reviewer-name">{users.name}</h3>
+            <h3 className="reviewer-name">{reviewUser.name}</h3>
             <p className="review-date">{formattedDate}</p>
+            {service && <p className="review-service">Service: {service}</p>}
           </div>
         </div>
 
@@ -143,11 +158,16 @@ export default function ReviewCard({
         <div className="replies-section">
           <h4 className="replies-title">💬 Replies ({replies.length})</h4>
           <div className="replies-list">
-            {replies.slice(0, visibleReplies).map((r) => (
+            {replies.slice(0, visibleReplies).map((r) => {
+              const replyUser = r.user || r.users;
+              const replyText = r.reply_text || r.reply;
+              if (!replyUser) return null;
+              
+              return (
               <div key={r.id} className="reply">
                 <div className="reply-header">
                   <div className="reply-info">
-                    <strong>{r.users.name}</strong>
+                    <strong>{replyUser.name}</strong>
                     <span className="reply-date">
                       {new Date(r.created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -167,9 +187,10 @@ export default function ReviewCard({
                     </button>
                   )}
                 </div>
-                <p className="reply-text">{r.reply}</p>
+                <p className="reply-text">{replyText}</p>
               </div>
-            ))}
+            );
+            })}
           </div>
           {visibleReplies < replies.length && (
             <button
@@ -183,7 +204,7 @@ export default function ReviewCard({
       )}
 
       {/* Reply Form */}
-      {currentUserId && (
+      {currentUserId && !isAuthor && (
         <div className="reply-form-section">
           {!showReplyForm && (
             <button

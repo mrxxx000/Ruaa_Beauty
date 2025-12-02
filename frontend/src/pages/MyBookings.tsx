@@ -40,6 +40,9 @@ const MyBookings: React.FC = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<string[]>([]);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -124,6 +127,26 @@ const MyBookings: React.FC = () => {
 
       const data = await response.json();
       setBookings(data.bookings || []);
+
+      // Fetch user's existing reviews to hide "Write Review" button
+      try {
+        const reviewsResponse = await fetch(`${backendUrl}/api/reviews/user/my-reviews`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (reviewsResponse.ok) {
+          const reviewsData = await reviewsResponse.json();
+          const reviewedBookingIds = (reviewsData.reviews || []).map((review: any) => review.booking_id);
+          setReviewedBookingIds(reviewedBookingIds);
+        }
+      } catch (err) {
+        console.error('Failed to fetch reviews:', err);
+        // Continue without reviews data if fetch fails
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error loading bookings');
     } finally {
@@ -165,7 +188,8 @@ const MyBookings: React.FC = () => {
 
   const handleSubmitReview = async (bookingId: string) => {
     if (!reviewComment.trim()) {
-      alert('Please write a review');
+      setNotification({ message: 'Please write a review', type: 'error' });
+      setTimeout(() => setNotification(null), 3000);
       return;
     }
 
@@ -192,12 +216,17 @@ const MyBookings: React.FC = () => {
         throw new Error(error.details || 'Failed to submit review');
       }
 
-      alert('Review submitted successfully!');
+      // Mark booking as reviewed and update UI immediately
+      setReviewedBookingIds(prev => [...prev, bookingId]);
       setReviewingBookingId(null);
       setReviewComment('');
       setReviewRating(5);
+      
+      setNotification({ message: 'Review submitted successfully!', type: 'success' });
+      setTimeout(() => setNotification(null), 3000);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error submitting review');
+      setNotification({ message: err instanceof Error ? err.message : 'Error submitting review', type: 'error' });
+      setTimeout(() => setNotification(null), 3000);
     } finally {
       setSubmittingReview(false);
     }
@@ -205,6 +234,39 @@ const MyBookings: React.FC = () => {
 
   return (
     <div className="home-landing">
+      {/* Notification Toast */}
+      {notification && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          padding: '16px 24px',
+          backgroundColor: notification.type === 'success' ? '#2ed573' : '#ff4444',
+          color: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 9999,
+          animation: 'slideIn 0.3s ease-out',
+          maxWidth: '400px',
+          fontWeight: '500',
+        }}>
+          {notification.message}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
+
       <header className="site-header">
         <div className="container header-inner">
           <div className="brand">
@@ -339,7 +401,7 @@ const MyBookings: React.FC = () => {
               </div>
             ) : (
               <div>
-                <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                   <button
                     onClick={() => setBookingFilter('all')}
                     style={{
@@ -404,6 +466,27 @@ const MyBookings: React.FC = () => {
                   >
                     Cancelled ({bookings.filter(b => b.status === 'cancelled').length})
                   </button>
+                  
+                  {/* New Booking Button */}
+                  <Link
+                    to="/book"
+                    style={{
+                      padding: '0.5rem 1rem',
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: '#4CAF50',
+                      color: '#fff',
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      fontSize: '0.9rem',
+                      transition: 'all 0.2s ease',
+                      marginLeft: 'auto',
+                      display: 'inline-block',
+                    }}
+                  >
+                    + New Booking
+                  </Link>
                 </div>
 
                 <div style={{ display: 'grid', gap: '20px' }}>
@@ -426,26 +509,62 @@ const MyBookings: React.FC = () => {
                           opacity: (booking.status === 'completed' || booking.status === 'cancelled') ? 0.85 : 1,
                           filter: booking.status === 'cancelled' ? 'blur(0.5px)' : 'none',
                           pointerEvents: booking.status === 'cancelled' ? 'none' : 'auto',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                          <h3 style={{ color: '#333', marginBottom: '0', fontSize: '1.1rem', margin: 0 }}>
-                            {booking.service.replace('-', ' ').toUpperCase()}
-                          </h3>
-                          {booking.status === 'completed' && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2ed573', fontWeight: '600', fontSize: '0.9rem' }}>
-                              <Check className="w-5 h-5" />
-                              Done
+                        {/* Header - Always Visible */}
+                        <div
+                          onClick={() => setExpandedBookingId(expandedBookingId === booking.id ? null : booking.id)}
+                          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: expandedBookingId === booking.id ? '16px' : '0' }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flex: 1 }}>
+                            <h3 style={{ color: '#333', marginBottom: '0', fontSize: '1.1rem', margin: 0 }}>
+                              {booking.service.replace('-', ' ').toUpperCase()}
+                            </h3>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              {booking.status === 'completed' && reviewedBookingIds.includes(booking.id) && (
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '4px 12px',
+                                  backgroundColor: '#e8f5e9',
+                                  color: '#2e7d32',
+                                  borderRadius: '20px',
+                                  fontSize: '0.8rem',
+                                  fontWeight: '600'
+                                }}>
+                                  ✓ Reviewed
+                                </div>
+                              )}
+                              {booking.status === 'completed' && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2ed573', fontWeight: '600', fontSize: '0.9rem' }}>
+                                  <Check className="w-5 h-5" />
+                                  Done
+                                </div>
+                              )}
+                              {booking.status === 'cancelled' && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f87171', fontWeight: '600', fontSize: '0.9rem' }}>
+                                  <AlertCircle className="w-5 h-5" />
+                                  Cancelled
+                                </div>
+                              )}
+                              <ChevronDown
+                                className="w-5 h-5"
+                                style={{
+                                  transition: 'transform 0.3s ease',
+                                  transform: expandedBookingId === booking.id ? 'rotate(180deg)' : 'rotate(0deg)',
+                                  color: '#666'
+                                }}
+                              />
                             </div>
-                          )}
-                          {booking.status === 'cancelled' && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f87171', fontWeight: '600', fontSize: '0.9rem' }}>
-                              <AlertCircle className="w-5 h-5" />
-                              Cancelled
-                            </div>
-                          )}
+                          </div>
                         </div>
 
+                        {/* Expandable Content */}
+                        {expandedBookingId === booking.id && (
+                          <>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                           {/* Left column */}
                           <div>
@@ -532,7 +651,7 @@ const MyBookings: React.FC = () => {
                           {cancellingId === booking.id ? 'Cancelling...' : 'Cancel Booking'}
                         </button>
                       )}
-                      {booking.status === 'completed' && (
+                      {booking.status === 'completed' && !reviewedBookingIds.includes(booking.id) && (
                         <button
                           onClick={() => setReviewingBookingId(booking.id)}
                           style={{
@@ -645,6 +764,8 @@ const MyBookings: React.FC = () => {
                         </div>
                       </div>
                     )}
+                          </>
+                        )}
 
                     {/* Cancellation Confirmation Modal */}
                     {showCancelConfirm === booking.id && (
