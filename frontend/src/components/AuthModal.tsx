@@ -395,7 +395,7 @@ const AuthModal: React.FC = () => {
             }}
           >
             <LogIn className="w-5 h-5" />
-            Login
+            {t('auth.login')}
           </button>
 
           {isOpen && (
@@ -426,7 +426,7 @@ const AuthModal: React.FC = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <h2 style={{ marginBottom: '24px', color: '#ff6fa3', textAlign: 'center' }}>
-                  {isLogin ? 'Login' : 'Register'}
+                  {isLogin ? t('authModal.title') : t('authModal.title')}
                 </h2>
 
                 {error && (
@@ -439,13 +439,13 @@ const AuthModal: React.FC = () => {
                   {!isLogin && (
                     <div style={{ marginBottom: '16px' }}>
                       <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
-                        Full Name
+                        {t('authModal.fullName')}
                       </label>
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Enter your full name"
+                        placeholder={t('authModal.fullNamePlaceholder')}
                         style={{
                           width: '100%',
                           padding: '10px',
@@ -460,13 +460,13 @@ const AuthModal: React.FC = () => {
 
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
-                      Email
+                      {t('authModal.email')}
                     </label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
+                      placeholder={t('authModal.emailPlaceholder')}
                       style={{
                         width: '100%',
                         padding: '10px',
@@ -481,13 +481,13 @@ const AuthModal: React.FC = () => {
                   {!isLogin && (
                     <div style={{ marginBottom: '16px' }}>
                       <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
-                        Phone Number <span style={{ color: '#999', fontSize: '0.85rem' }}>(Optional)</span>
+                        {t('authModal.phoneNumber')}
                       </label>
                       <input
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="Enter your phone number"
+                        placeholder={t('authModal.phoneNumberPlaceholder')}
                         style={{
                           width: '100%',
                           padding: '10px',
@@ -502,14 +502,14 @@ const AuthModal: React.FC = () => {
 
                   <div style={{ marginBottom: '24px' }}>
                     <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
-                      Password
+                      {t('authModal.password')}
                     </label>
                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder={isLogin ? 'Enter password' : 'Enter password (min. 8 characters)'}
+                        placeholder={isLogin ? t('authModal.passwordPlaceholder') : t('authModal.passwordMin')}
                         style={{
                           width: '100%',
                           padding: '10px 40px 10px 10px',
@@ -565,7 +565,7 @@ const AuthModal: React.FC = () => {
                       opacity: (loading || (!isLogin && password.length < 8)) ? 0.7 : 1,
                     }}
                   >
-                    {loading ? 'Processing...' : isLogin ? 'Login' : 'Register'}
+                    {loading ? 'Processing...' : isLogin ? t('authModal.title') : t('authModal.registerButton')}
                   </button>
 
                   {isLogin && (
@@ -586,13 +586,13 @@ const AuthModal: React.FC = () => {
                         textDecoration: 'underline',
                       }}
                     >
-                      🔐 Forgot password?
+                      {t('authModal.loginButton')}
                     </button>
                   )}
                 </form>
 
                 <p style={{ textAlign: 'center', marginTop: '16px', color: '#666' }}>
-                  {isLogin ? "Don't have an account? " : 'Already have an account? '}
+                  {isLogin ? t('authModal.dontHaveAccount') + ' ' : t('authModal.alreadyHaveAccount') + ' '}
                   <button
                     onClick={() => {
                       setIsLogin(!isLogin);
@@ -607,7 +607,7 @@ const AuthModal: React.FC = () => {
                       fontSize: '1rem',
                     }}
                   >
-                    {isLogin ? 'Register' : 'Login'}
+                    {isLogin ? t('authModal.register') : t('authModal.title')}
                   </button>
                 </p>
 
@@ -625,7 +625,7 @@ const AuthModal: React.FC = () => {
                     color: '#333',
                   }}
                 >
-                  Close
+                  {t('authModal.close')}
                 </button>
               </div>
             </div>
@@ -662,11 +662,11 @@ const AuthModal: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 style={{ marginBottom: '16px', color: '#ff6fa3', fontSize: '1.3rem' }}>
-              Confirm Logout
+              {t('auth.confirmLogout')}
             </h2>
 
             <p style={{ marginBottom: '24px', color: '#666', fontSize: '0.95rem', lineHeight: '1.5' }}>
-              Are you sure you want to log out?
+              {t('auth.confirmLogoutMessage')}
             </p>
 
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -684,7 +684,7 @@ const AuthModal: React.FC = () => {
                   cursor: 'pointer',
                 }}
               >
-                Cancel
+                {t('auth.cancel')}
               </button>
               <button
                 onClick={confirmLogout}
@@ -700,7 +700,7 @@ const AuthModal: React.FC = () => {
                   cursor: 'pointer',
                 }}
               >
-                Logout
+                {t('auth.logoutButton')}
               </button>
             </div>
           </div>
@@ -1241,7 +1241,7 @@ const AuthModal: React.FC = () => {
             boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ color: '#333', margin: 0, fontSize: '1.3rem' }}>🔐 Forgot Password</h2>
+              <h2 style={{ color: '#333', margin: 0, fontSize: '1.3rem' }}>{t('authModal.forgotPasswordTitle')}</h2>
               <button
                 onClick={() => setShowForgotPassword(false)}
                 style={{
@@ -1284,18 +1284,18 @@ const AuthModal: React.FC = () => {
                 )}
 
                 <p style={{ color: '#666', marginBottom: '16px', fontSize: '0.95rem' }}>
-                  Enter your email address and we'll send you a link to reset your password.
+                  {t('authModal.forgotPasswordDescription')}
                 </p>
 
                 <div style={{ marginBottom: '24px' }}>
                   <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
-                    Email Address
+                    {t('authModal.forgotPasswordEmail')}
                   </label>
                   <input
                     type="email"
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="Enter your email"
+                    placeholder={t('authModal.forgotPasswordEmailPlaceholder')}
                     style={{
                       width: '100%',
                       padding: '10px',
@@ -1324,7 +1324,7 @@ const AuthModal: React.FC = () => {
                       opacity: sendingReset ? 0.7 : 1,
                     }}
                   >
-                    {sendingReset ? 'Sending...' : 'Send Reset Link'}
+                    {sendingReset ? 'Sending...' : t('authModal.sendResetLink')}
                   </button>
                   <button
                     type="button"
@@ -1341,7 +1341,7 @@ const AuthModal: React.FC = () => {
                       cursor: 'pointer',
                     }}
                   >
-                    Cancel
+                    {t('authModal.cancel')}
                   </button>
                 </div>
               </form>

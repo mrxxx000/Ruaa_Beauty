@@ -189,8 +189,37 @@
     "loginToReply": "Login to Reply"
   },
   "auth": {
+    "login": "Login",
     "logout": "Log out",
-    "greeting": "Hey"
+    "greeting": "Hey",
+    "confirmLogout": "Confirm Logout",
+    "confirmLogoutMessage": "Are you sure you want to log out?",
+    "cancel": "Cancel",
+    "logoutButton": "Logout"
+  },
+  "authModal": {
+    "title": "Login",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password",
+    "loginButton": "🔐 Forgot password?",
+    "dontHaveAccount": "Don't have an account?",
+    "register": "Register",
+    "close": "Close",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "phoneNumber": "Phone Number (Optional)",
+    "phoneNumberPlaceholder": "Enter your phone number",
+    "passwordMin": "Enter password (min. 8 characters)",
+    "alreadyHaveAccount": "Already have an account?",
+    "registerButton": "Register",
+    "forgotPasswordTitle": "🔐 Forgot Password",
+    "forgotPasswordDescription": "Enter your email address and we'll send you a link to reset your password.",
+    "forgotPasswordEmail": "Email Address",
+    "forgotPasswordEmailPlaceholder": "Enter your email",
+    "sendResetLink": "Send Reset Link",
+    "cancel": "Cancel"
   },
   "profile": {
     "title": "My Profile",

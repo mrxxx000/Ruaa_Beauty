@@ -192,8 +192,37 @@
     "loginToReply": "Logga in för att svara"
   },
   "auth": {
+    "login": "Logga in",
     "logout": "Logga ut",
-    "greeting": "Hej"
+    "greeting": "Hej",
+    "confirmLogout": "Bekräfta utloggning",
+    "confirmLogoutMessage": "Är du säker på att du vill logga ut?",
+    "cancel": "Avbryt",
+    "logoutButton": "Logga ut"
+  },
+  "authModal": {
+    "title": "Logga in",
+    "email": "E-post",
+    "emailPlaceholder": "Ange din e-post",
+    "password": "Lösenord",
+    "passwordPlaceholder": "Ange lösenord",
+    "loginButton": "🔐 Glömt lösenord?",
+    "dontHaveAccount": "Har du inget konto?",
+    "register": "Registrera",
+    "close": "Stäng",
+    "fullName": "Fullständigt namn",
+    "fullNamePlaceholder": "Ange ditt fullständiga namn",
+    "phoneNumber": "Telefonnummer (Valfritt)",
+    "phoneNumberPlaceholder": "Ange ditt telefonnummer",
+    "passwordMin": "Ange lösenord (min. 8 tecken)",
+    "alreadyHaveAccount": "Har du redan ett konto?",
+    "registerButton": "Registrera",
+    "forgotPasswordTitle": "🔐 Glömt lösenord",
+    "forgotPasswordDescription": "Ange din e-postadress så skickar vi en länk för att återställa ditt lösenord.",
+    "forgotPasswordEmail": "E-postadress",
+    "forgotPasswordEmailPlaceholder": "Ange din e-post",
+    "sendResetLink": "Skicka återställningslänk",
+    "cancel": "Avbryt"
   },
   "profile": {
     "title": "Min profil",

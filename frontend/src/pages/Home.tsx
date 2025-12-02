@@ -251,32 +251,43 @@ const Home: React.FC = () => {
               justifyContent: 'center', 
               gap: '1rem' 
             }}>
-              {sitemapPages.map((page) => (
-                <Link
-                  key={page.path}
-                  to={page.path}
-                  title={page.description}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    backgroundColor: '#f5f5f5',
-                    borderRadius: '4px',
-                    textDecoration: 'none',
-                    color: '#ff6fa3',
-                    transition: 'all 0.3s ease',
-                    fontSize: '0.9rem'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#ff6fa3';
-                    e.currentTarget.style.color = '#fff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#f5f5f5';
-                    e.currentTarget.style.color = '#ff6fa3';
-                  }}
-                >
-                  {page.label}
-                </Link>
-              ))}
+              {sitemapPages.map((page) => {
+                let translatedLabel = page.label;
+                if (page.path === '/') translatedLabel = t('nav.home');
+                else if (page.path === '/book') translatedLabel = t('nav.book');
+                else if (page.path === '/lashes') translatedLabel = t('nav.lashes');
+                else if (page.path === '/makeup') translatedLabel = t('nav.makeup');
+                else if (page.path === '/mehendi') translatedLabel = t('nav.mehendi');
+                else if (page.path === '/reviews') translatedLabel = t('nav.reviews');
+                else if (page.path === '/contact') translatedLabel = t('nav.contact');
+
+                return (
+                  <Link
+                    key={page.path}
+                    to={page.path}
+                    title={page.description}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '4px',
+                      textDecoration: 'none',
+                      color: '#ff6fa3',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.9rem'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ff6fa3';
+                      e.currentTarget.style.color = '#fff';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f5f5f5';
+                      e.currentTarget.style.color = '#ff6fa3';
+                    }}
+                  >
+                    {translatedLabel}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -286,24 +297,46 @@ const Home: React.FC = () => {
         <div className="container">
           <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
             <div style={{ marginBottom: '1rem' }}>
-              {sitemapPages.slice(0, 3).map((page, index) => (
-                <React.Fragment key={page.path}>
-                  <Link to={page.path} style={{ color: '#ff6fa3', marginRight: '1.5rem', textDecoration: 'none' }}>
-                    {page.label}
-                  </Link>
-                  {index < 2 && <span style={{ color: '#ccc' }}>|</span>}
-                </React.Fragment>
-              ))}
+              {sitemapPages.slice(0, 3).map((page, index) => {
+                let label = page.label;
+                if (page.path === '/') label = t('nav.home');
+                else if (page.path === '/book') label = t('nav.book');
+                else if (page.path === '/lashes') label = t('nav.lashes');
+                else if (page.path === '/makeup') label = t('nav.makeup');
+                else if (page.path === '/mehendi') label = t('nav.mehendi');
+                else if (page.path === '/reviews') label = t('nav.reviews');
+                else if (page.path === '/contact') label = t('nav.contact');
+
+                return (
+                  <React.Fragment key={page.path}>
+                    <Link to={page.path} style={{ color: '#ff6fa3', marginRight: '1.5rem', textDecoration: 'none' }}>
+                      {label}
+                    </Link>
+                    {index < 2 && <span style={{ color: '#ccc' }}>|</span>}
+                  </React.Fragment>
+                );
+              })}
             </div>
             <div>
-              {sitemapPages.slice(3).map((page, index) => (
-                <React.Fragment key={page.path}>
-                  <Link to={page.path} style={{ color: '#ff6fa3', marginRight: '1.5rem', textDecoration: 'none' }}>
-                    {page.label}
-                  </Link>
-                  {index < 3 && <span style={{ color: '#ccc' }}>|</span>}
-                </React.Fragment>
-              ))}
+              {sitemapPages.slice(3).map((page, index) => {
+                let label = page.label;
+                if (page.path === '/') label = t('nav.home');
+                else if (page.path === '/book') label = t('nav.book');
+                else if (page.path === '/lashes') label = t('nav.lashes');
+                else if (page.path === '/makeup') label = t('nav.makeup');
+                else if (page.path === '/mehendi') label = t('nav.mehendi');
+                else if (page.path === '/reviews') label = t('nav.reviews');
+                else if (page.path === '/contact') label = t('nav.contact');
+
+                return (
+                  <React.Fragment key={page.path}>
+                    <Link to={page.path} style={{ color: '#ff6fa3', marginRight: '1.5rem', textDecoration: 'none' }}>
+                      {label}
+                    </Link>
+                    {index < 3 && <span style={{ color: '#ccc' }}>|</span>}
+                  </React.Fragment>
+                );
+              })}
             </div>
           </div>
           <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
