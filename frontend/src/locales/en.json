@@ -202,6 +202,29 @@
     "changePassword": "Change Password",
     "close": "Close"
   },
+  "myBookings": {
+    "title": "My Bookings",
+    "loading": "Loading your bookings",
+    "all": "All",
+    "pending": "Pending",
+    "done": "Done",
+    "cancelled": "Cancelled",
+    "newBooking": "New Booking",
+    "reviewed": "Reviewed",
+    "contactDetails": "Contact Details",
+    "name": "Name:",
+    "email": "Email:",
+    "phone": "Phone:",
+    "total": "Total:",
+    "writeReview": "Write Review",
+    "shareExperience": "Share Your Experience",
+    "rating": "Rating",
+    "yourReview": "Your Review",
+    "reviewPlaceholder": "Tell us about your experience...",
+    "cancel": "Cancel",
+    "submitReview": "Submit Review",
+    "reviewSuccess": "Review submitted successfully!"
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. All rights reserved."
   }

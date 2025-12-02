@@ -205,6 +205,29 @@
     "changePassword": "Byt lösenord",
     "close": "Stäng"
   },
+  "myBookings": {
+    "title": "Mina bokningar",
+    "loading": "Laddar dina bokningar",
+    "all": "Alla",
+    "pending": "Pågående",
+    "done": "Utfört",
+    "cancelled": "Avbrutet",
+    "newBooking": "Ny bokning",
+    "reviewed": "Recenserad",
+    "contactDetails": "Kontaktuppgifter",
+    "name": "Namn:",
+    "email": "E-post:",
+    "phone": "Telefon:",
+    "total": "Totalt:",
+    "writeReview": "Skriv recension",
+    "shareExperience": "Dela din upplevelse",
+    "rating": "Betyg",
+    "yourReview": "Din recension",
+    "reviewPlaceholder": "Berätta om din upplevelse...",
+    "cancel": "Avbryt",
+    "submitReview": "Skicka recension",
+    "reviewSuccess": "Recension skickad!"
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. Alla rättigheter förbehållna."
   }

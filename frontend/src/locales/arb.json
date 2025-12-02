@@ -206,6 +206,29 @@
     "changePassword": "تغيير كلمة المرور",
     "close": "إغلاق"
   },
+  "myBookings": {
+    "title": "حجوزاتي",
+    "loading": "جارٍ تحميل حجوزاتك",
+    "all": "الكل",
+    "pending": "قيد الانتظار",
+    "done": "تم",
+    "cancelled": "ملغاة",
+    "newBooking": "حجز جديد",
+    "reviewed": "تمت المراجعة",
+    "contactDetails": "بيانات الاتصال",
+    "name": "الاسم:",
+    "email": "البريد الإلكتروني:",
+    "phone": "رقم الهاتف:",
+    "total": "الإجمالي:",
+    "writeReview": "اكتب مراجعة",
+    "shareExperience": "شارك تجربتك",
+    "rating": "التقييم",
+    "yourReview": "مراجعتك",
+    "reviewPlaceholder": "أخبرنا عن تجربتك...",
+    "cancel": "إلغاء",
+    "submitReview": "إرسال المراجعة",
+    "reviewSuccess": "تم إرسال المراجعة بنجاح!"
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. جميع الحقوق محفوظة."
   }
