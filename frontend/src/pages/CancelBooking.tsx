@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { AlertCircle, CheckCircle, XCircle, Loader, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import '../styles/App.css';
@@ -20,6 +20,7 @@ const CancelBooking: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [state, setState] = useState<CancelState>('loading');
   const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null);
   const [error, setError] = useState<string>('');
@@ -101,7 +102,7 @@ const CancelBooking: React.FC = () => {
                 className="nav-dropdown-btn"
                 onClick={() => setSalonDropdownOpen(!salonDropdownOpen)}
               >
-                Salon Services
+                {t('nav.salonService')}
                 <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: salonDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
               </button>
               {salonDropdownOpen && (
@@ -121,7 +122,7 @@ const CancelBooking: React.FC = () => {
                 className="nav-dropdown-btn"
                 onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
               >
-                Products
+                {t('nav.products')}
                 <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: productsDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
               </button>
               {productsDropdownOpen && (

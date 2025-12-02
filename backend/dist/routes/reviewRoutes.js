@@ -28,12 +28,12 @@ const verifyToken = (req, res, next) => {
 // POST /api/reviews - Create a new review (requires authentication)
 router.post('/reviews', verifyToken, async (req, res) => {
     const userId = req.userId;
-    const { rating, comment } = req.body;
-    if (!rating || !comment) {
-        return res.status(400).json({ message: 'Rating and comment are required' });
+    const { bookingId, rating, comment } = req.body;
+    if (!bookingId || !rating || !comment) {
+        return res.status(400).json({ message: 'Booking ID, rating and comment are required' });
     }
     try {
-        const review = await reviewService.createReview(userId, rating, comment);
+        const review = await reviewService.createReview(userId, bookingId, rating, comment);
         res.status(201).json({
             message: 'Review created successfully',
             review,
@@ -53,15 +53,19 @@ router.get('/reviews', async (req, res) => {
     const limit = req.query.limit ? parseInt(req.query.limit) : 10;
     const offset = req.query.offset ? parseInt(req.query.offset) : 0;
     try {
+        console.log(`📊 GET /api/reviews - limit: ${limit}, offset: ${offset}`);
         const result = await reviewService.getAllReviews(limit, offset);
+        console.log(`✅ Successfully returned ${result.reviews.length} reviews`);
         res.status(200).json(result);
     }
     catch (err) {
-        console.error('Error fetching reviews:', err);
+        console.error('❌ Error in GET /api/reviews:', err);
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        const errorStack = err instanceof Error ? err.stack : '';
         res.status(500).json({
             message: 'Error fetching reviews',
             details: errorMessage,
+            stack: process.env.NODE_ENV === 'development' ? errorStack : undefined,
         });
     }
 });
@@ -124,12 +128,12 @@ router.get('/reviews/:reviewId', async (req, res) => {
 router.post('/reviews/:reviewId/reply', verifyToken, async (req, res) => {
     const userId = req.userId;
     const { reviewId } = req.params;
-    const { reply } = req.body;
-    if (!reviewId || !reply) {
-        return res.status(400).json({ message: 'Review ID and reply are required' });
+    const { replyText } = req.body;
+    if (!reviewId || !replyText) {
+        return res.status(400).json({ message: 'Review ID and reply text are required' });
     }
     try {
-        const replyData = await reviewService.addReplyToReview(parseInt(reviewId), userId, reply);
+        const replyData = await reviewService.addReplyToReview(parseInt(reviewId), userId, replyText);
         res.status(201).json({
             message: 'Reply added successfully',
             reply: replyData,
@@ -144,7 +148,7 @@ router.post('/reviews/:reviewId/reply', verifyToken, async (req, res) => {
         });
     }
 });
-// DELETE /api/reviews/:reviewId/reply/:replyId - Delete reply (requires authentication, only author)
+// DELETE /api/reviews/:reviewId/reply/:replyId - Delete reply (requires authentication, only author or admin)
 router.delete('/reviews/:reviewId/reply/:replyId', verifyToken, async (req, res) => {
     const userId = req.userId;
     const { reviewId, replyId } = req.params;

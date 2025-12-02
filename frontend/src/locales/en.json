@@ -6,7 +6,9 @@
     "mehendi": "Mehendi",
     "book": "Book",
     "contact": "Contact",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "salonService": "Salon Service",
+    "products": "Products"
   },
   "hero": {
   "title": "Ruaa Beauty",
@@ -174,7 +176,8 @@
   },
   "reviews": {
     "title": "Our Reviews",
-    "subtitle": "See what our clients have to say"
+    "subtitle": "See what our clients have to say",
+    "signInMessage": "👤 Sign in to share your experience and leave a review"
   },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. All rights reserved."

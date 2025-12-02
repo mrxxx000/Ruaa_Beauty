@@ -6,7 +6,9 @@
     "mehendi": "Mehendi",
     "book": "Boka",
     "contact": "Kontakt",
-    "reviews": "Recensioner"
+    "reviews": "Recensioner",
+    "salonService": "Salongtjänst",
+    "products": "Produkter"
   },
 
   "hero": {
@@ -177,7 +179,8 @@
 
   "reviews": {
     "title": "Våra Recensioner",
-    "subtitle": "Se vad våra klienter säger"
+    "subtitle": "Se vad våra klienter säger",
+    "signInMessage": "👤 Logga in för att dela din upplevelse och lämna en recension"
   },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. Alla rättigheter förbehållna."

@@ -141,7 +141,7 @@
     height: 16px;
     position: absolute;
     bottom: 10px;
-    right: 2px;
+    right: -5px;
     stroke-width: 2;
     color: inherit;
     stroke: currentColor;
@@ -260,6 +260,11 @@
 }
 
 [dir="rtl"] .dropdown-chevron {
+  left: -5px;
+  right: auto;
+}
+
+[dir="rtl"] .bottom-nav-dropdown:nth-child(3) .dropdown-chevron {
   left: 2px;
   right: auto;
 }

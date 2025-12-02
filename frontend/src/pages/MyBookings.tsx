@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, Calendar, MapPin, Clock, Phone, AlertCircle, Loader, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import '../styles/App.css';
@@ -26,6 +26,7 @@ interface Booking {
 const MyBookings: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -280,7 +281,7 @@ const MyBookings: React.FC = () => {
                 className="nav-dropdown-btn"
                 onClick={() => setSalonDropdownOpen(!salonDropdownOpen)}
               >
-                Salon Services
+                {t('nav.salonService')}
                 <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: salonDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
               </button>
               {salonDropdownOpen && (
@@ -300,7 +301,7 @@ const MyBookings: React.FC = () => {
                 className="nav-dropdown-btn"
                 onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
               >
-                Products
+                {t('nav.products')}
                 <ChevronDown className="w-4 h-4" style={{ transition: 'transform 0.2s', transform: productsDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
               </button>
               {productsDropdownOpen && (
