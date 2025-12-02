@@ -20,7 +20,8 @@ interface ReviewCardProps {
   rating: number;
   comment: string;
   created_at: string;
-  users: User;
+  user?: User; // Changed from 'users' to 'user'
+  users?: User; // Keep for backward compatibility
   replies?: ReviewReply[];
   currentUserId?: number;
   onReply?: (reviewId: number, reply: string) => Promise<void>;
@@ -33,6 +34,7 @@ export default function ReviewCard({
   rating,
   comment,
   created_at,
+  user,
   users,
   replies = [],
   currentUserId,
@@ -40,6 +42,9 @@ export default function ReviewCard({
   onDelete,
   onDeleteReply,
 }: ReviewCardProps) {
+  // Support both 'user' and 'users' for backward compatibility
+  const reviewUser = user || users;
+
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [reply, setReply] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,7 +52,12 @@ export default function ReviewCard({
   const [visibleReplies, setVisibleReplies] = useState(3);
   const [deletingReplyId, setDeletingReplyId] = useState<number | null>(null);
 
-  const isAuthor = currentUserId === users.id;
+  // Return null if no user data
+  if (!reviewUser) {
+    return null;
+  }
+
+  const isAuthor = currentUserId === reviewUser.id;
   const formattedDate = new Date(created_at).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -110,10 +120,10 @@ export default function ReviewCard({
       <div className="review-header">
         <div className="reviewer-info">
           <div className="reviewer-avatar">
-            {users.name.charAt(0).toUpperCase()}
+            {reviewUser.name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h3 className="reviewer-name">{users.name}</h3>
+            <h3 className="reviewer-name">{reviewUser.name}</h3>
             <p className="review-date">{formattedDate}</p>
           </div>
         </div>
