@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Calendar, Clock, MapPin, MessageSquare, User, Mail, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { createPayPalOrder } from '../paymentApi';
 
 type FormData = {
   name: string;
@@ -17,6 +18,7 @@ type FormData = {
   location: string;
   customAddress: string;
   notes: string;
+  paymentMethod: 'none' | 'paypal'; // Payment method selection
 };
 
 const defaultData: FormData = {
@@ -33,6 +35,7 @@ const defaultData: FormData = {
   location: '',
   customAddress: '',
   notes: '',
+  paymentMethod: 'none',
 };
 
 const SERVICES_PRICING: { [key: string]: number } = {
@@ -298,6 +301,29 @@ const BookingForm: React.FC = () => {
       return;
     }
     
+    // If PayPal payment is selected, handle PayPal flow instead of direct booking
+    if (formData.paymentMethod === 'paypal') {
+      setIsLoading(true);
+      try {
+        const paypalOrderId = await createPayPalOrder({
+          totalPrice,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          service: formData.services.join(', '),
+        });
+
+        // Redirect to PayPal checkout
+        window.location.href = `https://www.sandbox.paypal.com/checkoutnow?token=${paypalOrderId}`;
+      } catch (err) {
+        alert('Failed to create PayPal order. Please try again.');
+        console.error(err);
+        setIsLoading(false);
+      }
+      return;
+    }
+    
+    // Regular booking flow without payment
     setIsLoading(true);
     try {
       // Determine the address based on location choice
@@ -2414,6 +2440,120 @@ const BookingForm: React.FC = () => {
                   className={`w-full px-6 py-4 text-lg bg-background border-2 rounded-2xl transition-all duration-300 outline-none resize-none placeholder:text-muted-foreground/50 ${focusedField === 'notes' ? 'border-primary shadow-glow scale-[1.02]' : 'border-border hover:border-primary/50'}`}
                 />
               </div>
+            </div>
+
+            {/* Payment Method Selection */}
+            <div className="form-group">
+              <label className="flex items-center gap-2 mb-2 font-semibold text-foreground text-sm">
+                <span style={{ fontSize: '1.2rem' }}>💳</span>
+                {t('bookingForm.paymentMethodLabel') || 'Payment Method'}
+              </label>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '12px',
+                width: '100%'
+              }}>
+                {/* No Payment Option */}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, paymentMethod: 'none' })}
+                  style={{
+                    padding: '16px',
+                    borderRadius: '12px',
+                    border: formData.paymentMethod === 'none' ? '2px solid #ff6fa3' : '2px solid #e5e7eb',
+                    backgroundColor: formData.paymentMethod === 'none' ? '#fff6f8' : 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    textAlign: 'center'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#ff6fa3';
+                    if (formData.paymentMethod !== 'none') {
+                      e.currentTarget.style.backgroundColor = '#f9fafb';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (formData.paymentMethod !== 'none') {
+                      e.currentTarget.style.borderColor = '#e5e7eb';
+                      e.currentTarget.style.backgroundColor = 'white';
+                    }
+                  }}
+                >
+                  <div style={{ fontSize: '1.8rem', marginBottom: '8px' }}>📋</div>
+                  <p style={{
+                    fontSize: '0.95rem',
+                    fontWeight: '600',
+                    color: formData.paymentMethod === 'none' ? '#ff6fa3' : '#1f2937',
+                    marginBottom: '4px'
+                  }}>
+                    {t('bookingForm.directBooking') || 'Direct Booking'}
+                  </p>
+                  <p style={{
+                    fontSize: '0.8rem',
+                    color: '#6b7280'
+                  }}>
+                    {t('bookingForm.directBookingDesc') || 'Book without payment'}
+                  </p>
+                </button>
+
+                {/* PayPal Option */}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, paymentMethod: 'paypal' })}
+                  style={{
+                    padding: '16px',
+                    borderRadius: '12px',
+                    border: formData.paymentMethod === 'paypal' ? '2px solid #ff6fa3' : '2px solid #e5e7eb',
+                    backgroundColor: formData.paymentMethod === 'paypal' ? '#fff6f8' : 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    textAlign: 'center'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#ff6fa3';
+                    if (formData.paymentMethod !== 'paypal') {
+                      e.currentTarget.style.backgroundColor = '#f9fafb';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (formData.paymentMethod !== 'paypal') {
+                      e.currentTarget.style.borderColor = '#e5e7eb';
+                      e.currentTarget.style.backgroundColor = 'white';
+                    }
+                  }}
+                >
+                  <div style={{ fontSize: '1.8rem', marginBottom: '8px' }}>🅿️</div>
+                  <p style={{
+                    fontSize: '0.95rem',
+                    fontWeight: '600',
+                    color: formData.paymentMethod === 'paypal' ? '#ff6fa3' : '#1f2937',
+                    marginBottom: '4px'
+                  }}>
+                    PayPal
+                  </p>
+                  <p style={{
+                    fontSize: '0.8rem',
+                    color: '#6b7280'
+                  }}>
+                    {t('bookingForm.paypalDesc') || 'Pay now securely'}
+                  </p>
+                </button>
+              </div>
+              {formData.paymentMethod === 'paypal' && (
+                <div style={{
+                  marginTop: '12px',
+                  padding: '12px',
+                  backgroundColor: '#fef3f4',
+                  border: '1px solid #fecdd3',
+                  borderRadius: '8px',
+                  fontSize: '0.85rem',
+                  color: '#be123c',
+                  textAlign: 'center'
+                }}>
+                  ℹ️ {t('bookingForm.paypalInfo') || 'You will be redirected to PayPal to complete payment'}
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}

@@ -24,6 +24,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^2.7.0",
     "sib-api-v3-sdk": "^8.5.0"
   },
   "devDependencies": {
@@ -31,6 +32,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
     "@types/node": "^24.10.1",
+    "@types/node-fetch": "^2.6.13",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   }

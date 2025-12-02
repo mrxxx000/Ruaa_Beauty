@@ -12,6 +12,8 @@ import ResetPassword from './pages/ResetPassword';
 import CancelBooking from './pages/CancelBooking';
 import MyBookings from './pages/MyBookings';
 import AdminDashboard from './pages/AdminDashboard';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentCancel from './pages/PaymentCancel';
 import BottomNav from './components/BottomNav';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -28,6 +30,8 @@ function AppContent() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/unbook" element={<CancelBooking />} />
         <Route path="/my-bookings" element={<MyBookings />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/payment-cancel" element={<PaymentCancel />} />
         <Route
           path="/admin"
           element={
