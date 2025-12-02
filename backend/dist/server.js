@@ -18,7 +18,21 @@ const port = process.env.PORT ? Number(process.env.PORT) : 10000;
 app.use((0, compression_1.default)());
 // CORS with specific options for better performance
 app.use((0, cors_1.default)({
-    origin: process.env.FRONTEND_URL || '*',
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            process.env.FRONTEND_URL,
+            'https://ruaa-beauty.vercel.app',
+            'http://localhost:3000',
+            'http://localhost:5000',
+            '*'
+        ].filter(Boolean);
+        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     optionsSuccessStatus: 200,

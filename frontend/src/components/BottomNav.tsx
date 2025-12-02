@@ -38,6 +38,7 @@ const BottomNav: React.FC = () => {
       setSalonDropdownPos(rect.left + rect.width / 2);
     }
     setSalonDropdownOpen(!salonDropdownOpen);
+    setProductsDropdownOpen(false);
   };
 
   const handleProductsDropdownClick = () => {
@@ -46,6 +47,7 @@ const BottomNav: React.FC = () => {
       setProductsDropdownPos(rect.left + rect.width / 2);
     }
     setProductsDropdownOpen(!productsDropdownOpen);
+    setSalonDropdownOpen(false);
   };
 
   return (
@@ -73,10 +75,10 @@ const BottomNav: React.FC = () => {
               salonItems.some(item => item.path === location.pathname) ? 'active' : ''
             }`}
             onClick={handleSalonDropdownClick}
-            title="Salon Services"
+            title={t('nav.salonService')}
           >
             <Sparkles className="bottom-nav-icon" />
-            <span className="bottom-nav-label">Salon</span>
+            <span className="bottom-nav-label">{t('nav.salonService')}</span>
             <ChevronUp className="dropdown-chevron" style={{ opacity: salonDropdownOpen ? 1 : 0.5 }} />
           </button>
           {salonDropdownOpen && (
@@ -103,10 +105,10 @@ const BottomNav: React.FC = () => {
               productItems.some(item => item.path === location.pathname) ? 'active' : ''
             }`}
             onClick={handleProductsDropdownClick}
-            title="Products"
+            title={t('nav.products')}
           >
             <Package className="bottom-nav-icon" />
-            <span className="bottom-nav-label">Products</span>
+            <span className="bottom-nav-label">{t('nav.products')}</span>
             <ChevronUp className="dropdown-chevron" style={{ opacity: productsDropdownOpen ? 1 : 0.5 }} />
           </button>
           {productsDropdownOpen && (

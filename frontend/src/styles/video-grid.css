@@ -83,4 +83,23 @@
 /* RTL Support */
 [dir="rtl"] .video-grid {
   direction: rtl;
+  width: 100%;
+  margin: 0 auto;
+}
+
+[dir="rtl"] .video-overlay {
+  right: auto;
+  left: 10px;
+}
+
+@media (max-width: 640px) {
+  [dir="rtl"] .video-grid {
+    width: 95%;
+    margin: 0 auto;
+  }
+
+  [dir="rtl"] .video-overlay {
+    left: 6px;
+    right: auto;
+  }
 }
