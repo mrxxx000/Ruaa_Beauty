@@ -84,10 +84,10 @@ const BottomNav: React.FC = () => {
                 salonItems.some(item => item.path === location.pathname) ? 'active' : ''
               }`}
               onClick={handleSalonDropdownClick}
-              title={t('nav.salonService')}
+              title={t('nav.salonServiceDesktop')}
             >
               <Sparkles className="bottom-nav-icon" />
-              <span className="bottom-nav-label">{t('nav.salonService')}</span>
+              <span className="bottom-nav-label">{t('nav.salonServiceMobile')}</span>
               <ChevronUp className="dropdown-chevron" style={{ opacity: salonDropdownOpen ? 1 : 0.5 }} />
             </button>
           </div>
