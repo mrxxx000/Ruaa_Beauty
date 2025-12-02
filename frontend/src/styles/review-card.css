@@ -51,6 +51,13 @@
   color: #999;
 }
 
+.review-service {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+}
+
 .delete-btn {
   background: none;
   border: none;

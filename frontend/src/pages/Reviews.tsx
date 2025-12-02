@@ -16,6 +16,7 @@ interface Review {
   rating: number;
   comment: string;
   created_at: string;
+  service?: string;
   user?: {
     id: number;
     name: string;
@@ -300,6 +301,7 @@ const Reviews: React.FC = () => {
               rating={review.rating}
               comment={review.comment}
               created_at={review.created_at}
+              service={review.service}
               user={review.user}
               users={review.users}
               replies={review.replies}

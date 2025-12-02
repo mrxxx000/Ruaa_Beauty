@@ -22,6 +22,7 @@ interface ReviewCardProps {
   rating: number;
   comment: string;
   created_at: string;
+  service?: string;
   user?: User; // Changed from 'users' to 'user'
   users?: User; // Keep for backward compatibility
   replies?: ReviewReply[];
@@ -36,6 +37,7 @@ export default function ReviewCard({
   rating,
   comment,
   created_at,
+  service,
   user,
   users,
   replies = [],
@@ -127,6 +129,7 @@ export default function ReviewCard({
           <div>
             <h3 className="reviewer-name">{reviewUser.name}</h3>
             <p className="review-date">{formattedDate}</p>
+            {service && <p className="review-service">Service: {service}</p>}
           </div>
         </div>
 
