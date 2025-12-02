@@ -187,7 +187,9 @@
     "totalReviews": "Totala recensioner",
     "averageRating": "Genomsnittligt betyg",
     "loadingMessage": "Laddar recensioner...",
-    "signInMessage": "👤 Logga in för att dela din upplevelse och lämna en recension"
+    "signInMessage": "👤 Logga in för att dela din upplevelse och lämna en recension",
+    "reply": "Svara",
+    "loginToReply": "Logga in för att svara"
   },
   "auth": {
     "logout": "Logga ut",

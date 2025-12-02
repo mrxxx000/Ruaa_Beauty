@@ -184,7 +184,9 @@
     "totalReviews": "Total Reviews",
     "averageRating": "Average Rating",
     "loadingMessage": "Loading reviews...",
-    "signInMessage": "👤 Sign in to share your experience and leave a review"
+    "signInMessage": "👤 Sign in to share your experience and leave a review",
+    "reply": "Reply",
+    "loginToReply": "Login to Reply"
   },
   "auth": {
     "logout": "Log out",

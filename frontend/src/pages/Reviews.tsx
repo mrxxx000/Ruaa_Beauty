@@ -535,7 +535,7 @@ const Reviews: React.FC = () => {
                 )}
 
                 {/* Reply Form */}
-                {currentUserId && currentUserId !== reviewUser?.id && (
+                {currentUserId && (
                   <div className="reply-form-section">
                     {replyingToId !== review.id ? (
                       <button
@@ -543,7 +543,7 @@ const Reviews: React.FC = () => {
                         className="reply-btn"
                       >
                         <MessageCircle size={16} />
-                        Reply
+                        {t('reviews.reply')}
                       </button>
                     ) : (
                       <div className="reply-form">
@@ -579,7 +579,7 @@ const Reviews: React.FC = () => {
                 )}
 
                 {/* Login to Reply Tag */}
-                {!currentUserId && currentUserId !== reviewUser?.id && (
+                {!currentUserId && (
                   <button
                     onClick={() => {
                       // Dispatch event to open auth modal
@@ -610,7 +610,7 @@ const Reviews: React.FC = () => {
                       e.currentTarget.style.boxShadow = '0 2px 8px rgba(255, 111, 163, 0.2)';
                     }}
                   >
-                    Login to Reply
+                    {t('reviews.loginToReply')}
                   </button>
                 )}
               </div>
