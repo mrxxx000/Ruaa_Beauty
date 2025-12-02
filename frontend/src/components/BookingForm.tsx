@@ -1795,6 +1795,124 @@ const BookingForm: React.FC = () => {
                           </button>
                         </div>
                       )}
+
+                      {/* Area selector for Threading in checkbox */}
+                      {service.value === 'threading' && formData.services.includes('threading') && (
+                        <div style={{
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: '#fff6f8',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px',
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          maxWidth: '100%',
+                          overflow: 'hidden'
+                        }}>
+                          <div style={{
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            color: '#ff6fa3',
+                            width: '100%',
+                            boxSizing: 'border-box'
+                          }}>
+                            {t('bookingForm.threadingAreas') || 'Select areas:'}
+                          </div>
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '6px',
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            maxWidth: '100%'
+                          }}>
+                            {[
+                              { id: 'eyebrows', label: t('bookingForm.threadingEyebrows') || 'Eyebrows - 120 kr' },
+                              { id: 'upper-lip', label: t('bookingForm.threadingUpperLip') || 'Upper Lip - 80 kr' },
+                              { id: 'chin', label: t('bookingForm.threadingChin') || 'Chin - 80 kr' },
+                              { id: 'full-face', label: t('bookingForm.threadingFullFace') || 'Full Face - 250 kr' }
+                            ].map((option) => {
+                              const isSelected = formData.threadingAreas.includes(option.id);
+                              const hasFullFace = formData.threadingAreas.includes('full-face');
+                              const isIndividualArea = option.id !== 'full-face';
+                              const isDisabled = (isIndividualArea && hasFullFace) || (!isIndividualArea && formData.threadingAreas.length > 0 && !hasFullFace);
+                              
+                              return (
+                                <button
+                                  key={option.id}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    if (isDisabled) return;
+                                    
+                                    let updatedAreas: string[] = [];
+                                    
+                                    if (option.id === 'full-face') {
+                                      updatedAreas = isSelected ? [] : ['full-face'];
+                                    } else if (isSelected) {
+                                      updatedAreas = formData.threadingAreas.filter(a => a !== option.id);
+                                    } else {
+                                      updatedAreas = [...formData.threadingAreas, option.id];
+                                      if (updatedAreas.length >= 3) {
+                                        updatedAreas = ['full-face'];
+                                      }
+                                    }
+                                    
+                                    setFormData({ ...formData, threadingAreas: updatedAreas });
+                                  }}
+                                  style={{
+                                    padding: '8px 10px',
+                                    borderRadius: '6px',
+                                    border: isSelected ? 'none' : '2px solid #ff6fa3',
+                                    background: isSelected 
+                                      ? 'linear-gradient(90deg, #ff6fa3 0%, #ff9ccf 100%)'
+                                      : isDisabled ? '#e5e7eb' : 'white',
+                                    color: isSelected ? 'white' : isDisabled ? '#9ca3af' : '#ff6fa3',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.2s',
+                                    textAlign: 'center',
+                                    opacity: isDisabled ? 0.5 : 1,
+                                    width: '100%',
+                                    boxSizing: 'border-box',
+                                    wordWrap: 'break-word',
+                                    overflowWrap: 'break-word',
+                                    wordBreak: 'break-word'
+                                  }}
+                                >
+                                  {isSelected && '✓ '}
+                                  {option.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {formData.threadingAreas.length > 0 && (
+                            <div style={{
+                              fontSize: '0.75rem',
+                              color: '#6b7280',
+                              fontStyle: 'italic',
+                              paddingTop: '4px',
+                              borderTop: '1px solid #ffe0e8',
+                              width: '100%',
+                              boxSizing: 'border-box'
+                            }}>
+                              Selected: {formData.threadingAreas.includes('full-face') 
+                                ? (t('bookingForm.threadingFullFace') || 'Full Face')
+                                : formData.threadingAreas.map(a => {
+                                    const areaNames: { [key: string]: string } = {
+                                      'eyebrows': t('bookingForm.threadingEyebrows') || 'Eyebrows',
+                                      'upper-lip': t('bookingForm.threadingUpperLip') || 'Upper Lip',
+                                      'chin': t('bookingForm.threadingChin') || 'Chin'
+                                    };
+                                    return areaNames[a] || a;
+                                  }).join(' + ')}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
