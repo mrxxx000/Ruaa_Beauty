@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, Calendar, MapPin, Clock, Phone, AlertCircle, Loader, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { formatBookingDate } from '../utils/dateFormatter';
 import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import LanguageSwitcher from '../components/LanguageSwitcher';
@@ -24,7 +25,7 @@ interface Booking {
 }
 
 const MyBookings: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -570,7 +571,7 @@ const MyBookings: React.FC = () => {
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#666' }}>
                               <Calendar className="w-4 h-4" />
-                              <span>{new Date(booking.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                              <span>{formatBookingDate(booking.date)}</span>
                             </div>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#666' }}>
