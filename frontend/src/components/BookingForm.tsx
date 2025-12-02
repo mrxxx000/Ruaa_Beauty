@@ -46,7 +46,7 @@ const SERVICES_PRICING: { [key: string]: number } = {
 };
 
 const BookingForm: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>(defaultData);
   const [submitted, setSubmitted] = useState(false);
@@ -2138,33 +2138,59 @@ const BookingForm: React.FC = () => {
                     marginBottom: '8px',
                     fontSize: '1rem'
                   }}>
-                    Don't find a time that works for you?
+                    {t('bookingForm.supportMessageTitle')}
                   </p>
                   <p style={{
                     color: '#4b5563',
                     fontSize: '0.95rem',
                     lineHeight: '1.5'
                   }}>
-                    Please feel free to{' '}
-                    <button
-                      type="button"
-                      onClick={() => navigate('/contact')}
-                      style={{
-                        color: '#2563EB',
-                        fontWeight: '600',
-                        textDecoration: 'none',
-                        cursor: 'pointer',
-                        border: 'none',
-                        background: 'none',
-                        padding: '0',
-                        transition: 'text-decoration 0.2s'
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
-                      onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
-                    >
-                      contact us
-                    </button>
-                    . We'll do our best to adjust the schedule and find a time that suits you — your comfort and happiness are our top priority.
+                    {(() => {
+                      const content = t('bookingForm.supportMessageContent');
+                      const currentLanguage = i18n.language;
+                      let linkText = '';
+                      let splitPattern = '';
+                      
+                      if (currentLanguage === 'en') {
+                        linkText = 'contact us';
+                        splitPattern = 'contact us';
+                      } else if (currentLanguage === 'sv') {
+                        linkText = 'kontakta oss';
+                        splitPattern = 'kontakta oss';
+                      } else if (currentLanguage === 'arb') {
+                        linkText = 'التواصل معنا';
+                        splitPattern = 'التواصل معنا';
+                      }
+                      
+                      const parts = content.split(splitPattern);
+                      if (parts.length > 1) {
+                        return (
+                          <>
+                            {parts[0]}
+                            <button
+                              type="button"
+                              onClick={() => navigate('/contact')}
+                              style={{
+                                color: '#2563EB',
+                                fontWeight: '600',
+                                textDecoration: 'none',
+                                cursor: 'pointer',
+                                border: 'none',
+                                background: 'none',
+                                padding: '0',
+                                transition: 'text-decoration 0.2s'
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                              onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                            >
+                              {linkText}
+                            </button>
+                            {parts[1]}
+                          </>
+                        );
+                      }
+                      return content;
+                    })()}
                   </p>
                 </div>
               </div>

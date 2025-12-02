@@ -141,7 +141,9 @@
     "successTitle": "Bokningsförfrågan Mottagen! ✨",
     "successMessage": "Vi kontaktar dig inom kort för att bekräfta din tid och svara på eventuella frågor.",
     "footerNote": "💖 Vi återkommer inom 24 timmar med en bekräftelse.",
-    "serviceDetails": "Tjänstdetaljer"
+    "serviceDetails": "Tjänstdetaljer",
+    "supportMessageTitle": "Hittar du ingen tid som passar dig?",
+    "supportMessageContent": "Tveka inte att kontakta oss. Vi gör vårt bästa för att justera schemat och hitta en tid som passar dig — din komfort och din glädje är vår högsta prioritet."
   },
 
   "mehendi": {
