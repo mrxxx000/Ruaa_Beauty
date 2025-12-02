@@ -141,7 +141,8 @@
     "submitting": "Sending...",
     "successTitle": "Booking Request Received! ✨",
     "successMessage": "We'll contact you shortly to confirm your appointment and answer any questions.",
-    "footerNote": "💖 We'll contact you within 24 hours to confirm your booking"
+    "footerNote": "💖 We'll contact you within 24 hours to confirm your booking",
+    "serviceDetails": "Service Details"
   },
   "mehendi": {
     "heroTitle": "Exquisite Mehendi Designs for Every Occasion",

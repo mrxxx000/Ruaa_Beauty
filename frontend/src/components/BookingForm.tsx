@@ -600,7 +600,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>Service Details</span>
+                      <span>{t('bookingForm.serviceDetails')}</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedLashLift ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
 
@@ -736,7 +736,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>Service Details</span>
+                      <span>{t('bookingForm.serviceDetails')}</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedBrowLift ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
                     {expandedBrowLift && (
@@ -870,7 +870,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>Service Details</span>
+                      <span>{t('bookingForm.serviceDetails')}</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedCombinedLashBrow ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
 
@@ -933,7 +933,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>Service Details</span>
+                      <span>{t('bookingForm.serviceDetails')}</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedEventMakeup ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
 
@@ -996,7 +996,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>Service Details</span>
+                      <span>{t('bookingForm.serviceDetails')}</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedBridalMakeup ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
 
@@ -1060,7 +1060,7 @@ const BookingForm: React.FC = () => {
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      <span>Service Details</span>
+                      <span>{t('bookingForm.serviceDetails')}</span>
                       <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s ease', transform: expandedThreading ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button>
 

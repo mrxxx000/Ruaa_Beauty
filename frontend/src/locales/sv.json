@@ -140,7 +140,8 @@
     "submitting": "Skickar...",
     "successTitle": "Bokningsförfrågan Mottagen! ✨",
     "successMessage": "Vi kontaktar dig inom kort för att bekräfta din tid och svara på eventuella frågor.",
-    "footerNote": "💖 Vi återkommer inom 24 timmar med en bekräftelse."
+    "footerNote": "💖 Vi återkommer inom 24 timmar med en bekräftelse.",
+    "serviceDetails": "Tjänstdetaljer"
   },
 
   "mehendi": {
