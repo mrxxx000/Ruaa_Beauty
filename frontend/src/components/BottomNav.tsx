@@ -11,6 +11,8 @@ const BottomNav: React.FC = () => {
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const [salonDropdownPos, setSalonDropdownPos] = useState<number>(0);
   const [productsDropdownPos, setProductsDropdownPos] = useState<number>(0);
+  const [salonDropdownWidth, setSalonDropdownWidth] = useState<number>(0);
+  const [productsDropdownWidth, setProductsDropdownWidth] = useState<number>(0);
   const salonBtnRef = React.useRef<HTMLButtonElement>(null);
   const productsBtnRef = React.useRef<HTMLButtonElement>(null);
 
@@ -38,6 +40,7 @@ const BottomNav: React.FC = () => {
       // Calculate center position of button
       const centerPos = rect.left + rect.width / 2;
       setSalonDropdownPos(centerPos);
+      setSalonDropdownWidth(rect.width);
     }
     setSalonDropdownOpen(!salonDropdownOpen);
     setProductsDropdownOpen(false);
@@ -49,122 +52,143 @@ const BottomNav: React.FC = () => {
       // Calculate center position of button
       const centerPos = rect.left + rect.width / 2;
       setProductsDropdownPos(centerPos);
+      setProductsDropdownWidth(rect.width);
     }
     setProductsDropdownOpen(!productsDropdownOpen);
     setSalonDropdownOpen(false);
   };
 
   return (
-    <nav className="bottom-nav">
-      <div className="bottom-nav-inner">
-        {/* Home */}
-        {regularItems.map(({ path, icon: Icon, label }) => (
+    <>
+      <nav className="bottom-nav">
+        <div className="bottom-nav-inner">
+          {/* Home */}
+          {regularItems.map(({ path, icon: Icon, label }) => (
+            <Link
+              key={path}
+              to={path}
+              className={`bottom-nav-item ${location.pathname === path ? 'active' : ''}`}
+              onClick={handleNavClick}
+              title={label}
+            >
+              <Icon className="bottom-nav-icon" />
+              <span className="bottom-nav-label">{label}</span>
+            </Link>
+          ))}
+
+          {/* Salon Services Dropdown */}
+          <div className="bottom-nav-dropdown">
+            <button
+              ref={salonBtnRef}
+              className={`bottom-nav-item dropdown-btn ${
+                salonItems.some(item => item.path === location.pathname) ? 'active' : ''
+              }`}
+              onClick={handleSalonDropdownClick}
+              title={t('nav.salonService')}
+            >
+              <Sparkles className="bottom-nav-icon" />
+              <span className="bottom-nav-label">{t('nav.salonService')}</span>
+              <ChevronUp className="dropdown-chevron" style={{ opacity: salonDropdownOpen ? 1 : 0.5 }} />
+            </button>
+          </div>
+
+          {/* Products Dropdown */}
+          <div className="bottom-nav-dropdown">
+            <button
+              ref={productsBtnRef}
+              className={`bottom-nav-item dropdown-btn ${
+                productItems.some(item => item.path === location.pathname) ? 'active' : ''
+              }`}
+              onClick={handleProductsDropdownClick}
+              title={t('nav.products')}
+            >
+              <Package className="bottom-nav-icon" />
+              <span className="bottom-nav-label">{t('nav.products')}</span>
+              <ChevronUp className="dropdown-chevron" style={{ opacity: productsDropdownOpen ? 1 : 0.5 }} />
+            </button>
+          </div>
+
+          {/* Book */}
           <Link
-            key={path}
-            to={path}
-            className={`bottom-nav-item ${location.pathname === path ? 'active' : ''}`}
+            to="/book"
+            className={`bottom-nav-item ${location.pathname === '/book' ? 'active' : ''}`}
             onClick={handleNavClick}
-            title={label}
+            title={t('nav.book')}
           >
-            <Icon className="bottom-nav-icon" />
-            <span className="bottom-nav-label">{label}</span>
+            <ShoppingBag className="bottom-nav-icon" />
+            <span className="bottom-nav-label">{t('nav.book')}</span>
           </Link>
-        ))}
 
-        {/* Salon Services Dropdown */}
-        <div className="bottom-nav-dropdown">
-          <button
-            ref={salonBtnRef}
-            className={`bottom-nav-item dropdown-btn ${
-              salonItems.some(item => item.path === location.pathname) ? 'active' : ''
-            }`}
-            onClick={handleSalonDropdownClick}
-            title={t('nav.salonService')}
+          {/* Contact */}
+          <Link
+            to="/contact"
+            className={`bottom-nav-item ${location.pathname === '/contact' ? 'active' : ''}`}
+            onClick={handleNavClick}
+            title={t('nav.contact')}
           >
-            <Sparkles className="bottom-nav-icon" />
-            <span className="bottom-nav-label">{t('nav.salonService')}</span>
-            <ChevronUp className="dropdown-chevron" style={{ opacity: salonDropdownOpen ? 1 : 0.5 }} />
-          </button>
-          {salonDropdownOpen && (
-            <div className="bottom-nav-dropdown-menu" style={{ left: `${salonDropdownPos}px` }}>
-              {salonItems.map(({ path, label }) => (
-                <Link
-                  key={path}
-                  to={path}
-                  className={`dropdown-menu-item ${location.pathname === path ? 'active' : ''}`}
-                  onClick={handleNavClick}
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+            <Mail className="bottom-nav-icon" />
+            <span className="bottom-nav-label">{t('nav.contact')}</span>
+          </Link>
 
-        {/* Products Dropdown */}
-        <div className="bottom-nav-dropdown">
-          <button
-            ref={productsBtnRef}
-            className={`bottom-nav-item dropdown-btn ${
-              productItems.some(item => item.path === location.pathname) ? 'active' : ''
-            }`}
-            onClick={handleProductsDropdownClick}
-            title={t('nav.products')}
+          {/* Reviews */}
+          <Link
+            to="/reviews"
+            className={`bottom-nav-item ${location.pathname === '/reviews' ? 'active' : ''}`}
+            onClick={handleNavClick}
+            title={t('nav.reviews')}
           >
-            <Package className="bottom-nav-icon" />
-            <span className="bottom-nav-label">{t('nav.products')}</span>
-            <ChevronUp className="dropdown-chevron" style={{ opacity: productsDropdownOpen ? 1 : 0.5 }} />
-          </button>
-          {productsDropdownOpen && (
-            <div className="bottom-nav-dropdown-menu" style={{ left: `${productsDropdownPos}px` }}>
-              {productItems.map(({ path, label }) => (
-                <Link
-                  key={path}
-                  to={path}
-                  className={`dropdown-menu-item ${location.pathname === path ? 'active' : ''}`}
-                  onClick={handleNavClick}
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-          )}
+            <Star className="bottom-nav-icon" />
+            <span className="bottom-nav-label">{t('nav.reviews')}</span>
+          </Link>
         </div>
+      </nav>
 
-        {/* Book */}
-        <Link
-          to="/book"
-          className={`bottom-nav-item ${location.pathname === '/book' ? 'active' : ''}`}
-          onClick={handleNavClick}
-          title={t('nav.book')}
+      {/* Salon Dropdown Portal */}
+      {salonDropdownOpen && (
+        <div
+          className="bottom-nav-menu-wrapper"
+          style={{
+            '--menu-left': `${salonDropdownPos}px`,
+          } as React.CSSProperties & { '--menu-left': string }}
         >
-          <ShoppingBag className="bottom-nav-icon" />
-          <span className="bottom-nav-label">{t('nav.book')}</span>
-        </Link>
+          <div className="bottom-nav-dropdown-menu">
+            {salonItems.map(({ path, label }) => (
+              <Link
+                key={path}
+                to={path}
+                className={`dropdown-menu-item ${location.pathname === path ? 'active' : ''}`}
+                onClick={handleNavClick}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
-        {/* Contact */}
-        <Link
-          to="/contact"
-          className={`bottom-nav-item ${location.pathname === '/contact' ? 'active' : ''}`}
-          onClick={handleNavClick}
-          title={t('nav.contact')}
+      {/* Products Dropdown Portal */}
+      {productsDropdownOpen && (
+        <div
+          className="bottom-nav-menu-wrapper"
+          style={{
+            '--menu-left': `${productsDropdownPos}px`,
+          } as React.CSSProperties & { '--menu-left': string }}
         >
-          <Mail className="bottom-nav-icon" />
-          <span className="bottom-nav-label">{t('nav.contact')}</span>
-        </Link>
-
-        {/* Reviews */}
-        <Link
-          to="/reviews"
-          className={`bottom-nav-item ${location.pathname === '/reviews' ? 'active' : ''}`}
-          onClick={handleNavClick}
-          title={t('nav.reviews')}
-        >
-          <Star className="bottom-nav-icon" />
-          <span className="bottom-nav-label">{t('nav.reviews')}</span>
-        </Link>
-      </div>
-    </nav>
+          <div className="bottom-nav-dropdown-menu">
+            {productItems.map(({ path, label }) => (
+              <Link
+                key={path}
+                to={path}
+                className={`dropdown-menu-item ${location.pathname === path ? 'active' : ''}`}
+                onClick={handleNavClick}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
