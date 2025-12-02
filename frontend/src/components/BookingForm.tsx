@@ -302,7 +302,7 @@ const BookingForm: React.FC = () => {
     try {
       // Determine the address based on location choice
       const address = formData.location === 'studio' 
-        ? 'Serenagatan 123, Malmö 21000'
+        ? 'Odengatan 56274 31 Skurup'
         : formData.customAddress;
 
       // Prepare booking data - only send fields the API expects
@@ -2366,7 +2366,7 @@ const BookingForm: React.FC = () => {
                   <input
                     type="text"
                     readOnly
-                    value="Serenagatan 123, Malmö 21000"
+                    value="Odengatan 56274 31 Skurup"
                     className="w-full px-6 py-4 text-lg bg-background border-2 border-border rounded-2xl outline-none cursor-default text-foreground"
                   />
                 </div>
