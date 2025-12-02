@@ -11,6 +11,7 @@ const bookingRoutes_1 = __importDefault(require("./routes/bookingRoutes"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 const reviewRoutes_1 = __importDefault(require("./routes/reviewRoutes"));
+const paymentRoutes_1 = __importDefault(require("./routes/paymentRoutes"));
 const sitemap_1 = __importDefault(require("./sitemap"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -58,6 +59,8 @@ app.get('/api/status', (_req, res) => {
 app.use('/api/auth', authRoutes_1.default);
 // Use booking routes
 app.use('/api', bookingRoutes_1.default);
+// Use payment routes
+app.use('/api', paymentRoutes_1.default);
 // Use review routes
 app.use('/api', reviewRoutes_1.default);
 // Use admin routes

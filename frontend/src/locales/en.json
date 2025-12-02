@@ -145,6 +145,11 @@
     "successTitle": "Booking Request Received! ✨",
     "successMessage": "We'll contact you shortly to confirm your appointment and answer any questions.",
     "footerNote": "💖 We'll contact you within 24 hours to confirm your booking",
+    "paymentMethodLabel": "Payment Method",
+    "directBooking": "Direct Booking",
+    "directBookingDesc": "Book without payment",
+    "paypalDesc": "Pay now securely",
+    "paypalInfo": "You will be redirected to PayPal to complete payment",
     "serviceDetails": "Service Details",
     "supportMessageTitle": "Don't find a time that works for you?",
     "supportMessageContent": "Please feel free to contact us. We'll do our best to adjust the schedule and find a time that suits you — your comfort and happiness are our top priority."
