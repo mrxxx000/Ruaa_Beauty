@@ -101,76 +101,43 @@ class ReviewService {
         console.log(`🔍 Fetching all reviews (limit: ${limit}, offset: ${offset})`);
         try {
             const supabase = this.getSupabase();
+            // First, fetch basic reviews without trying to fetch replies
             const { data: reviews, error, count } = await supabase
                 .from('reviews')
-                .select(`
-          id,
-          user_id,
-          booking_id,
-          service,
-          rating,
-          comment,
-          created_at
-        `, { count: 'exact' })
+                .select('id, user_id, booking_id, service, rating, comment, created_at', { count: 'exact' })
                 .order('created_at', { ascending: false })
                 .range(offset, offset + limit - 1);
             if (error) {
-                console.error('❌ Failed to fetch reviews:', error);
+                console.error('❌ Failed to fetch reviews:', error.message);
                 throw new Error(`Failed to fetch reviews: ${error.message}`);
             }
+            console.log(`✅ Fetched ${reviews?.length || 0} reviews (basic data only)`);
             // If no reviews, return empty result
             if (!reviews || reviews.length === 0) {
-                console.log(`✅ Fetched 0 reviews`);
                 return {
                     reviews: [],
                     total: count || 0,
                 };
             }
-            // Fetch user details for each review and their replies
+            // Enrich with user data only (skip replies for now to avoid query issues)
             const enrichedReviews = await Promise.all(reviews.map(async (review) => {
                 try {
-                    // Get user details
                     const { data: user, error: userError } = await supabase
                         .from('users')
                         .select('id, name, email')
                         .eq('id', review.user_id)
                         .single();
                     if (userError) {
-                        console.warn(`⚠️ Could not fetch user ${review.user_id}:`, userError.message);
+                        console.warn(`⚠️ Could not fetch user ${review.user_id}`);
                     }
-                    // Get replies for this review
-                    const { data: replies, error: repliesError } = await supabase
-                        .from('review_replies')
-                        .select('id, user_id, reply_text, is_admin_reply, created_at')
-                        .eq('review_id', review.id)
-                        .order('created_at', { ascending: true });
-                    if (repliesError) {
-                        console.warn(`⚠️ Could not fetch replies for review ${review.id}:`, repliesError.message);
-                    }
-                    // Enrich replies with user data
-                    const enrichedReplies = await Promise.all((replies || []).map(async (reply) => {
-                        const { data: replyUser, error: replyUserError } = await supabase
-                            .from('users')
-                            .select('id, name, email, role')
-                            .eq('id', reply.user_id)
-                            .single();
-                        if (replyUserError) {
-                            console.warn(`⚠️ Could not fetch reply user ${reply.user_id}:`, replyUserError.message);
-                        }
-                        return {
-                            ...reply,
-                            user: replyUser || null,
-                        };
-                    }));
                     return {
                         ...review,
                         user: user || null,
-                        replies: enrichedReplies,
+                        replies: [], // Empty replies for now
                     };
                 }
-                catch (reviewError) {
-                    console.error(`❌ Error processing review ${review.id}:`, reviewError?.message || reviewError);
-                    // Return review with minimal data on error
+                catch (err) {
+                    console.error(`❌ Error processing review ${review.id}:`, err?.message);
                     return {
                         ...review,
                         user: null,
@@ -178,7 +145,7 @@ class ReviewService {
                     };
                 }
             }));
-            console.log(`✅ Fetched ${enrichedReviews.length} reviews`);
+            console.log(`✅ Successfully enriched ${enrichedReviews.length} reviews`);
             return {
                 reviews: enrichedReviews,
                 total: count || 0,
@@ -208,57 +175,30 @@ class ReviewService {
             }
             // If no reviews, return empty result
             if (!reviews || reviews.length === 0) {
-                console.log(`✅ Fetched 0 reviews for user ${userId}`);
                 return {
                     reviews: [],
                     total: count || 0,
                 };
             }
-            // Fetch user details for each review and their replies
+            // Enrich with user data only (skip replies for now)
             const enrichedReviews = await Promise.all(reviews.map(async (review) => {
                 try {
-                    // Get user details
                     const { data: user, error: userError } = await supabase
                         .from('users')
                         .select('id, name, email')
                         .eq('id', review.user_id)
                         .single();
                     if (userError) {
-                        console.warn(`⚠️ Could not fetch user ${review.user_id}:`, userError);
+                        console.warn(`⚠️ Could not fetch user ${review.user_id}`);
                     }
-                    // Get replies for this review
-                    const { data: replies, error: repliesError } = await supabase
-                        .from('review_replies')
-                        .select('id, user_id, reply_text, is_admin_reply, created_at')
-                        .eq('review_id', review.id)
-                        .order('created_at', { ascending: true });
-                    if (repliesError) {
-                        console.warn(`⚠️ Could not fetch replies for review ${review.id}:`, repliesError);
-                    }
-                    // Enrich replies with user data
-                    const enrichedReplies = await Promise.all((replies || []).map(async (reply) => {
-                        const { data: replyUser, error: replyUserError } = await supabase
-                            .from('users')
-                            .select('id, name, email, role')
-                            .eq('id', reply.user_id)
-                            .single();
-                        if (replyUserError) {
-                            console.warn(`⚠️ Could not fetch reply user ${reply.user_id}:`, replyUserError);
-                        }
-                        return {
-                            ...reply,
-                            user: replyUser || null,
-                        };
-                    }));
                     return {
                         ...review,
                         user: user || null,
-                        replies: enrichedReplies,
+                        replies: [], // Empty replies for now
                     };
                 }
-                catch (reviewError) {
-                    console.error(`❌ Error processing review ${review.id}:`, reviewError);
-                    // Return review with minimal data on error
+                catch (err) {
+                    console.error(`❌ Error processing review ${review.id}:`, err?.message);
                     return {
                         ...review,
                         user: null,
@@ -266,14 +206,14 @@ class ReviewService {
                     };
                 }
             }));
-            console.log(`✅ Fetched ${enrichedReviews.length} reviews for user ${userId}`);
+            console.log(`✅ Successfully enriched ${enrichedReviews.length} reviews for user ${userId}`);
             return {
                 reviews: enrichedReviews,
                 total: count || 0,
             };
         }
         catch (err) {
-            console.error('❌ Error fetching user reviews:', err);
+            console.error('❌ Error fetching user reviews:', err?.message || err);
             throw err;
         }
     }
