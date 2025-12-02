@@ -204,7 +204,7 @@ export default function ReviewCard({
       )}
 
       {/* Reply Form */}
-      {currentUserId && (
+      {currentUserId && !isAuthor && (
         <div className="reply-form-section">
           {!showReplyForm && (
             <button
