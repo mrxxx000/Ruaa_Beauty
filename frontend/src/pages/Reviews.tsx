@@ -16,7 +16,12 @@ interface Review {
   rating: number;
   comment: string;
   created_at: string;
-  users: {
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  users?: {
     id: number;
     name: string;
     email: string;
@@ -24,9 +29,15 @@ interface Review {
   replies?: Array<{
     id: number;
     user_id: number;
-    reply: string;
+    reply_text?: string;
+    reply?: string;
     created_at: string;
-    users: {
+    user?: {
+      id: number;
+      name: string;
+      email: string;
+    };
+    users?: {
       id: number;
       name: string;
       email: string;
@@ -35,9 +46,15 @@ interface Review {
   review_replies?: Array<{
     id: number;
     user_id: number;
-    reply: string;
+    reply_text?: string;
+    reply?: string;
     created_at: string;
-    users: {
+    user?: {
+      id: number;
+      name: string;
+      email: string;
+    };
+    users?: {
       id: number;
       name: string;
       email: string;
@@ -283,6 +300,7 @@ const Reviews: React.FC = () => {
               rating={review.rating}
               comment={review.comment}
               created_at={review.created_at}
+              user={review.user}
               users={review.users}
               replies={review.replies}
               currentUserId={currentUserId}

@@ -10,9 +10,11 @@ interface User {
 interface ReviewReply {
   id: number;
   user_id: number;
-  reply: string;
+  reply_text?: string;
+  reply?: string;
   created_at: string;
-  users: User;
+  user?: User;
+  users?: User;
 }
 
 interface ReviewCardProps {
@@ -153,11 +155,16 @@ export default function ReviewCard({
         <div className="replies-section">
           <h4 className="replies-title">💬 Replies ({replies.length})</h4>
           <div className="replies-list">
-            {replies.slice(0, visibleReplies).map((r) => (
+            {replies.slice(0, visibleReplies).map((r) => {
+              const replyUser = r.user || r.users;
+              const replyText = r.reply_text || r.reply;
+              if (!replyUser) return null;
+              
+              return (
               <div key={r.id} className="reply">
                 <div className="reply-header">
                   <div className="reply-info">
-                    <strong>{r.users.name}</strong>
+                    <strong>{replyUser.name}</strong>
                     <span className="reply-date">
                       {new Date(r.created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -177,9 +184,10 @@ export default function ReviewCard({
                     </button>
                   )}
                 </div>
-                <p className="reply-text">{r.reply}</p>
+                <p className="reply-text">{replyText}</p>
               </div>
-            ))}
+            );
+            })}
           </div>
           {visibleReplies < replies.length && (
             <button
