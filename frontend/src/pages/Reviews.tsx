@@ -286,7 +286,7 @@ const Reviews: React.FC = () => {
         {/* Header Section with Stats */}
         <div className="reviews-header">
           <h1>Client Reviews</h1>
-          <p>Trusted by hundreds of satisfied clients</p>
+          <p>See what our clients have to say</p>
           
           {!loading && reviews.length > 0 && (
             <div className="reviews-stats">

@@ -41,6 +41,7 @@ const MyBookings: React.FC = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewedBookingIds, setReviewedBookingIds] = useState<string[]>([]);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -507,26 +508,47 @@ const MyBookings: React.FC = () => {
                           opacity: (booking.status === 'completed' || booking.status === 'cancelled') ? 0.85 : 1,
                           filter: booking.status === 'cancelled' ? 'blur(0.5px)' : 'none',
                           pointerEvents: booking.status === 'cancelled' ? 'none' : 'auto',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                          <h3 style={{ color: '#333', marginBottom: '0', fontSize: '1.1rem', margin: 0 }}>
-                            {booking.service.replace('-', ' ').toUpperCase()}
-                          </h3>
-                          {booking.status === 'completed' && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2ed573', fontWeight: '600', fontSize: '0.9rem' }}>
-                              <Check className="w-5 h-5" />
-                              Done
+                        {/* Header - Always Visible */}
+                        <div
+                          onClick={() => setExpandedBookingId(expandedBookingId === booking.id ? null : booking.id)}
+                          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: expandedBookingId === booking.id ? '16px' : '0' }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flex: 1 }}>
+                            <h3 style={{ color: '#333', marginBottom: '0', fontSize: '1.1rem', margin: 0 }}>
+                              {booking.service.replace('-', ' ').toUpperCase()}
+                            </h3>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              {booking.status === 'completed' && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2ed573', fontWeight: '600', fontSize: '0.9rem' }}>
+                                  <Check className="w-5 h-5" />
+                                  Done
+                                </div>
+                              )}
+                              {booking.status === 'cancelled' && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f87171', fontWeight: '600', fontSize: '0.9rem' }}>
+                                  <AlertCircle className="w-5 h-5" />
+                                  Cancelled
+                                </div>
+                              )}
+                              <ChevronDown
+                                className="w-5 h-5"
+                                style={{
+                                  transition: 'transform 0.3s ease',
+                                  transform: expandedBookingId === booking.id ? 'rotate(180deg)' : 'rotate(0deg)',
+                                  color: '#666'
+                                }}
+                              />
                             </div>
-                          )}
-                          {booking.status === 'cancelled' && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f87171', fontWeight: '600', fontSize: '0.9rem' }}>
-                              <AlertCircle className="w-5 h-5" />
-                              Cancelled
-                            </div>
-                          )}
+                          </div>
                         </div>
 
+                        {/* Expandable Content */}
+                        {expandedBookingId === booking.id && (
+                          <>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                           {/* Left column */}
                           <div>
@@ -726,6 +748,8 @@ const MyBookings: React.FC = () => {
                         </div>
                       </div>
                     )}
+                          </>
+                        )}
 
                     {/* Cancellation Confirmation Modal */}
                     {showCancelConfirm === booking.id && (
