@@ -107,8 +107,8 @@ export class PaymentService {
           locale: 'en-US',
           landing_page: 'BILLING',
           user_action: 'PAY_NOW',
-          return_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment-success`,
-          cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment-cancel`,
+          return_url: `${process.env.FRONTEND_URL || 'https://www.ruaa-beauty.eu'}/payment-success`,
+          cancel_url: `${process.env.FRONTEND_URL || 'https://www.ruaa-beauty.eu'}/payment-cancel`,
         },
       };
 
