@@ -341,8 +341,8 @@ const BookingForm: React.FC = () => {
           service: formData.services.join(', '),
         });
 
-        // Redirect to PayPal checkout (use production URL)
-        const paypalCheckoutUrl = `https://www.paypal.com/checkoutnow?token=${paypalOrderId}`;
+        // Redirect to PayPal checkout (use sandbox for testing)
+        const paypalCheckoutUrl = `https://www.sandbox.paypal.com/checkoutnow?token=${paypalOrderId}`;
         window.location.href = paypalCheckoutUrl;
       } catch (err) {
         alert('Failed to create PayPal order. Please try again.');
