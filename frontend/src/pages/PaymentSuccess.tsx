@@ -27,8 +27,9 @@ export default function PaymentSuccess() {
         .then((payment) => {
           console.log('✅ Payment captured successfully:', payment);
           
-          // Get pending booking data from sessionStorage
-          const pendingBookingJson = sessionStorage.getItem('pendingPayPalBooking');
+          // Get pending booking data from localStorage
+          const pendingBookingJson = localStorage.getItem('pendingPayPalBooking');
+          console.log('🔍 Looking for pending booking in localStorage:', pendingBookingJson ? 'Found' : 'Not found');
           if (pendingBookingJson) {
             const bookingData = JSON.parse(pendingBookingJson);
             console.log('📋 Creating booking with payment:', bookingData);
@@ -45,18 +46,20 @@ export default function PaymentSuccess() {
               method: 'POST',
               headers,
               body: JSON.stringify(bookingData),
-            }).then(resp => {
+            }).then(async resp => {
+              const responseData = await resp.json();
               if (resp.ok) {
-                console.log('✅ Booking created successfully after payment');
+                console.log('✅ Booking created successfully after payment:', responseData);
                 // Clear pending booking from storage
-                sessionStorage.removeItem('pendingPayPalBooking');
+                localStorage.removeItem('pendingPayPalBooking');
                 setState('success');
                 // Redirect to my-bookings after 3 seconds
                 setTimeout(() => {
                   navigate('/my-bookings');
                 }, 3000);
               } else {
-                throw new Error('Failed to create booking after payment');
+                console.error('❌ Failed to create booking:', responseData);
+                throw new Error(responseData.message || 'Failed to create booking after payment');
               }
             });
           } else {

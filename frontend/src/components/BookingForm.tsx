@@ -329,8 +329,9 @@ const BookingForm: React.FC = () => {
           paymentMethod: 'paypal',
         };
 
-        // Store booking data in sessionStorage for retrieval after PayPal redirect
-        sessionStorage.setItem('pendingPayPalBooking', JSON.stringify(bookingData));
+        // Store booking data in localStorage for retrieval after PayPal redirect
+        localStorage.setItem('pendingPayPalBooking', JSON.stringify(bookingData));
+        console.log('💾 Stored pending booking in localStorage:', bookingData);
 
         const paypalOrderId = await createPayPalOrder({
           totalPrice,
