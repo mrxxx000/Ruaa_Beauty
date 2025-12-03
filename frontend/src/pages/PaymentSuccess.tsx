@@ -19,6 +19,9 @@ export default function PaymentSuccess() {
 
   useEffect(() => {
     if (orderId) {
+      console.log('🔵 PaymentSuccess mounted with orderId:', orderId);
+      console.log('🔵 About to call capturePayPalOrder...');
+      
       // Capture the order
       capturePayPalOrder(orderId)
         .then((payment) => {
@@ -34,6 +37,10 @@ export default function PaymentSuccess() {
           setState('error');
           setError(err instanceof Error ? err.message : 'Failed to process payment');
         });
+    } else {
+      console.log('⚠️ No orderId found in URL');
+      setState('error');
+      setError('No payment order ID found. Please try again.');
     }
   }, [orderId, navigate]);
 
