@@ -26,14 +26,49 @@ export default function PaymentSuccess() {
       capturePayPalOrder(orderId)
         .then((payment) => {
           console.log('✅ Payment captured successfully:', payment);
-          setState('success');
-          // Redirect to my-bookings after 3 seconds
-          setTimeout(() => {
-            navigate('/my-bookings');
-          }, 3000);
+          
+          // Get pending booking data from sessionStorage
+          const pendingBookingJson = sessionStorage.getItem('pendingPayPalBooking');
+          if (pendingBookingJson) {
+            const bookingData = JSON.parse(pendingBookingJson);
+            console.log('📋 Creating booking with payment:', bookingData);
+            
+            // Create the booking now that payment is confirmed
+            const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+            const token = localStorage.getItem('authToken');
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (token) {
+              headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            return fetch(`${backendUrl}/api/booking`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify(bookingData),
+            }).then(resp => {
+              if (resp.ok) {
+                console.log('✅ Booking created successfully after payment');
+                // Clear pending booking from storage
+                sessionStorage.removeItem('pendingPayPalBooking');
+                setState('success');
+                // Redirect to my-bookings after 3 seconds
+                setTimeout(() => {
+                  navigate('/my-bookings');
+                }, 3000);
+              } else {
+                throw new Error('Failed to create booking after payment');
+              }
+            });
+          } else {
+            console.warn('⚠️ No pending booking data found');
+            setState('success');
+            setTimeout(() => {
+              navigate('/my-bookings');
+            }, 3000);
+          }
         })
         .catch((err) => {
-          console.error('❌ Payment capture error:', err);
+          console.error('❌ Error in payment flow:', err);
           setState('error');
           setError(err instanceof Error ? err.message : 'Failed to process payment');
         });

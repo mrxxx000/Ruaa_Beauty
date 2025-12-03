@@ -305,6 +305,33 @@ const BookingForm: React.FC = () => {
     if (formData.paymentMethod === 'paypal') {
       setIsLoading(true);
       try {
+        // Prepare booking data to store for after payment
+        const address = formData.location === 'studio' 
+          ? 'Odengatan 56274 31 Skurup'
+          : formData.customAddress;
+
+        const finalThreadingAreas = getFinalThreadingAreas(formData.threadingAreas);
+        const bookingData = {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          service: formData.services.join(', '),
+          date: formData.date,
+          time: formData.time,
+          location: formData.location,
+          address: address,
+          notes: formData.notes,
+          mehendiHours: formData.mehendiHours,
+          lashLiftTint: formData.lashLiftTint,
+          browLiftTint: formData.browLiftTint,
+          threadingAreas: finalThreadingAreas,
+          totalPrice: totalPrice,
+          paymentMethod: 'paypal',
+        };
+
+        // Store booking data in sessionStorage for retrieval after PayPal redirect
+        sessionStorage.setItem('pendingPayPalBooking', JSON.stringify(bookingData));
+
         const paypalOrderId = await createPayPalOrder({
           totalPrice,
           name: formData.name,
@@ -313,8 +340,9 @@ const BookingForm: React.FC = () => {
           service: formData.services.join(', '),
         });
 
-        // Redirect to PayPal checkout
-        window.location.href = `https://www.sandbox.paypal.com/checkoutnow?token=${paypalOrderId}`;
+        // Redirect to PayPal checkout (use production URL)
+        const paypalCheckoutUrl = `https://www.paypal.com/checkoutnow?token=${paypalOrderId}`;
+        window.location.href = paypalCheckoutUrl;
       } catch (err) {
         alert('Failed to create PayPal order. Please try again.');
         console.error(err);
