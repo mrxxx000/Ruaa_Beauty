@@ -90,6 +90,7 @@ const Contact: React.FC = () => {
                 {t('contact.generalBookingsDescription')}
               </p>
               <p>📱 {t('contact.whatsapp')}: <a href="https://wa.me/46704679469" target="_blank" rel="noreferrer">+46 70 467 94 69</a> {t('contact.orDmInstagram')} <a href="https://www.instagram.com/ruaa5r/" target="_blank" rel="noreferrer">@ruaa5r</a></p>
+              <p style={{ marginTop: 12 }}>🎓 <a href="https://www.superprof.se/makeupartist-lash-lift-brow-lift-artist-privatlektioner-svenska-arabiska-makeup-skonhet-film.html" target="_blank" rel="noreferrer">Superprof Profile</a></p>
 
               <h3 style={{ marginTop: 18 }}>{t('contact.mehendiBookingsTitle')}</h3>
               <p>

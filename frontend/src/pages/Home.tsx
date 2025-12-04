@@ -24,8 +24,7 @@ const VideoGrid: React.FC<{ videos?: string[] }> = ({ videos }) => {
   const defaultVideos = [
     process.env.PUBLIC_URL + '/assets/short1.mp4',
     process.env.PUBLIC_URL + '/assets/short2.mp4',
-    process.env.PUBLIC_URL + '/assets/short3.mp4',
-    process.env.PUBLIC_URL + '/assets/short4.mp4'
+    process.env.PUBLIC_URL + '/assets/short3.mp4'
   ];
   const list = videos && videos.length ? videos : defaultVideos;
 

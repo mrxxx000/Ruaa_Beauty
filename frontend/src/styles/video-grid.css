@@ -48,11 +48,11 @@
     margin-right: calc(50% - 50vw);
     width: 95%;
     margin: 0 auto;
-    gap: 12px;
+    gap: 10px;
   }
 
   .video-card {
-    min-height: 220px;
+    min-height: 160px;
   }
 
   .video-overlay {
