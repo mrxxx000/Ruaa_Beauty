@@ -15,6 +15,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancel from './pages/PaymentCancel';
 import BottomNav from './components/BottomNav';
+import PromoPopup from './components/PromoPopup';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function AppContent() {
@@ -48,6 +49,11 @@ function AppContent() {
         <Route path="/reviews" element={<Reviews />} />
       </Routes>
       {showBottomNav && <BottomNav />}
+      <PromoPopup 
+        gifUrl="/assets/ezgif.com-optimize.gif" 
+        side="right"
+        delayMs={4000}
+      />
     </>
   );
 }
