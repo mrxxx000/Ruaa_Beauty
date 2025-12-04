@@ -291,5 +291,12 @@
   },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. All rights reserved."
+  },
+  "pwa": {
+    "installTitle": "Install Ruaa Beauty App",
+    "installHint": "Get quick access to booking",
+    "installBannerHint": "Fast booking access from your home screen",
+    "install": "Install",
+    "dismiss": "Dismiss"
   }
 }
