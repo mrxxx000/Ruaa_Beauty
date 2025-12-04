@@ -10,11 +10,11 @@ class BookingService {
         // Group A - Mehendi Staff
         'mehendi': { duration: 0, staffGroup: 'mehendi' }, // duration set by user
         // Group B - Beauty Staff (all share same person)
-        'lash-lift': { duration: 2, staffGroup: 'beauty' },
-        'brow-lift': { duration: 2, staffGroup: 'beauty' },
-        'threading': { duration: 2, staffGroup: 'beauty' },
-        'makeup': { duration: 3, staffGroup: 'beauty' },
-        'bridal-makeup': { duration: 9, staffGroup: 'beauty' }, // full day: 9-18
+        'lash-lift': { duration: 1, staffGroup: 'beauty' },
+        'brow-lift': { duration: 1, staffGroup: 'beauty' },
+        'threading': { duration: 1, staffGroup: 'beauty' },
+        'makeup': { duration: 2, staffGroup: 'beauty' },
+        'bridal-makeup': { duration: 4, staffGroup: 'beauty' }, // 4-hour block
     };
     getSupabase() {
         if (!this.supabaseInstance) {
@@ -57,9 +57,9 @@ class BookingService {
      * Returns true if the booking can fit without conflicts
      */
     isTimeSlotAvailable(startHour, totalDuration, existingBookings, staffGroupsNeeded) {
-        const endHour = startHour + totalDuration;
-        // Check if booking fits within working hours (9-18)
-        if (startHour < 9 || endHour > 18) {
+        // Allow any start time from 9 onwards (can extend beyond 18)
+        // Reasonable max is 22 to prevent midnight bookings
+        if (startHour < 9 || startHour > 22) {
             return false;
         }
         // Check for conflicts with existing bookings in the same staff group
@@ -76,6 +76,7 @@ class BookingService {
                 existingDuration = Math.max(existingDuration, duration);
             });
             const existingEndHour = bookingHour + existingDuration;
+            const endHour = startHour + totalDuration;
             // Check if any staff group overlaps
             for (const staffGroup of staffGroupsNeeded) {
                 if (existingStaffGroups.has(staffGroup)) {
@@ -101,6 +102,8 @@ class BookingService {
         }
         const requestedHour = parseInt(time?.split(':')[0] || '0');
         const requestedServices = service.split(',').map((s) => s.trim());
+        // Check if any requested service is a makeup service
+        const isMakeupService = requestedServices.some(svc => ['makeup', 'bridal-makeup'].includes(svc));
         // Calculate total duration needed for this booking
         let totalDuration = 0;
         requestedServices.forEach((svc) => {
@@ -178,7 +181,10 @@ class BookingService {
         if (fetchError) {
             throw new Error(`Error fetching bookings: ${fetchError.message}`);
         }
-        const allHours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+        // Check if any service is makeup (allows extra hours 17-18)
+        const isMakeupService = services.some(svc => ['makeup', 'bridal-makeup'].includes(svc));
+        // Generate hours list: all services can book from 9-21 (can extend beyond 18:00)
+        let allHours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
         const availableHours = [];
         // Calculate total duration needed for requested services
         let totalDuration = 0;
