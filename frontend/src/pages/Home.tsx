@@ -9,7 +9,8 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 import AuthModal from '../components/AuthModal';
 import { 
   injectSchemaMarkup, 
-  organizationSchema, 
+  organizationSchema,
+  websiteSchema,
   createBreadcrumbSchema
 } from '../utils/schemaMarkup';
 import {
@@ -140,6 +141,7 @@ const Home: React.FC = () => {
       '/'
     );
     injectSchemaMarkup(organizationSchema);
+    injectSchemaMarkup(websiteSchema);
     injectSchemaMarkup(createBreadcrumbSchema([
       { name: 'Home', url: 'https://www.ruaa-beauty.eu/' }
     ]));

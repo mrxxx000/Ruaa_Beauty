@@ -13,12 +13,20 @@ interface SchemaMarkup {
 export const organizationSchema: SchemaMarkup = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
+  '@id': 'https://www.ruaa-beauty.eu/#organization',
   name: 'Ruaa Beauty',
-  image: [
-    'https://www.ruaa-beauty.eu/logo512.png',
-    'https://www.ruaa-beauty.eu/logo192.png'
-  ],
-  logo: 'https://www.ruaa-beauty.eu/logo512.png',
+  image: {
+    '@type': 'ImageObject',
+    url: 'https://www.ruaa-beauty.eu/logo512.png',
+    width: 512,
+    height: 512
+  },
+  logo: {
+    '@type': 'ImageObject',
+    url: 'https://www.ruaa-beauty.eu/logo512.png',
+    width: 512,
+    height: 512
+  },
   description: 'Professional beauty services including bridal mehendi, lashes, and makeup',
   url: 'https://www.ruaa-beauty.eu',
   telephone: '+46704679469',
@@ -114,6 +122,34 @@ export const contactSchema: SchemaMarkup = {
     name: 'Ruaa Beauty',
     telephone: '+46704679469',
     email: 'ruaa.azimeh123@gmail.com'
+  }
+};
+
+// WebSite schema for homepage (improves search visibility)
+export const websiteSchema: SchemaMarkup = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': 'https://www.ruaa-beauty.eu/#website',
+  url: 'https://www.ruaa-beauty.eu',
+  name: 'Ruaa Beauty',
+  description: 'Professional beauty services including bridal mehendi, lashes, and makeup',
+  publisher: {
+    '@type': 'Organization',
+    '@id': 'https://www.ruaa-beauty.eu/#organization',
+    name: 'Ruaa Beauty',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://www.ruaa-beauty.eu/logo512.png',
+      width: 512,
+      height: 512
+    }
+  },
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: 'https://www.ruaa-beauty.eu/?s={search_term_string}'
+    }
   }
 };
 
