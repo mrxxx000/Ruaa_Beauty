@@ -295,13 +295,5 @@
   },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. جميع الحقوق محفوظة."
-  },
-  "pwa": {
-    "installTitle": "تثبيت تطبيق Ruaa Beauty",
-    "installHint": "الوصول السريع إلى الحجز",
-    "installBannerHint": "الوصول السريع للحجز من شاشة البداية",
-    "iosInstruction": "أضف تطبيقنا إلى شاشة البداية للوصول السريع",
-    "install": "تثبيت",
-    "dismiss": "إغلاق"
   }
 }

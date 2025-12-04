@@ -15,7 +15,6 @@ import AdminDashboard from './pages/AdminDashboard';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancel from './pages/PaymentCancel';
 import BottomNav from './components/BottomNav';
-import PWAInstallHint from './components/PWAInstallHint';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function AppContent() {
@@ -49,7 +48,6 @@ function AppContent() {
         <Route path="/reviews" element={<Reviews />} />
       </Routes>
       {showBottomNav && <BottomNav />}
-      <PWAInstallHint position="corner" />
     </>
   );
 }
