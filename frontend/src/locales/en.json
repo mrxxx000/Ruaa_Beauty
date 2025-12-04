@@ -296,6 +296,7 @@
     "installTitle": "Install Ruaa Beauty App",
     "installHint": "Get quick access to booking",
     "installBannerHint": "Fast booking access from your home screen",
+    "iosInstruction": "Add our app to your home screen for quick access",
     "install": "Install",
     "dismiss": "Dismiss"
   }

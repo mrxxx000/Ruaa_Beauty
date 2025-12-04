@@ -14,17 +14,22 @@ export const PWAInstallHint: React.FC<PWAInstallHintProps> = ({
   const { t, i18n } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
-    // Check if it's mobile
+    // Check if it's mobile and detect iOS
     const checkMobile = () => {
-      setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsIOS(isIOSDevice);
+      setIsMobile(isMobileDevice);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
-    // Listen for beforeinstallprompt event
+    // Listen for beforeinstallprompt event (Android only)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -40,6 +45,16 @@ export const PWAInstallHint: React.FC<PWAInstallHintProps> = ({
         }
       }, 3000);
     };
+
+    // For iOS, show hint immediately
+    if (isIOS && !localStorage.getItem('PWAHintDismissed')) {
+      setTimeout(() => {
+        setIsVisible(true);
+        if (autoHideAfter > 0) {
+          setTimeout(() => setIsVisible(false), autoHideAfter);
+        }
+      }, 3000);
+    }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
@@ -65,7 +80,148 @@ export const PWAInstallHint: React.FC<PWAInstallHintProps> = ({
     localStorage.setItem('PWAHintDismissed', 'true');
   };
 
-  if (!isVisible || !isMobile || !deferredPrompt) {
+  if (!isVisible || !isMobile) {
+    return null;
+  }
+
+  // For iOS - show manual install instructions
+  if (isIOS) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 20,
+          right: 20,
+          zIndex: 999,
+          animation: 'fadeIn 0.3s ease-out',
+          maxWidth: 300,
+        }}
+      >
+        <style>{`
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+          }
+          .pwa-hint-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 16px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+          }
+          .pwa-hint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+          }
+          .pwa-hint-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin: 0;
+          }
+          .pwa-hint-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            opacity: 0.7;
+          }
+          .pwa-hint-close:hover {
+            opacity: 1;
+          }
+          .pwa-hint-content {
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+          }
+          .pwa-hint-steps {
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+          }
+          .pwa-hint-steps ol {
+            margin: 0;
+            padding-left: 20px;
+          }
+          .pwa-hint-steps li {
+            margin-bottom: 4px;
+          }
+          .pwa-hint-buttons {
+            display: flex;
+            gap: 10px;
+          }
+          .pwa-hint-button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .pwa-hint-button-install {
+            background: white;
+            color: #667eea;
+          }
+          .pwa-hint-button-install:active {
+            transform: scale(0.98);
+          }
+          .pwa-hint-button-dismiss {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+          }
+          .pwa-hint-button-dismiss:active {
+            background: rgba(255, 255, 255, 0.3);
+          }
+        `}</style>
+        
+        <div className="pwa-hint-card">
+          <div className="pwa-hint-header">
+            <h3 className="pwa-hint-title">{t('pwa.installTitle')}</h3>
+            <button className="pwa-hint-close" onClick={handleDismiss}>
+              <X size={18} />
+            </button>
+          </div>
+          
+          <div className="pwa-hint-content">
+            {t('pwa.iosInstruction')}
+          </div>
+          
+          <div className="pwa-hint-steps">
+            <ol>
+              <li>Tap the Share button at bottom</li>
+              <li>Scroll and tap "Add to Home Screen"</li>
+              <li>Tap "Add"</li>
+            </ol>
+          </div>
+          
+          <div className="pwa-hint-buttons">
+            <button 
+              className="pwa-hint-button pwa-hint-button-dismiss"
+              onClick={handleDismiss}
+            >
+              {t('pwa.dismiss')}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // For Android - show automatic install prompt
+  if (!deferredPrompt) {
     return null;
   }
 
