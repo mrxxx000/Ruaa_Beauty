@@ -111,7 +111,7 @@ router.post('/booking', async (req, res) => {
     }
 
     // Create booking with optional user_id and payment method
-    const { cancelToken } = await bookingService.createBooking({
+    const { cancelToken, bookingId } = await bookingService.createBooking({
       name,
       email,
       phone,
@@ -132,17 +132,16 @@ router.post('/booking', async (req, res) => {
       originalPrice,
     });
 
-    console.log('✅ Booking saved to database with userId:', userId);
+    console.log('✅ Booking saved to database with userId:', userId, 'bookingId:', bookingId);
 
     // Redeem loyalty points if discount was applied
-    if (useLoyaltyDiscount && userId && discountApplied) {
+    if (useLoyaltyDiscount && userId && discountApplied && bookingId) {
       try {
-        // Note: We need the booking ID, but createBooking only returns cancelToken
-        // We'll need to update the createBooking method to return the booking ID
-        // For now, we'll log this action
-        console.log(`🎁 Loyalty points will be redeemed for user ${userId}`);
+        await loyaltyService.redeemPoints(userId, bookingId);
+        console.log(`✅ Successfully redeemed 100 loyalty points for user ${userId}`);
       } catch (redeemErr) {
         console.error('⚠️ Failed to redeem loyalty points:', redeemErr);
+        // Don't fail the booking if point redemption fails
       }
     }
 

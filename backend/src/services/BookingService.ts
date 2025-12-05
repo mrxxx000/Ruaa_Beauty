@@ -189,13 +189,13 @@ export class BookingService {
       insertData.original_price = bookingData.originalPrice;
     }
 
-    const { error: dbError } = await supabase.from('bookings').insert([insertData]);
+    const { data, error: dbError } = await supabase.from('bookings').insert([insertData]).select('id').single();
 
     if (dbError) {
       throw new Error(`Database error: ${dbError.message}`);
     }
 
-    return { cancelToken };
+    return { cancelToken, bookingId: data?.id };
   }
 
   async getBookingByToken(token: string) {
