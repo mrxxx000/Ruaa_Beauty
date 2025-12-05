@@ -157,14 +157,15 @@ export class LoyaltyPointsService {
         return { success: false, discount: 0 };
       }
 
-      // Reset points to 0
+      // Deduct 100 points (the reward threshold)
+      const newBalance = currentPoints - this.REWARD_THRESHOLD;
       const { error: updateError } = await supabase
         .from('users')
-        .update({ loyalty_points: 0 })
+        .update({ loyalty_points: newBalance })
         .eq('id', userId);
 
       if (updateError) {
-        throw new Error(`Failed to reset user points: ${updateError.message}`);
+        throw new Error(`Failed to deduct user points: ${updateError.message}`);
       }
 
       // Log transaction
@@ -172,14 +173,14 @@ export class LoyaltyPointsService {
         userId,
         bookingId,
         pointsEarned: 0,
-        pointsSpent: currentPoints,
-        balanceAfter: 0,
+        pointsSpent: this.REWARD_THRESHOLD,
+        balanceAfter: newBalance,
         transactionType: 'redeemed',
         serviceType: 'loyalty_reward',
-        notes: `Redeemed ${currentPoints} points for ${this.REWARD_DISCOUNT_PERCENT}% discount`,
+        notes: `Redeemed ${this.REWARD_THRESHOLD} points for ${this.REWARD_DISCOUNT_PERCENT}% discount`,
       });
 
-      console.log(`🎁 User ${userId} redeemed ${currentPoints} points for ${this.REWARD_DISCOUNT_PERCENT}% discount`);
+      console.log(`🎁 User ${userId} redeemed ${this.REWARD_THRESHOLD} points for ${this.REWARD_DISCOUNT_PERCENT}% discount (${newBalance} points remaining)`);
       return { success: true, discount: this.REWARD_DISCOUNT_PERCENT };
     } catch (error) {
       console.error('Error redeeming points:', error);
