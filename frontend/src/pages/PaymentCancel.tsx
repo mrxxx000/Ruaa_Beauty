@@ -62,10 +62,10 @@ export default function PaymentCancel() {
             }}
           />
           <h1 style={{ color: '#333', marginBottom: '16px', fontSize: '28px' }}>
-            Payment Cancelled
+            {t('paymentCancel.title')}
           </h1>
           <p style={{ color: '#666', fontSize: '16px', marginBottom: '32px' }}>
-            Your payment was cancelled. You can try booking again whenever you're ready.
+            {t('paymentCancel.message')}
           </p>
 
           <div
@@ -79,16 +79,16 @@ export default function PaymentCancel() {
             }}
           >
             <p style={{ margin: '0', color: '#d84315', fontSize: '14px', fontWeight: '600' }}>
-              No worries! Here's what you can do:
+              {t('paymentCancel.noWorries')}
             </p>
             <ul style={{ margin: '12px 0 0 0', color: '#666', fontSize: '14px', paddingLeft: '20px' }}>
               <li style={{ marginBottom: '8px' }}>
-                Review your booking details and try again
+                {t('paymentCancel.tip1')}
               </li>
               <li style={{ marginBottom: '8px' }}>
-                Make sure you have sufficient funds in your PayPal account
+                {t('paymentCancel.tip2')}
               </li>
-              <li>Contact us if you need assistance</li>
+              <li>{t('paymentCancel.tip3')}</li>
             </ul>
           </div>
 
@@ -109,7 +109,7 @@ export default function PaymentCancel() {
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#ff5a8f')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ff6fa3')}
             >
-              Try Booking Again
+              {t('paymentCancel.tryAgain')}
             </button>
             <Link
               to="/"
@@ -128,13 +128,13 @@ export default function PaymentCancel() {
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d0d0d0')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#e0e0e0')}
             >
-              Back to Home
+              {t('paymentCancel.backHome')}
             </Link>
           </div>
 
           <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #eee' }}>
             <p style={{ color: '#999', fontSize: '14px', margin: '0' }}>
-              Questions? Check out our{' '}
+              {t('paymentCancel.questions')}{' '}
               <Link
                 to="/contact"
                 style={{
@@ -143,9 +143,9 @@ export default function PaymentCancel() {
                   fontWeight: '600',
                 }}
               >
-                contact page
+                {t('paymentCancel.contactPage')}
               </Link>{' '}
-              or reach out directly.
+              {t('paymentCancel.orReachOut')}
             </p>
           </div>
         </div>

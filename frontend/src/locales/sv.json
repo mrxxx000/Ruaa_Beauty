@@ -294,6 +294,19 @@
       "december": "December"
     }
   },
+  "paymentCancel": {
+    "title": "Betalningen avbröts",
+    "message": "Din betalning avbröts. Du kan försöka boka igen när du känner dig redo.",
+    "noWorries": "Ingen fara! Här är vad du kan göra:",
+    "tip1": "Granska dina bokningsuppgifter och försök igen",
+    "tip2": "Kontrollera att du har tillräckligt med pengar på ditt PayPal-konto",
+    "tip3": "Kontakta oss om du behöver hjälp",
+    "tryAgain": "Försök boka igen",
+    "backHome": "Tillbaka till startsidan",
+    "questions": "Har du frågor? Besök vår",
+    "contactPage": "kontaktsida",
+    "orReachOut": "eller hör av dig direkt."
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. Alla rättigheter förbehållna."
   }

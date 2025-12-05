@@ -23,8 +23,8 @@ i18n
   .use(initReactI18next) // Passes i18n down to react-i18next
   .init({
     resources,
-    fallbackLng: 'en', // Default language
-    lng: 'en', // Initial language
+    fallbackLng: 'sv', // Default language
+    lng: 'sv', // Initial language
     interpolation: {
       escapeValue: false // React already escapes by default
     },
@@ -42,7 +42,7 @@ i18n.on('languageChanged', (lng) => {
 });
 
 // Set initial direction
-const currentLang = i18n.language || 'en';
+const currentLang = i18n.language || 'sv';
 document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
 document.documentElement.lang = currentLang;
 

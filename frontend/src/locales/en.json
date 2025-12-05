@@ -291,6 +291,19 @@
       "december": "December"
     }
   },
+  "paymentCancel": {
+    "title": "Payment Cancelled",
+    "message": "Your payment was cancelled. You can try booking again whenever you're ready.",
+    "noWorries": "No worries! Here's what you can do:",
+    "tip1": "Review your booking details and try again",
+    "tip2": "Make sure you have sufficient funds in your PayPal account",
+    "tip3": "Contact us if you need assistance",
+    "tryAgain": "Try Booking Again",
+    "backHome": "Back to Home",
+    "questions": "Questions? Check out our",
+    "contactPage": "contact page",
+    "orReachOut": "or reach out directly."
+  },
   "footer": {
     "copyright": "© {{year}} Ruaa Beauty. All rights reserved."
   }
