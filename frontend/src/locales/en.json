@@ -250,6 +250,8 @@
     "cancelled": "Cancelled",
     "newBooking": "New Booking",
     "reviewed": "Reviewed",
+    "paid": "Paid",
+    "unpaid": "Unpaid",
     "contactDetails": "Contact Details",
     "name": "Name:",
     "email": "Email:",

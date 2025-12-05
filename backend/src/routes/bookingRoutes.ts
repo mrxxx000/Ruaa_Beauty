@@ -93,6 +93,7 @@ router.post('/booking', async (req, res) => {
       servicePricing,
       mehendiHours,
       paymentMethod,
+      paymentStatus: 'unpaid', // Direct bookings are unpaid
       userId,
     });
 

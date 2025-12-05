@@ -193,4 +193,15 @@ export class PaymentService {
       throw error;
     }
   }
+
+  // Get booking ID from PayPal order reference
+  getBookingIdFromOrder(orderDetails: any): string | null {
+    try {
+      const referenceId = orderDetails.purchase_units?.[0]?.reference_id;
+      return referenceId || null;
+    } catch (error) {
+      console.error('❌ Error extracting booking ID:', error);
+      return null;
+    }
+  }
 }

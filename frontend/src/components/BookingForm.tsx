@@ -377,6 +377,7 @@ const BookingForm: React.FC = () => {
         browLiftTint: formData.browLiftTint,
         threadingAreas: finalThreadingAreas,
         totalPrice: totalPrice,
+        paymentMethod: 'none', // Direct booking without payment
         servicePricing: formData.services.map(s => {
           if (s === 'mehendi') {
             return {

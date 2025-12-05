@@ -23,6 +23,7 @@ interface Booking {
   created_at?: string;
   status?: string;
   payment_method?: string;
+  payment_status?: string;
 }
 
 const MyBookings: React.FC = () => {
@@ -546,14 +547,14 @@ const MyBookings: React.FC = () => {
                                   {t('myBookings.done')}
                                 </div>
                               )}
-                              {booking.payment_method === 'paypal' && (
+                              {booking.payment_status === 'paid' && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#d4edda', color: '#155724', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600' }}>
-                                  ✓ Paid
+                                  ✓ {t('myBookings.paid') || 'Paid'}
                                 </div>
                               )}
-                              {(!booking.payment_method || booking.payment_method === 'none') && (
+                              {(booking.payment_status === 'unpaid' || booking.payment_status === 'pending' || !booking.payment_status) && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#fff3cd', color: '#856404', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600' }}>
-                                  ⏳ Unpaid
+                                  ⏳ {t('myBookings.unpaid') || 'Unpaid'}
                                 </div>
                               )}
                               {booking.status === 'cancelled' && (
