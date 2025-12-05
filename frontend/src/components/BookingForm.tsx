@@ -327,6 +327,27 @@ const BookingForm: React.FC = () => {
           threadingAreas: finalThreadingAreas,
           totalPrice: totalPrice,
           paymentMethod: 'paypal',
+          servicePricing: formData.services.map(s => {
+            if (s === 'mehendi') {
+              return {
+                name: s,
+                price: SERVICES_PRICING[s] * formData.mehendiHours,
+                hours: formData.mehendiHours
+              };
+            }
+            if (s === 'threading') {
+              return {
+                name: s,
+                price: getThreadingAreaPrice(formData.threadingAreas),
+                areas: finalThreadingAreas
+              };
+            }
+            return {
+              name: s,
+              price: SERVICES_PRICING[s] || 0,
+              tint: s === 'lash-lift' && formData.lashLiftTint ? 20 : s === 'brow-lift' && formData.browLiftTint ? 20 : undefined
+            };
+          }),
         };
 
         // Store booking data in localStorage for retrieval after PayPal redirect
