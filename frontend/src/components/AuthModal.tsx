@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LogIn, LogOut, User, Eye, EyeOff, X, Edit2, Check, Lock } from 'lucide-react';
+import { LogIn, LogOut, User, Eye, EyeOff, X, Edit2, Check, Lock, Award } from 'lucide-react';
 import '../styles/App.css';
 import { getUserProfile, updateUserProfile } from '../profileApi';
+import { getUserLoyaltyPoints } from '../loyaltyApi';
 
 const AuthModal: React.FC = () => {
   const navigate = useNavigate();
@@ -41,6 +42,8 @@ const AuthModal: React.FC = () => {
   const [forgotPasswordError, setForgotPasswordError] = useState('');
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
+  const [loyaltyPoints, setLoyaltyPoints] = useState<number>(0);
+  const [canRedeemPoints, setCanRedeemPoints] = useState<boolean>(false);
 
   React.useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -80,6 +83,15 @@ const AuthModal: React.FC = () => {
         phone_number: profile.phone_number || undefined,
         role: profile.role,
       }));
+
+      // Load loyalty points
+      try {
+        const pointsData = await getUserLoyaltyPoints();
+        setLoyaltyPoints(pointsData.points);
+        setCanRedeemPoints(pointsData.canRedeem);
+      } catch (pointsErr) {
+        console.error('Failed to load loyalty points:', pointsErr);
+      }
     } catch (err) {
       console.error('Failed to load full profile:', err);
     }
@@ -340,7 +352,17 @@ const AuthModal: React.FC = () => {
       {currentUser ? (
         <div className="user-info-badge" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', backgroundColor: '#ff6fa3', borderRadius: '8px', color: 'white' }}>
           <button
-            onClick={() => setShowProfileModal(true)}
+            onClick={async () => {
+              setShowProfileModal(true);
+              // Refresh loyalty points when opening profile
+              try {
+                const pointsData = await getUserLoyaltyPoints();
+                setLoyaltyPoints(pointsData.points);
+                setCanRedeemPoints(pointsData.canRedeem);
+              } catch (err) {
+                console.error('Failed to refresh loyalty points:', err);
+              }
+            }}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -838,6 +860,69 @@ const AuthModal: React.FC = () => {
                       <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600' }}>{currentUser.phone_number}</p>
                     </div>
                   )}
+
+                  {/* Loyalty Points Display */}
+                  <div style={{ 
+                    background: canRedeemPoints 
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                    padding: '20px', 
+                    borderRadius: '12px', 
+                    marginTop: '16px',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                    color: 'white',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                      <Award className="w-6 h-6" style={{ color: 'white' }} />
+                      <div>
+                        <p style={{ margin: '0', fontSize: '0.85rem', opacity: 0.9 }}>{t('loyalty.yourPoints')}</p>
+                        <p style={{ margin: '0', fontSize: '2rem', fontWeight: 'bold', lineHeight: '1' }}>{loyaltyPoints}</p>
+                      </div>
+                    </div>
+                    
+                    {canRedeemPoints ? (
+                      <div style={{
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        backdropFilter: 'blur(10px)',
+                      }}>
+                        <p style={{ margin: '0 0 4px 0', fontSize: '0.9rem', fontWeight: '600' }}>
+                          ✨ {t('loyalty.rewardUnlocked')}
+                        </p>
+                        <p style={{ margin: '0', fontSize: '0.85rem', opacity: 0.95 }}>
+                          {t('loyalty.canRedeem')}
+                        </p>
+                      </div>
+                    ) : (
+                      <div style={{
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        backdropFilter: 'blur(10px)',
+                      }}>
+                        <p style={{ margin: '0', fontSize: '0.85rem' }}>
+                          {t('loyalty.pointsNeeded', { points: 100 - loyaltyPoints })}
+                        </p>
+                        <div style={{
+                          width: '100%',
+                          height: '8px',
+                          backgroundColor: 'rgba(255,255,255,0.3)',
+                          borderRadius: '4px',
+                          marginTop: '8px',
+                          overflow: 'hidden',
+                        }}>
+                          <div style={{
+                            width: `${(loyaltyPoints / 100) * 100}%`,
+                            height: '100%',
+                            backgroundColor: 'white',
+                            borderRadius: '4px',
+                            transition: 'width 0.3s ease',
+                          }} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </>
               ) : (
                 <>

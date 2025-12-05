@@ -163,26 +163,33 @@ export class BookingService {
     const supabase = this.getSupabase();
     const cancelToken = randomUUID();
 
-    const { error: dbError } = await supabase.from('bookings').insert([
-      {
-        name: bookingData.name,
-        email: bookingData.email,
-        phone: bookingData.phone,
-        service: bookingData.service,
-        date: bookingData.date,
-        time: bookingData.time,
-        location: bookingData.location,
-        address: bookingData.address,
-        notes: bookingData.notes,
-        cancel_token: cancelToken,
-        total_price: bookingData.totalPrice || 0,
-        service_pricing: bookingData.servicePricing || [],
-        mehendi_hours: bookingData.mehendiHours || 0,
-        payment_method: bookingData.paymentMethod || 'none',
-        payment_status: bookingData.paymentStatus || 'unpaid',
-        user_id: bookingData.userId || null,
-      },
-    ]);
+    const insertData: any = {
+      name: bookingData.name,
+      email: bookingData.email,
+      phone: bookingData.phone,
+      service: bookingData.service,
+      date: bookingData.date,
+      time: bookingData.time,
+      location: bookingData.location,
+      address: bookingData.address,
+      notes: bookingData.notes,
+      cancel_token: cancelToken,
+      total_price: bookingData.totalPrice || 0,
+      service_pricing: bookingData.servicePricing || [],
+      mehendi_hours: bookingData.mehendiHours || 0,
+      payment_method: bookingData.paymentMethod || 'none',
+      payment_status: bookingData.paymentStatus || 'unpaid',
+      user_id: bookingData.userId || null,
+    };
+
+    // Add discount fields if provided
+    if (bookingData.discountApplied !== undefined && bookingData.discountApplied !== null) {
+      insertData.discount_applied = bookingData.discountApplied;
+      insertData.discount_reason = bookingData.discountReason;
+      insertData.original_price = bookingData.originalPrice;
+    }
+
+    const { error: dbError } = await supabase.from('bookings').insert([insertData]);
 
     if (dbError) {
       throw new Error(`Database error: ${dbError.message}`);
