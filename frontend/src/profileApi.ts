@@ -6,6 +6,7 @@ export interface UserProfile {
   email: string;
   phone_number: string | null;
   role: string;
+  loyalty_points?: number;
 }
 
 export async function getUserProfile(token: string): Promise<UserProfile> {

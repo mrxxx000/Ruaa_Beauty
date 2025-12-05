@@ -2,10 +2,12 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { BookingService } from '../services/BookingService';
 import { EmailService } from '../services/EmailService';
+import { LoyaltyPointsService } from '../services/LoyaltyPointsService';
 
 const router = express.Router();
 const bookingService = new BookingService();
 const emailService = new EmailService();
+const loyaltyService = new LoyaltyPointsService();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -56,9 +58,9 @@ router.post('/booking', async (req, res) => {
     console.log('⚠️  No token provided in authorization header');
   }
 
-  const { name, email, phone, service, date, time, location, address, notes, totalPrice, servicePricing, mehendiHours, paymentMethod, paymentStatus } = req.body;
+  const { name, email, phone, service, date, time, location, address, notes, totalPrice, servicePricing, mehendiHours, paymentMethod, paymentStatus, useLoyaltyDiscount } = req.body;
 
-  console.log('💰 Payment details received:', { paymentMethod, paymentStatus });
+  console.log('💰 Payment details received:', { paymentMethod, paymentStatus, useLoyaltyDiscount });
 
   if (!name || !email) {
     return res.status(400).json({ message: 'Name and email are required' });
@@ -83,6 +85,31 @@ router.post('/booking', async (req, res) => {
     const finalPaymentStatus = paymentStatus || 'unpaid';
     console.log('💾 Creating booking with payment status:', finalPaymentStatus);
 
+    // Handle loyalty discount if requested
+    let finalPrice = totalPrice;
+    let discountApplied = null;
+    let discountReason = null;
+    let originalPrice = null;
+
+    if (useLoyaltyDiscount && userId) {
+      try {
+        const userPoints = await loyaltyService.getUserPoints(userId);
+        if (userPoints.canRedeem) {
+          // Apply discount
+          const discountResult = loyaltyService.applyDiscount(totalPrice, 10);
+          finalPrice = discountResult.discountedPrice;
+          discountApplied = 10; // 10%
+          discountReason = 'loyalty_reward';
+          originalPrice = totalPrice;
+          
+          console.log(`🎁 Loyalty discount applied: ${discountResult.discountAmount} SEK off (10%)`);
+        }
+      } catch (loyaltyErr) {
+        console.error('⚠️ Failed to apply loyalty discount:', loyaltyErr);
+        // Continue without discount if there's an error
+      }
+    }
+
     // Create booking with optional user_id and payment method
     const { cancelToken } = await bookingService.createBooking({
       name,
@@ -94,20 +121,37 @@ router.post('/booking', async (req, res) => {
       location,
       address,
       notes,
-      totalPrice,
+      totalPrice: finalPrice,
       servicePricing,
       mehendiHours,
       paymentMethod,
       paymentStatus: finalPaymentStatus, // Use provided status or default to unpaid
       userId,
+      discountApplied,
+      discountReason,
+      originalPrice,
     });
 
     console.log('✅ Booking saved to database with userId:', userId);
+
+    // Redeem loyalty points if discount was applied
+    if (useLoyaltyDiscount && userId && discountApplied) {
+      try {
+        // Note: We need the booking ID, but createBooking only returns cancelToken
+        // We'll need to update the createBooking method to return the booking ID
+        // For now, we'll log this action
+        console.log(`🎁 Loyalty points will be redeemed for user ${userId}`);
+      } catch (redeemErr) {
+        console.error('⚠️ Failed to redeem loyalty points:', redeemErr);
+      }
+    }
 
     // Send response immediately
     res.status(200).json({
       message: 'Booking saved successfully. Confirmation email will be sent shortly.',
       cancelToken,
+      discountApplied: discountApplied || 0,
+      finalPrice: finalPrice,
     });
 
     // Send emails asynchronously

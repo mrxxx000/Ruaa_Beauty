@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Calendar, Clock, MapPin, MessageSquare, User, Mail, Phone } from 'lucide-react';
+import { Sparkles, Calendar, Clock, MapPin, MessageSquare, User, Mail, Phone, Award } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { createPayPalOrder } from '../paymentApi';
+import { getUserLoyaltyPoints } from '../loyaltyApi';
 
 type FormData = {
   name: string;
@@ -65,6 +66,9 @@ const BookingForm: React.FC = () => {
   const [expandedEventMakeup, setExpandedEventMakeup] = useState<boolean>(false);
   const [expandedBridalMakeup, setExpandedBridalMakeup] = useState<boolean>(false);
   const [expandedThreading, setExpandedThreading] = useState<boolean>(false);
+  const [loyaltyPoints, setLoyaltyPoints] = useState<number>(0);
+  const [canRedeemPoints, setCanRedeemPoints] = useState<boolean>(false);
+  const [useLoyaltyDiscount, setUseLoyaltyDiscount] = useState<boolean>(false);
 
   // Check if user is logged in on component mount
   useEffect(() => {
@@ -118,6 +122,19 @@ const BookingForm: React.FC = () => {
       };
 
       fetchLatestProfile();
+
+      // Fetch loyalty points
+      const fetchLoyaltyPoints = async () => {
+        try {
+          const pointsData = await getUserLoyaltyPoints();
+          setLoyaltyPoints(pointsData.points);
+          setCanRedeemPoints(pointsData.canRedeem);
+        } catch (err) {
+          console.error('Failed to fetch loyalty points:', err);
+        }
+      };
+
+      fetchLoyaltyPoints();
     }
 
     // Listen for profile update events
@@ -242,6 +259,11 @@ const BookingForm: React.FC = () => {
   };
 
   const totalPrice = calculateTotalPrice(formData.services, formData.mehendiHours, formData.lashLiftTint, formData.browLiftTint, formData.threadingAreas);
+  
+  // Calculate discounted price if loyalty discount is applied
+  const discountedPrice = useLoyaltyDiscount ? Math.round(totalPrice * 0.9) : totalPrice;
+  const savingsAmount = useLoyaltyDiscount ? totalPrice - discountedPrice : 0;
+  const finalPrice = discountedPrice;
 
   // Fetch available times when date or services change
   const fetchAvailableTimes = async (date: string, services: string[], mehendiHours: number = 0) => {
@@ -325,8 +347,9 @@ const BookingForm: React.FC = () => {
           lashLiftTint: formData.lashLiftTint,
           browLiftTint: formData.browLiftTint,
           threadingAreas: finalThreadingAreas,
-          totalPrice: totalPrice,
+          totalPrice: finalPrice, // Use final price (with discount if applied)
           paymentMethod: 'paypal',
+          useLoyaltyDiscount: useLoyaltyDiscount, // Pass loyalty discount flag
           servicePricing: formData.services.map(s => {
             if (s === 'mehendi') {
               return {
@@ -355,7 +378,7 @@ const BookingForm: React.FC = () => {
         console.log('💾 Stored pending booking in localStorage:', bookingData);
 
         const paypalOrderId = await createPayPalOrder({
-          totalPrice,
+          totalPrice: finalPrice, // Use final price (with discount if applied)
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
@@ -397,8 +420,9 @@ const BookingForm: React.FC = () => {
         lashLiftTint: formData.lashLiftTint,
         browLiftTint: formData.browLiftTint,
         threadingAreas: finalThreadingAreas,
-        totalPrice: totalPrice,
+        totalPrice: finalPrice, // Use final price (with discount if applied)
         paymentMethod: 'none', // Direct booking without payment
+        useLoyaltyDiscount: useLoyaltyDiscount, // Pass loyalty discount flag
         servicePricing: formData.services.map(s => {
           if (s === 'mehendi') {
             return {
@@ -2177,7 +2201,8 @@ const BookingForm: React.FC = () => {
                         backgroundClip: 'text',
                         color: 'transparent'
                       }}>
-                        {totalPrice} kr
+                        {useLoyaltyDiscount && <span style={{ textDecoration: 'line-through', color: '#9ca3af', marginRight: '8px', fontSize: '1.2rem' }}>{totalPrice}</span>}
+                        {finalPrice} kr
                       </span>
                     </div>
                   </div>
@@ -2492,6 +2517,159 @@ const BookingForm: React.FC = () => {
                 />
               </div>
             </div>
+
+            {/* Loyalty Discount Section */}
+            {isLoggedIn && loyaltyPoints > 0 && (
+              <div style={{
+                marginBottom: '24px',
+                padding: '20px',
+                background: loyaltyPoints >= 100 
+                  ? 'linear-gradient(135deg, #FFF6F8 0%, #FFE4EC 100%)'
+                  : 'linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%)',
+                border: loyaltyPoints >= 100 ? '2px solid #ff6fa3' : '2px solid #d1d5db',
+                borderRadius: '16px',
+                boxShadow: loyaltyPoints >= 100 
+                  ? '0 4px 6px rgba(255, 111, 163, 0.1)'
+                  : '0 2px 4px rgba(0, 0, 0, 0.05)'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '16px'
+                }}>
+                  <Award size={28} style={{ color: loyaltyPoints >= 100 ? '#ff6fa3' : '#9ca3af' }} />
+                  <div>
+                    <h3 style={{
+                      fontSize: '1.1rem',
+                      fontWeight: '700',
+                      color: '#1f2937',
+                      marginBottom: '4px'
+                    }}>
+                      {loyaltyPoints >= 100 
+                        ? (t('loyalty.redeemDiscount') || 'Loyalty Discount Available!')
+                        : (t('loyalty.pointsBalance') || 'Points Balance')
+                      }
+                    </h3>
+                    <p style={{
+                      fontSize: '0.9rem',
+                      color: '#6b7280'
+                    }}>
+                      {t('loyalty.youHave') || 'You have'} <strong style={{ color: loyaltyPoints >= 100 ? '#ff6fa3' : '#9ca3af' }}>{loyaltyPoints} {t('loyalty.points') || 'points'}</strong>
+                    </p>
+                    {loyaltyPoints < 100 && (
+                      <p style={{
+                        fontSize: '0.85rem',
+                        color: '#f59e0b',
+                        marginTop: '4px',
+                        fontWeight: '500'
+                      }}>
+                        {t('loyalty.pointsNeeded', { points: 100 - loyaltyPoints }) || `${100 - loyaltyPoints} more points needed to unlock reward`}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '14px',
+                  backgroundColor: 'white',
+                  border: useLoyaltyDiscount ? '2px solid #ff6fa3' : '2px solid #e5e7eb',
+                  borderRadius: '12px',
+                  cursor: loyaltyPoints >= 100 ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.3s',
+                  opacity: loyaltyPoints >= 100 ? 1 : 0.6
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={useLoyaltyDiscount}
+                    onChange={(e) => setUseLoyaltyDiscount(e.target.checked)}
+                    disabled={loyaltyPoints < 100}
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      cursor: loyaltyPoints >= 100 ? 'pointer' : 'not-allowed',
+                      accentColor: '#ff6fa3'
+                    }}
+                  />
+                  <span style={{
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    color: loyaltyPoints >= 100 ? '#1f2937' : '#9ca3af'
+                  }}>
+                    {t('loyalty.use10Discount') || 'Use 10% Loyalty Discount'}
+                  </span>
+                  <span style={{
+                    marginLeft: 'auto',
+                    fontSize: '0.9rem',
+                    fontWeight: '700',
+                    color: loyaltyPoints >= 100 ? '#10b981' : '#9ca3af'
+                  }}>
+                    -{Math.round(totalPrice * 0.1)} kr
+                  </span>
+                </label>
+
+                {useLoyaltyDiscount && (
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '12px',
+                    backgroundColor: 'white',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginBottom: '8px',
+                      fontSize: '0.9rem',
+                      color: '#6b7280'
+                    }}>
+                      <span>{t('loyalty.originalPrice') || 'Original Price'}:</span>
+                      <span style={{ textDecoration: 'line-through' }}>{totalPrice} kr</span>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginBottom: '8px',
+                      fontSize: '0.9rem',
+                      color: '#10b981',
+                      fontWeight: '600'
+                    }}>
+                      <span>{t('loyalty.discount') || 'Discount (10%)'}:</span>
+                      <span>-{savingsAmount} kr</span>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      paddingTop: '8px',
+                      borderTop: '2px solid #e5e7eb',
+                      fontSize: '1.1rem',
+                      fontWeight: '700'
+                    }}>
+                      <span style={{ color: '#1f2937' }}>{t('loyalty.finalPrice') || 'Final Price'}:</span>
+                      <span style={{ 
+                        background: 'linear-gradient(90deg, #ff6fa3 0%, #ff9ccf 100%)',
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        color: 'transparent'
+                      }}>
+                        {finalPrice} kr
+                      </span>
+                    </div>
+                    <p style={{
+                      marginTop: '12px',
+                      fontSize: '0.8rem',
+                      color: '#6b7280',
+                      textAlign: 'center'
+                    }}>
+                      💡 {t('loyalty.pointsWillBeReset') || 'Your points will be reset to 0 after redeeming this discount'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Payment Method Selection */}
             <div className="form-group">

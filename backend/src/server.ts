@@ -7,6 +7,7 @@ import authRoutes from './routes/authRoutes';
 import adminRoutes from './routes/adminRoutes';
 import reviewRoutes from './routes/reviewRoutes';
 import paymentRoutes from './routes/paymentRoutes';
+import loyaltyRoutes from './routes/loyaltyRoutes';
 import sitemapRouter from './sitemap';
 
 dotenv.config();
@@ -69,6 +70,9 @@ app.use('/api', paymentRoutes);
 
 // Use review routes
 app.use('/api', reviewRoutes);
+
+// Use loyalty points routes
+app.use('/api', loyaltyRoutes);
 
 // Use admin routes
 app.use('/api/admin', adminRoutes);

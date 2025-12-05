@@ -3,11 +3,13 @@ import jwt from 'jsonwebtoken';
 import { BookingService } from '../services/BookingService';
 import { AuthService } from '../services/AuthService';
 import { EmailService } from '../services/EmailService';
+import { LoyaltyPointsService } from '../services/LoyaltyPointsService';
 
 const router = express.Router();
 const bookingService = new BookingService();
 const authService = new AuthService();
 const emailService = new EmailService();
+const loyaltyService = new LoyaltyPointsService();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -101,6 +103,18 @@ router.put('/bookings/:bookingId/status', verifyAdminToken, async (req, res) => 
 
   try {
     const booking = await bookingService.updateBookingStatus(bookingId, status);
+    
+    // Award loyalty points if booking is completed and user is logged in
+    if (status === 'completed' && booking.user_id) {
+      try {
+        const services = booking.service.split(',').map((s: string) => s.trim());
+        const pointsAwarded = await loyaltyService.awardPoints(booking.user_id, bookingId, services);
+        console.log(`✨ Awarded ${pointsAwarded} loyalty points to user ${booking.user_id}`);
+      } catch (loyaltyErr) {
+        console.error('⚠️ Failed to award loyalty points:', loyaltyErr);
+        // Continue with the rest of the flow even if points fail
+      }
+    }
     
     // Send status update emails
     const adminEmail = process.env.ADMIN_EMAIL || 'akmalsafi43@gmail.com';
