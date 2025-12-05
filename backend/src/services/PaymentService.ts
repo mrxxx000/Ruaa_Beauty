@@ -65,11 +65,11 @@ export class PaymentService {
           {
             reference_id: orderId,
             amount: {
-              currency_code: 'EUR',
+              currency_code: 'SEK',
               value: bookingData.totalPrice.toFixed(2),
               breakdown: {
                 item_total: {
-                  currency_code: 'EUR',
+                  currency_code: 'SEK',
                   value: bookingData.totalPrice.toFixed(2),
                 },
               },
@@ -79,7 +79,7 @@ export class PaymentService {
                 name: bookingData.service,
                 quantity: '1',
                 unit_amount: {
-                  currency_code: 'EUR',
+                  currency_code: 'SEK',
                   value: bookingData.totalPrice.toFixed(2),
                 },
               },
