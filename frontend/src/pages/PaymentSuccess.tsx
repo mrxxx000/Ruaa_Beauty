@@ -42,10 +42,16 @@ export default function PaymentSuccess() {
               headers['Authorization'] = `Bearer ${token}`;
             }
 
+            // Add payment status as 'paid' for PayPal bookings
+            const bookingDataWithPaymentStatus = {
+              ...bookingData,
+              paymentStatus: 'paid'
+            };
+
             return fetch(`${backendUrl}/api/booking`, {
               method: 'POST',
               headers,
-              body: JSON.stringify(bookingData),
+              body: JSON.stringify(bookingDataWithPaymentStatus),
             }).then(async resp => {
               const responseData = await resp.json();
               if (resp.ok) {

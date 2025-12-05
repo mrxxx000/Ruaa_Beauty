@@ -178,6 +178,8 @@ export class BookingService {
         total_price: bookingData.totalPrice || 0,
         service_pricing: bookingData.servicePricing || [],
         mehendi_hours: bookingData.mehendiHours || 0,
+        payment_method: bookingData.paymentMethod || 'none',
+        payment_status: bookingData.paymentStatus || 'unpaid',
         user_id: bookingData.userId || null,
       },
     ]);
@@ -213,6 +215,23 @@ export class BookingService {
 
     if (error) {
       throw new Error(`Error cancelling booking: ${error.message}`);
+    }
+  }
+
+  async updateBookingPaymentStatus(bookingId: string, paymentStatus: string, paypalOrderId?: string) {
+    const supabase = this.getSupabase();
+    const updateData: any = { payment_status: paymentStatus };
+    if (paypalOrderId) {
+      updateData.paypal_order_id = paypalOrderId;
+    }
+
+    const { error } = await supabase
+      .from('bookings')
+      .update(updateData)
+      .eq('id', bookingId);
+
+    if (error) {
+      throw new Error(`Error updating payment status: ${error.message}`);
     }
   }
 

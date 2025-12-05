@@ -22,6 +22,8 @@ interface Booking {
   total_price?: number;
   created_at?: string;
   status?: string;
+  payment_method?: string;
+  payment_status?: string;
 }
 
 const MyBookings: React.FC = () => {
@@ -543,6 +545,16 @@ const MyBookings: React.FC = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2ed573', fontWeight: '600', fontSize: '0.9rem' }}>
                                   <Check className="w-5 h-5" />
                                   {t('myBookings.done')}
+                                </div>
+                              )}
+                              {booking.payment_status === 'paid' && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#d4edda', color: '#155724', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600' }}>
+                                  ✓ {t('myBookings.paid') || 'Paid'}
+                                </div>
+                              )}
+                              {(booking.payment_status === 'unpaid' || booking.payment_status === 'pending' || !booking.payment_status) && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#fff3cd', color: '#856404', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600' }}>
+                                  ⏳ {t('myBookings.unpaid') || 'Unpaid'}
                                 </div>
                               )}
                               {booking.status === 'cancelled' && (

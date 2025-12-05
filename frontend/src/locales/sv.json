@@ -253,6 +253,8 @@
     "cancelled": "Avbrutet",
     "newBooking": "Ny bokning",
     "reviewed": "Recenserad",
+    "paid": "Betald",
+    "unpaid": "Obetald",
     "contactDetails": "Kontaktuppgifter",
     "name": "Namn:",
     "email": "E-post:",

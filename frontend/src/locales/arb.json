@@ -254,6 +254,8 @@
     "cancelled": "ملغاة",
     "newBooking": "حجز جديد",
     "reviewed": "تمت المراجعة",
+    "paid": "مدفوع",
+    "unpaid": "غير مدفوع",
     "contactDetails": "بيانات الاتصال",
     "name": "الاسم:",
     "email": "البريد الإلكتروني:",

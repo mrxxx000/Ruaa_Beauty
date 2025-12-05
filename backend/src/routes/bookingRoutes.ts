@@ -56,7 +56,7 @@ router.post('/booking', async (req, res) => {
     console.log('⚠️  No token provided in authorization header');
   }
 
-  const { name, email, phone, service, date, time, location, address, notes, totalPrice, servicePricing, mehendiHours } = req.body;
+  const { name, email, phone, service, date, time, location, address, notes, totalPrice, servicePricing, mehendiHours, paymentMethod } = req.body;
 
   if (!name || !email) {
     return res.status(400).json({ message: 'Name and email are required' });
@@ -78,7 +78,7 @@ router.post('/booking', async (req, res) => {
       });
     }
 
-    // Create booking with optional user_id
+    // Create booking with optional user_id and payment method
     const { cancelToken } = await bookingService.createBooking({
       name,
       email,
@@ -92,6 +92,8 @@ router.post('/booking', async (req, res) => {
       totalPrice,
       servicePricing,
       mehendiHours,
+      paymentMethod,
+      paymentStatus: 'unpaid', // Direct bookings are unpaid
       userId,
     });
 
