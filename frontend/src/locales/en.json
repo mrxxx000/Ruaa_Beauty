@@ -320,7 +320,7 @@
     "originalPrice": "Original Price",
     "discount": "Discount (10%)",
     "finalPrice": "Final Price",
-    "pointsWillBeReset": "Your points will be reset to 0 after redeeming this discount"
+    "pointsWillBeReset": "Redeeming this discount will deduct 100 points from your account"
   },
   "paymentCancel": {
     "title": "Payment Cancelled",

@@ -324,7 +324,7 @@
     "originalPrice": "السعر الأصلي",
     "discount": "الخصم (10%)",
     "finalPrice": "السعر النهائي",
-    "pointsWillBeReset": "سيتم إعادة تعيين نقاطك إلى 0 بعد استرداد هذا الخصم"
+    "pointsWillBeReset": "عند استخدام هذا الخصم، سيتم خصم 100 نقطة من حسابك"
   },
   "paymentCancel": {
     "title": "تم إلغاء الدفع",

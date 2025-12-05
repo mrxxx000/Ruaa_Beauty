@@ -866,47 +866,47 @@ const AuthModal: React.FC = () => {
                     background: canRedeemPoints 
                       ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                       : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                    padding: '20px', 
+                    padding: window.innerWidth <= 768 ? '14px' : '20px', 
                     borderRadius: '12px', 
                     marginTop: '16px',
                     boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
                     color: 'white',
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                      <Award className="w-6 h-6" style={{ color: 'white' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: window.innerWidth <= 768 ? '10px' : '12px', marginBottom: window.innerWidth <= 768 ? '10px' : '12px' }}>
+                      <Award className={window.innerWidth <= 768 ? 'w-5 h-5' : 'w-6 h-6'} style={{ color: 'white' }} />
                       <div>
-                        <p style={{ margin: '0', fontSize: '0.85rem', opacity: 0.9 }}>{t('loyalty.yourPoints')}</p>
-                        <p style={{ margin: '0', fontSize: '2rem', fontWeight: 'bold', lineHeight: '1' }}>{loyaltyPoints}</p>
+                        <p style={{ margin: '0', fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.85rem', opacity: 0.9 }}>{t('loyalty.yourPoints')}</p>
+                        <p style={{ margin: '0', fontSize: window.innerWidth <= 768 ? '1.6rem' : '2rem', fontWeight: 'bold', lineHeight: '1' }}>{loyaltyPoints}</p>
                       </div>
                     </div>
                     
                     {canRedeemPoints ? (
                       <div style={{
                         backgroundColor: 'rgba(255,255,255,0.2)',
-                        padding: '12px',
+                        padding: window.innerWidth <= 768 ? '10px' : '12px',
                         borderRadius: '8px',
                         backdropFilter: 'blur(10px)',
                       }}>
-                        <p style={{ margin: '0 0 4px 0', fontSize: '0.9rem', fontWeight: '600' }}>
+                        <p style={{ margin: '0 0 4px 0', fontSize: window.innerWidth <= 768 ? '0.85rem' : '0.9rem', fontWeight: '600' }}>
                           ✨ {t('loyalty.rewardUnlocked')}
                         </p>
-                        <p style={{ margin: '0', fontSize: '0.85rem', opacity: 0.95 }}>
+                        <p style={{ margin: '0', fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.85rem', opacity: 0.95 }}>
                           {t('loyalty.canRedeem')}
                         </p>
                       </div>
                     ) : (
                       <div style={{
                         backgroundColor: 'rgba(255,255,255,0.2)',
-                        padding: '12px',
+                        padding: window.innerWidth <= 768 ? '10px' : '12px',
                         borderRadius: '8px',
                         backdropFilter: 'blur(10px)',
                       }}>
-                        <p style={{ margin: '0', fontSize: '0.85rem' }}>
+                        <p style={{ margin: '0', fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.85rem' }}>
                           {t('loyalty.pointsNeeded', { points: 100 - loyaltyPoints })}
                         </p>
                         <div style={{
                           width: '100%',
-                          height: '8px',
+                          height: window.innerWidth <= 768 ? '6px' : '8px',
                           backgroundColor: 'rgba(255,255,255,0.3)',
                           borderRadius: '4px',
                           marginTop: '8px',

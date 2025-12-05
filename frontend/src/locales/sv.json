@@ -323,7 +323,7 @@
     "originalPrice": "Ursprungligt pris",
     "discount": "Rabatt (10%)",
     "finalPrice": "Slutpris",
-    "pointsWillBeReset": "Dina poäng kommer att återställas till 0 efter att du har löst in denna rabatt"
+    "pointsWillBeReset": "Att använda denna rabatt drar 100 poäng från ditt konto"
   },
   "paymentCancel": {
     "title": "Betalningen avbröts",
