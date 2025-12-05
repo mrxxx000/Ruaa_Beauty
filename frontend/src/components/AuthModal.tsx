@@ -749,15 +749,17 @@ const AuthModal: React.FC = () => {
             style={{
               backgroundColor: 'white',
               borderRadius: '12px',
-              padding: '32px',
+              padding: window.innerWidth <= 768 ? '20px' : '32px',
               maxWidth: '450px',
               width: '90%',
               boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+              maxHeight: '90vh',
+              overflowY: 'auto',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ color: '#ff6fa3', margin: 0 }}>{t('profile.title')}</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: window.innerWidth <= 768 ? '16px' : '24px' }}>
+              <h2 style={{ color: '#ff6fa3', margin: 0, fontSize: window.innerWidth <= 768 ? '1.3rem' : '1.5rem' }}>{t('profile.title')}</h2>
               <button
                 onClick={() => setShowProfileModal(false)}
                 style={{
@@ -800,9 +802,9 @@ const AuthModal: React.FC = () => {
               </div>
             )}
 
-            <div style={{ marginBottom: '32px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ color: '#333', margin: 0, fontSize: '1rem', fontWeight: '600' }}>{t('profile.userDetails')}</h3>
+            <div style={{ marginBottom: window.innerWidth <= 768 ? '20px' : '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: window.innerWidth <= 768 ? '12px' : '16px' }}>
+                <h3 style={{ color: '#333', margin: 0, fontSize: window.innerWidth <= 768 ? '0.9rem' : '1rem', fontWeight: '600' }}>{t('profile.userDetails')}</h3>
                 {!isEditingProfile && (
                   <button
                     onClick={handleEditProfile}
@@ -828,38 +830,38 @@ const AuthModal: React.FC = () => {
                 <>
                   <div style={{ 
                     backgroundColor: '#f9f9f9', 
-                    padding: '16px', 
+                    padding: window.innerWidth <= 768 ? '12px' : '16px', 
                     borderRadius: '8px', 
-                    marginBottom: '12px',
+                    marginBottom: window.innerWidth <= 768 ? '10px' : '12px',
                     borderLeft: '4px solid #ff6fa3'
                   }}>
-                    <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>{t('profile.fullName')}</p>
-                    <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600' }}>{currentUser.name}</p>
+                    <p style={{ margin: '0 0 6px 0', color: '#666', fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.85rem' }}>{t('profile.fullName')}</p>
+                    <p style={{ margin: '0', color: '#333', fontSize: window.innerWidth <= 768 ? '0.9rem' : '1rem', fontWeight: '600' }}>{currentUser.name}</p>
                   </div>
 
                   <div style={{ 
                     backgroundColor: '#f9f9f9', 
-                    padding: '16px', 
+                    padding: window.innerWidth <= 768 ? '12px' : '16px', 
                     borderRadius: '8px', 
-                    marginBottom: '12px',
+                    marginBottom: window.innerWidth <= 768 ? '10px' : '12px',
                     borderLeft: '4px solid #ff6fa3'
                   }}>
-                    <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>{t('profile.email')}</p>
-                    <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600', wordBreak: 'break-all' }}>{currentUser.email}</p>
+                    <p style={{ margin: '0 0 6px 0', color: '#666', fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.85rem' }}>{t('profile.email')}</p>
+                    <p style={{ margin: '0', color: '#333', fontSize: window.innerWidth <= 768 ? '0.9rem' : '1rem', fontWeight: '600', wordBreak: 'break-all' }}>{currentUser.email}</p>
                   </div>
 
-                  {currentUser.phone_number && (
-                    <div style={{ 
-                      backgroundColor: '#f9f9f9', 
-                      padding: '16px', 
-                      borderRadius: '8px', 
-                      marginBottom: '12px',
-                      borderLeft: '4px solid #ff6fa3'
-                    }}>
-                      <p style={{ margin: '0 0 8px 0', color: '#666', fontSize: '0.85rem' }}>{t('profile.phoneNumber')}</p>
-                      <p style={{ margin: '0', color: '#333', fontSize: '1rem', fontWeight: '600' }}>{currentUser.phone_number}</p>
-                    </div>
-                  )}
+                  <div style={{ 
+                    backgroundColor: '#f9f9f9', 
+                    padding: window.innerWidth <= 768 ? '12px' : '16px', 
+                    borderRadius: '8px', 
+                    marginBottom: window.innerWidth <= 768 ? '10px' : '12px',
+                    borderLeft: '4px solid #ff6fa3'
+                  }}>
+                    <p style={{ margin: '0 0 6px 0', color: '#666', fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.85rem' }}>{t('profile.phoneNumber')}</p>
+                    <p style={{ margin: '0', color: currentUser.phone_number ? '#333' : '#999', fontSize: window.innerWidth <= 768 ? '0.9rem' : '1rem', fontWeight: '600', fontStyle: currentUser.phone_number ? 'normal' : 'italic' }}>
+                      {currentUser.phone_number || 'No phone number added'}
+                    </p>
+                  </div>
 
                   {/* Loyalty Points Display */}
                   <div style={{ 
@@ -1011,40 +1013,40 @@ const AuthModal: React.FC = () => {
               )}
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem', fontWeight: '600' }}>{t('profile.myBookings')}</h3>
+            <div style={{ marginBottom: window.innerWidth <= 768 ? '16px' : '24px' }}>
+              <h3 style={{ color: '#333', marginBottom: window.innerWidth <= 768 ? '12px' : '16px', fontSize: window.innerWidth <= 768 ? '0.9rem' : '1rem', fontWeight: '600' }}>{t('profile.myBookings')}</h3>
               <a 
                 href="/my-bookings"
                 style={{
                   display: 'inline-block',
-                  padding: '12px 24px',
+                  padding: window.innerWidth <= 768 ? '10px 20px' : '12px 24px',
                   backgroundColor: '#ff6fa3',
                   color: 'white',
                   textDecoration: 'none',
                   borderRadius: '8px',
                   fontWeight: '600',
-                  fontSize: '0.95rem',
+                  fontSize: window.innerWidth <= 768 ? '0.85rem' : '0.95rem',
                 }}
               >
                 {t('profile.viewMyBookings')}
               </a>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ color: '#333', marginBottom: '16px', fontSize: '1rem', fontWeight: '600' }}>{t('profile.security')}</h3>
+            <div style={{ marginBottom: window.innerWidth <= 768 ? '16px' : '24px' }}>
+              <h3 style={{ color: '#333', marginBottom: window.innerWidth <= 768 ? '12px' : '16px', fontSize: window.innerWidth <= 768 ? '0.9rem' : '1rem', fontWeight: '600' }}>{t('profile.security')}</h3>
               <button
                 onClick={() => setShowChangePassword(true)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '12px 24px',
+                  padding: window.innerWidth <= 768 ? '10px 20px' : '12px 24px',
                   backgroundColor: '#ff6fa3',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
                   fontWeight: '600',
-                  fontSize: '0.95rem',
+                  fontSize: window.innerWidth <= 768 ? '0.85rem' : '0.95rem',
                   cursor: 'pointer',
                 }}
               >
@@ -1057,12 +1059,12 @@ const AuthModal: React.FC = () => {
               onClick={() => setShowProfileModal(false)}
               style={{
                 width: '100%',
-                padding: '12px',
+                padding: window.innerWidth <= 768 ? '10px' : '12px',
                 backgroundColor: '#f0f0f0',
                 border: 'none',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                fontSize: '0.9rem',
+                fontSize: window.innerWidth <= 768 ? '0.85rem' : '0.9rem',
                 color: '#333',
                 fontWeight: '600',
               }}
