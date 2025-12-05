@@ -178,6 +178,7 @@ export class BookingService {
         total_price: bookingData.totalPrice || 0,
         service_pricing: bookingData.servicePricing || [],
         mehendi_hours: bookingData.mehendiHours || 0,
+        payment_method: bookingData.paymentMethod || 'none',
         user_id: bookingData.userId || null,
       },
     ]);
