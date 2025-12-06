@@ -9,6 +9,7 @@ import reviewRoutes from './routes/reviewRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import loyaltyRoutes from './routes/loyaltyRoutes';
 import sitemapRouter from './sitemap';
+import { ReminderService } from './services/ReminderService';
 
 dotenv.config();
 
@@ -99,6 +100,11 @@ const server = app.listen(port, () => {
   // eslint-disable-next-line no-console
   console.log(`✅ Server listening on http://localhost:${port}`);
   console.log(`📅 Time Slot System ACTIVE - Hours: 7:00-20:00 (Overtime Allowed)`);
+  
+  // Start 24-hour reminder service
+  const reminderService = new ReminderService();
+  reminderService.start();
+  console.log(`🔔 24-hour appointment reminder service started`);
 });
 
 // Handle unhandled promise rejections
