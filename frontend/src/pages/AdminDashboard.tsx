@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Users, Calendar, Menu, Check, AlertCircle, MessageSquare } from 'lucide-react';
+import { LogOut, Users, Calendar, Menu, Check, AlertCircle, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import '../styles/admin-dashboard.css';
 import ConfirmModal from '../components/ConfirmModal';
 import { useReviewUpdates } from '../hooks/useReviewUpdates';
@@ -27,6 +27,7 @@ export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState<{ name: string; email: string } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [bookingFilter, setBookingFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all');
+  const [expandedBookings, setExpandedBookings] = useState<Set<string>>(new Set());
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -193,6 +194,18 @@ export default function AdminDashboard() {
     });
   };
 
+  const toggleBookingExpand = (bookingId: string) => {
+    setExpandedBookings((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(bookingId)) {
+        newSet.delete(bookingId);
+      } else {
+        newSet.add(bookingId);
+      }
+      return newSet;
+    });
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('currentUser');
@@ -328,73 +341,89 @@ export default function AdminDashboard() {
               {bookings.length === 0 ? (
                 <p className="no-data">No bookings found</p>
               ) : (
-                <div className="bookings-table-wrapper">
-                  <table className="admin-table">
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Service</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Status</th>
-                        <th>Price</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {bookings
-                        .filter(booking => {
-                          if (bookingFilter === 'pending') return booking.status !== 'completed' && booking.status !== 'cancelled';
-                          if (bookingFilter === 'completed') return booking.status === 'completed';
-                          if (bookingFilter === 'cancelled') return booking.status === 'cancelled';
-                          return true;
-                        })
-                        .map((booking) => (
-                          <tr key={booking.id} className={`booking-row status-${booking.status || 'pending'}`}>
-                            <td data-label="Name">{booking.name}</td>
-                            <td data-label="Email">{booking.email}</td>
-                            <td data-label="Phone">{booking.phone}</td>
-                            <td data-label="Service">{booking.service.replace('-', ' ').toUpperCase()}</td>
-                            <td data-label="Date">{new Date(booking.date).toLocaleDateString()}</td>
-                            <td data-label="Time">{booking.time}</td>
-                            <td data-label="Status">
-                              {booking.status === 'completed' ? (
-                                <div className="status-completed">
-                                  <Check className="w-5 h-5" style={{ marginRight: '0.5rem' }} />
-                                  Completed
+                <div className="bookings-cards-wrapper">
+                  {bookings
+                    .filter(booking => {
+                      if (bookingFilter === 'pending') return booking.status !== 'completed' && booking.status !== 'cancelled';
+                      if (bookingFilter === 'completed') return booking.status === 'completed';
+                      if (bookingFilter === 'cancelled') return booking.status === 'cancelled';
+                      return true;
+                    })
+                    .map((booking) => {
+                      const isExpanded = expandedBookings.has(booking.id);
+                      return (
+                        <div key={booking.id} className={`booking-card status-${booking.status || 'pending'}`}>
+                          <div className="booking-card-header" onClick={() => toggleBookingExpand(booking.id)}>
+                            <div className="booking-card-main-info">
+                              <h3>{booking.name}</h3>
+                              <p className="booking-service">{booking.service.replace('-', ' ').toUpperCase()}</p>
+                            </div>
+                            <div className="booking-card-date-info">
+                              <p className="booking-date">{new Date(booking.date).toLocaleDateString()}</p>
+                              <p className="booking-time">{booking.time}</p>
+                            </div>
+                            <button className="expand-toggle" aria-label={isExpanded ? 'Collapse' : 'Expand'}>
+                              {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                            </button>
+                          </div>
+
+                          {isExpanded && (
+                            <div className="booking-card-details">
+                              <div className="booking-detail-row">
+                                <span className="detail-label">Email:</span>
+                                <span className="detail-value">{booking.email}</span>
+                              </div>
+                              <div className="booking-detail-row">
+                                <span className="detail-label">Phone:</span>
+                                <span className="detail-value">{booking.phone}</span>
+                              </div>
+                              <div className="booking-detail-row">
+                                <span className="detail-label">Price:</span>
+                                <span className="detail-value">{booking.total_price || 0} Kr</span>
+                              </div>
+                              <div className="booking-detail-row">
+                                <span className="detail-label">Status:</span>
+                                <div className="detail-value">
+                                  {booking.status === 'completed' ? (
+                                    <div className="status-completed">
+                                      <Check className="w-5 h-5" style={{ marginRight: '0.5rem' }} />
+                                      Completed
+                                    </div>
+                                  ) : (
+                                    <select
+                                      className="status-select"
+                                      value={booking.status || 'pending'}
+                                      onChange={(e) =>
+                                        handleStatusChange(
+                                          booking.id,
+                                          e.target.value as 'pending' | 'completed' | 'cancelled'
+                                        )
+                                      }
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <option value="pending">Pending</option>
+                                      <option value="completed">Completed</option>
+                                      <option value="cancelled">Cancelled</option>
+                                    </select>
+                                  )}
                                 </div>
-                              ) : (
-                                <select
-                                  className="status-select"
-                                  value={booking.status || 'pending'}
-                                  onChange={(e) =>
-                                    handleStatusChange(
-                                      booking.id,
-                                      e.target.value as 'pending' | 'completed' | 'cancelled'
-                                    )
-                                  }
+                              </div>
+                              <div className="booking-card-actions">
+                                <button
+                                  className="cancel-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCancelBooking(booking.id);
+                                  }}
                                 >
-                                  <option value="pending">Pending</option>
-                                  <option value="completed">Completed</option>
-                                  <option value="cancelled">Cancelled</option>
-                                </select>
-                              )}
-                            </td>
-                            <td data-label="Price">{booking.total_price || 0} Kr</td>
-                            <td data-label="Action">
-                              <button
-                                className="cancel-btn"
-                                onClick={() => handleCancelBooking(booking.id)}
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
+                                  Delete Booking
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               )}
             </div>
