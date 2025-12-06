@@ -110,16 +110,29 @@ export default function AdminDashboard() {
   }, [activeTab, token]);
 
   const handleStatusChange = async (bookingId: string, newStatus: 'pending' | 'completed' | 'cancelled') => {
-    try {
-      await updateBookingStatus(token, bookingId, newStatus);
-      setBookings(
-        bookings.map((booking) =>
-          booking.id === bookingId ? { ...booking, status: newStatus } : booking
-        )
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update booking status');
-    }
+    const statusText = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+    
+    setConfirmModal({
+      isOpen: true,
+      title: 'Update Booking Status',
+      message: `Are you sure you want to change the status of this booking to "${statusText}"?`,
+      confirmText: 'Update',
+      isDanger: false,
+      onConfirm: async () => {
+        try {
+          await updateBookingStatus(token, bookingId, newStatus);
+          setBookings(
+            bookings.map((booking) =>
+              booking.id === bookingId ? { ...booking, status: newStatus } : booking
+            )
+          );
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to update booking status');
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      },
+    });
   };
 
   const handleCancelBooking = async (bookingId: string) => {
