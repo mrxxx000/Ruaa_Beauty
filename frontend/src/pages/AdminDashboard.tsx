@@ -8,6 +8,7 @@ import {
   getAllBookings,
   getAllUsers,
   updateBookingStatus,
+  updateBookingPaymentStatus,
   cancelBookingAdmin,
   Booking,
   User,
@@ -129,6 +130,32 @@ export default function AdminDashboard() {
           setConfirmModal({ ...confirmModal, isOpen: false });
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Failed to update booking status');
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+      },
+    });
+  };
+
+  const handlePaymentStatusChange = async (bookingId: string, newPaymentStatus: 'paid' | 'unpaid' | 'pending') => {
+    const paymentStatusText = newPaymentStatus.charAt(0).toUpperCase() + newPaymentStatus.slice(1);
+    
+    setConfirmModal({
+      isOpen: true,
+      title: 'Update Payment Status',
+      message: `Are you sure you want to change the payment status of this booking to "${paymentStatusText}"?`,
+      confirmText: 'Update',
+      isDanger: false,
+      onConfirm: async () => {
+        try {
+          await updateBookingPaymentStatus(token, bookingId, newPaymentStatus);
+          setBookings(
+            bookings.map((booking) =>
+              booking.id === bookingId ? { ...booking, payment_status: newPaymentStatus } : booking
+            )
+          );
+          setConfirmModal({ ...confirmModal, isOpen: false });
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to update payment status');
           setConfirmModal({ ...confirmModal, isOpen: false });
         }
       },
@@ -393,6 +420,33 @@ export default function AdminDashboard() {
                               <div className="booking-detail-row">
                                 <span className="detail-label">Price:</span>
                                 <span className="detail-value">{booking.total_price || 0} Kr</span>
+                              </div>
+                              <div className="booking-detail-row">
+                                <span className="detail-label">Payment:</span>
+                                <div className="detail-value">
+                                  {booking.payment_status === 'paid' ? (
+                                    <div className="payment-status-paid">
+                                      <Check className="w-4 h-4" style={{ marginRight: '0.3rem' }} />
+                                      Paid
+                                    </div>
+                                  ) : (
+                                    <select
+                                      className="payment-status-select"
+                                      value={booking.payment_status || 'unpaid'}
+                                      onChange={(e) =>
+                                        handlePaymentStatusChange(
+                                          booking.id,
+                                          e.target.value as 'paid' | 'unpaid' | 'pending'
+                                        )
+                                      }
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <option value="unpaid">Unpaid</option>
+                                      <option value="pending">Pending</option>
+                                      <option value="paid">Paid</option>
+                                    </select>
+                                  )}
+                                </div>
                               </div>
                               <div className="booking-detail-row">
                                 <span className="detail-label">Status:</span>

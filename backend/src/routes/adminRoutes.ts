@@ -195,6 +195,38 @@ router.put('/bookings/:bookingId/status', verifyAdminToken, async (req, res) => 
   }
 });
 
+// PUT /api/admin/bookings/:bookingId/payment-status - Update payment status (admin only)
+router.put('/bookings/:bookingId/payment-status', verifyAdminToken, async (req, res) => {
+  const bookingId = req.params.bookingId;
+  const { paymentStatus } = req.body;
+
+  if (!bookingId) {
+    return res.status(400).json({ message: 'Booking ID is required' });
+  }
+
+  if (!paymentStatus || !['paid', 'unpaid', 'pending'].includes(paymentStatus)) {
+    return res.status(400).json({ message: 'Valid payment status is required: paid, unpaid, or pending' });
+  }
+
+  console.log(`💳 Updating booking ${bookingId} payment status to ${paymentStatus}`);
+
+  try {
+    const booking = await bookingService.updateBookingPaymentStatus(bookingId, paymentStatus);
+    
+    res.status(200).json({
+      message: 'Payment status updated successfully',
+      booking,
+    });
+  } catch (err) {
+    console.error('Error updating payment status:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({
+      message: 'Error updating payment status',
+      details: errorMessage,
+    });
+  }
+});
+
 // DELETE /api/admin/bookings/:bookingId - Cancel a booking (admin only)
 router.delete('/bookings/:bookingId', verifyAdminToken, async (req, res) => {
   const bookingId = req.params.bookingId;

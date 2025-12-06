@@ -16,6 +16,7 @@ export interface Booking {
   mehendi_hours: number;
   user_id: number | null;
   status?: string;
+  payment_status?: string;
   created_at?: string;
 }
 
@@ -83,6 +84,30 @@ export async function updateBookingStatus(
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.message || 'Failed to update booking status');
+  }
+
+  const data = await response.json();
+  return data.booking;
+}
+
+// Update booking payment status (admin only)
+export async function updateBookingPaymentStatus(
+  token: string,
+  bookingId: string,
+  paymentStatus: 'paid' | 'unpaid' | 'pending'
+): Promise<Booking> {
+  const response = await fetch(`${API_URL}/api/admin/bookings/${bookingId}/payment-status`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ paymentStatus }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to update payment status');
   }
 
   const data = await response.json();
