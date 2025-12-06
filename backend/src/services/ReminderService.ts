@@ -1,10 +1,10 @@
 import * as cron from 'node-cron';
-import SibApiV3Sdk from 'sib-api-v3-sdk';
 import { createClient } from '@supabase/supabase-js';
+import fetch from 'node-fetch';
 
 export class ReminderService {
   private supabase;
-  private brevoClient;
+  private brevoApiKey: string;
   private cronJob: cron.ScheduledTask | null = null;
 
   constructor() {
@@ -14,12 +14,8 @@ export class ReminderService {
       process.env.SUPABASE_SERVICE_ROLE || ''
     );
 
-    // Initialize Brevo client
-    const defaultClient = SibApiV3Sdk.ApiClient.instance;
-    const apiKey = defaultClient.authentications['api-key'];
-    apiKey.apiKey = process.env.BREVO_API_KEY || '';
-    
-    this.brevoClient = new SibApiV3Sdk.TransactionalEmailsApi();
+    // Store Brevo API key
+    this.brevoApiKey = process.env.BREVO_API_KEY || '';
   }
 
   // Start the cron job (runs every hour)
@@ -193,7 +189,21 @@ export class ReminderService {
       htmlContent: emailContent,
     };
 
-    await this.brevoClient.sendTransacEmail(sendSmtpEmail);
+    // Send email using Brevo API directly with fetch
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': this.brevoApiKey,
+      },
+      body: JSON.stringify(sendSmtpEmail),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to send reminder email: ${error}`);
+    }
   }
 
 }
