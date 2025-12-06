@@ -12,15 +12,16 @@ export class BookingService {
 
   // Service configurations: duration in hours and staff group assignment
   private serviceConfig: { [key: string]: ServiceConfig } = {
-    // Group A - Mehendi Staff
-    'mehendi': { duration: 0, staffGroup: 'mehendi' }, // duration set by user
+    // Person A - Mehendi Staff
+    'mehendi': { duration: 0, staffGroup: 'personA' }, // duration set by user
     
-    // Group B - Beauty Staff (all share same person)
-    'lash-lift': { duration: 2, staffGroup: 'beauty' },
-    'brow-lift': { duration: 2, staffGroup: 'beauty' },
-    'threading': { duration: 2, staffGroup: 'beauty' },
-    'makeup': { duration: 3, staffGroup: 'beauty' },
-    'bridal-makeup': { duration: 9, staffGroup: 'beauty' }, // full day: 9-18
+    // Person B - Beauty Services
+    'lash-lift': { duration: 1, staffGroup: 'personB' },
+    'brow-lift': { duration: 1, staffGroup: 'personB' },
+    'threading': { duration: 1, staffGroup: 'personB' },
+    'combined-lash-brow': { duration: 1, staffGroup: 'personB' }, // Combined package
+    'makeup': { duration: 2, staffGroup: 'personB' }, // Event makeup
+    'bridal-makeup': { duration: 4, staffGroup: 'personB' },
   };
 
   private getSupabase() {
@@ -66,6 +67,39 @@ export class BookingService {
   }
 
   /**
+   * Detect if services should be auto-converted to Combined Package
+   * If user selects both lash-lift and brow-lift, treat as combined-lash-brow (1 hour)
+   */
+  private normalizeServices(services: string[]): string[] {
+    const hasLashLift = services.includes('lash-lift');
+    const hasBrowLift = services.includes('brow-lift');
+    const hasCombined = services.includes('combined-lash-brow');
+    
+    // If both lash-lift and brow-lift are selected (and not already combined), convert to combined package
+    if (hasLashLift && hasBrowLift && !hasCombined) {
+      return services.filter(s => s !== 'lash-lift' && s !== 'brow-lift').concat('combined-lash-brow');
+    }
+    
+    return services;
+  }
+
+  /**
+   * Calculate total duration for multiple services
+   * For Person B services, sum all durations
+   */
+  private calculateTotalDuration(services: string[], mehendiHours: number = 0): number {
+    const normalized = this.normalizeServices(services);
+    let totalDuration = 0;
+    
+    normalized.forEach(service => {
+      const duration = this.getServiceDuration(service, mehendiHours);
+      totalDuration += duration;
+    });
+    
+    return totalDuration;
+  }
+
+  /**
    * Check if a time slot is available
    * Returns true if the booking can fit without conflicts
    */
@@ -77,9 +111,20 @@ export class BookingService {
   ): boolean {
     const endHour = startHour + totalDuration;
     
-    // Check if booking fits within working hours (9-18)
-    if (startHour < 9 || endHour > 18) {
-      return false;
+    // Person B works 07:00 - 20:00 with overtime allowed
+    // Services can START at 20:00 even if they end later
+    if (staffGroupsNeeded.has('personB')) {
+      if (startHour < 7 || startHour > 20) {
+        return false;
+      }
+    }
+    
+    // Person A (Mehendi) has no time restrictions (can work anytime)
+    // But we still validate start hour is reasonable
+    if (staffGroupsNeeded.has('personA') && !staffGroupsNeeded.has('personB')) {
+      if (startHour < 7 || startHour > 20) {
+        return false;
+      }
     }
 
     // Check for conflicts with existing bookings in the same staff group
@@ -88,15 +133,14 @@ export class BookingService {
       const bookingServices = booking.service.split(',').map((s: string) => s.trim());
       const bookingMehendiHours = booking.mehendi_hours || 0;
       
-      // Get staff groups used by this existing booking
-      const existingStaffGroups = this.getStaffGroupsForServices(bookingServices, bookingMehendiHours);
+      // Normalize services for existing booking
+      const normalizedBookingServices = this.normalizeServices(bookingServices);
       
-      // Calculate existing booking duration
-      let existingDuration = 0;
-      bookingServices.forEach((svc: string) => {
-        const duration = this.getServiceDuration(svc, bookingMehendiHours);
-        existingDuration = Math.max(existingDuration, duration);
-      });
+      // Get staff groups used by this existing booking
+      const existingStaffGroups = this.getStaffGroupsForServices(normalizedBookingServices, bookingMehendiHours);
+      
+      // Calculate existing booking duration (sum for Person B services)
+      const existingDuration = this.calculateTotalDuration(normalizedBookingServices, bookingMehendiHours);
       
       const existingEndHour = bookingHour + existingDuration;
       
@@ -104,6 +148,7 @@ export class BookingService {
       for (const staffGroup of staffGroupsNeeded) {
         if (existingStaffGroups.has(staffGroup)) {
           // Same staff group - check for time overlap
+          // Overlap exists if: NOT (new ends before existing starts OR new starts after existing ends)
           if (!(endHour <= bookingHour || startHour >= existingEndHour)) {
             // There's a conflict
             return false;
@@ -130,15 +175,14 @@ export class BookingService {
     const requestedHour = parseInt(time?.split(':')[0] || '0');
     const requestedServices = service.split(',').map((s: string) => s.trim());
     
+    // Normalize services (auto-detect combined package)
+    const normalizedServices = this.normalizeServices(requestedServices);
+    
     // Calculate total duration needed for this booking
-    let totalDuration = 0;
-    requestedServices.forEach((svc: string) => {
-      const duration = this.getServiceDuration(svc, mehendiHours);
-      totalDuration = Math.max(totalDuration, duration);
-    });
+    const totalDuration = this.calculateTotalDuration(normalizedServices, mehendiHours);
     
     // Get staff groups needed
-    const staffGroupsNeeded = this.getStaffGroupsForServices(requestedServices, mehendiHours);
+    const staffGroupsNeeded = this.getStaffGroupsForServices(normalizedServices, mehendiHours);
     
     // Check if slot is available
     const isAvailable = this.isTimeSlotAvailable(
@@ -152,7 +196,7 @@ export class BookingService {
       return {
         isAvailable: false,
         conflictingHour: requestedHour,
-        conflictingService: requestedServices[0],
+        conflictingService: normalizedServices[0],
       };
     }
 
@@ -254,18 +298,21 @@ export class BookingService {
       throw new Error(`Error fetching bookings: ${fetchError.message}`);
     }
 
-    const allHours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+    // Person B works 07:00 - 20:00 (can start at 20:00 with overtime)
+    const allHours = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+    console.log('🕐 Checking availability for hours:', allHours);
     const availableHours: number[] = [];
+    const unavailableHours: number[] = [];
+    
+    // Normalize services (auto-detect combined package)
+    const normalizedServices = this.normalizeServices(services);
+    console.log('📋 Normalized services:', normalizedServices);
     
     // Calculate total duration needed for requested services
-    let totalDuration = 0;
-    services.forEach((svc: string) => {
-      const duration = this.getServiceDuration(svc, mehendiHours);
-      totalDuration = Math.max(totalDuration, duration);
-    });
+    const totalDuration = this.calculateTotalDuration(normalizedServices, mehendiHours);
     
     // Get staff groups needed
-    const staffGroupsNeeded = this.getStaffGroupsForServices(services, mehendiHours);
+    const staffGroupsNeeded = this.getStaffGroupsForServices(normalizedServices, mehendiHours);
     
     // Check each hour
     for (const hour of allHours) {
@@ -276,14 +323,18 @@ export class BookingService {
         staffGroupsNeeded
       );
       
+      console.log(`⏰ Hour ${hour}: ${isAvailable ? '✅ Available' : '❌ Unavailable'} (duration: ${totalDuration}h, endHour: ${hour + totalDuration})`);
+      
       if (isAvailable) {
         availableHours.push(hour);
+      } else {
+        unavailableHours.push(hour);
       }
     }
 
     return {
       availableHours,
-      unavailableHours: allHours.filter(h => !availableHours.includes(h)),
+      unavailableHours,
     };
   }
 

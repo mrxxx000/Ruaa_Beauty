@@ -56,7 +56,7 @@ const BookingForm: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string>('');
-  const [availableHours, setAvailableHours] = useState<number[]>([9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+  const [availableHours, setAvailableHours] = useState<number[]>([7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
   const [unavailableHours, setUnavailableHours] = useState<number[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string; phone?: string } | null>(null);
@@ -269,7 +269,7 @@ const BookingForm: React.FC = () => {
   const fetchAvailableTimes = async (date: string, services: string[], mehendiHours: number = 0) => {
     if (!date || services.length === 0) {
       // Reset to all hours if no date or services
-      setAvailableHours([9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+      setAvailableHours([7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
       setUnavailableHours([]);
       return;
     }
@@ -288,7 +288,7 @@ const BookingForm: React.FC = () => {
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setAvailableHours(data.availableHours || [9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+        setAvailableHours(data.availableHours || [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
         setUnavailableHours(data.unavailableHours || []);
         // Clear selected time if it's no longer available
         if (formData.time && !data.availableHours.includes(parseInt(formData.time.split(':')[0]))) {
@@ -2406,6 +2406,8 @@ const BookingForm: React.FC = () => {
                   >
                     <option value="">{t('bookingForm.timePlaceholder')}</option>
                     {[
+                      { value: '07:00', label: t('bookingForm.time07') || '07:00', hour: 7 },
+                      { value: '08:00', label: t('bookingForm.time08') || '08:00', hour: 8 },
                       { value: '09:00', label: t('bookingForm.time09'), hour: 9 },
                       { value: '10:00', label: t('bookingForm.time10'), hour: 10 },
                       { value: '11:00', label: t('bookingForm.time11'), hour: 11 },
@@ -2416,6 +2418,8 @@ const BookingForm: React.FC = () => {
                       { value: '16:00', label: t('bookingForm.time16'), hour: 16 },
                       { value: '17:00', label: t('bookingForm.time17'), hour: 17 },
                       { value: '18:00', label: t('bookingForm.time18'), hour: 18 },
+                      { value: '19:00', label: t('bookingForm.time19') || '19:00', hour: 19 },
+                      { value: '20:00', label: t('bookingForm.time20') || '20:00', hour: 20 },
                     ].map((time) => {
                       const isUnavailable = unavailableHours.includes(time.hour);
                       return (

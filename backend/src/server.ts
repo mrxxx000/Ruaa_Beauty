@@ -43,8 +43,10 @@ app.use(cors({
 // Parse JSON with size limit
 app.use(express.json({ limit: '10mb' }));
 
+console.log('🚀 STARTING BACKEND SERVER - TIME SLOT SYSTEM v2.0 - UPDATED CODE');
+
 app.get('/', (_req, res) => {
-  res.send('Hello from backend');
+  res.send('Hello from backend - Time Slot System v2.0');
 });
 
 // Debug endpoint to check if routes are loaded
@@ -90,7 +92,8 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 const server = app.listen(port, () => {
   // eslint-disable-next-line no-console
-  console.log(`Server listening on http://localhost:${port}`);
+  console.log(`✅ Server listening on http://localhost:${port}`);
+  console.log(`📅 Time Slot System ACTIVE - Hours: 7:00-20:00 (Overtime Allowed)`);
 });
 
 // Handle unhandled promise rejections
