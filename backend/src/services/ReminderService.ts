@@ -1,4 +1,4 @@
-import cron from 'node-cron';
+import * as cron from 'node-cron';
 import SibApiV3Sdk from 'sib-api-v3-sdk';
 import { createClient } from '@supabase/supabase-js';
 
