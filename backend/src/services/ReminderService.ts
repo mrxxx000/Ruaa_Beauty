@@ -17,7 +17,7 @@ export class ReminderService {
     // Initialize Brevo client
     const defaultClient = SibApiV3Sdk.ApiClient.instance;
     const apiKey = defaultClient.authentications['api-key'];
-    apiKey.apiKey = process.env.BREVO_API_KEY;
+    apiKey.apiKey = process.env.BREVO_API_KEY || '';
     
     this.brevoClient = new SibApiV3Sdk.TransactionalEmailsApi();
   }
