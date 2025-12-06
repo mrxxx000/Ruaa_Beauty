@@ -524,8 +524,14 @@
     padding: 0.5rem 0.25rem;
   }
 
-  .admin-table tbody tr:nth-child(n + 5) {
-    display: none;
+  .admin-table tbody tr {
+    display: table-row; /* show all rows */
+  }
+
+  .users-table-wrapper {
+    max-height: 100vh;       /* take full screen */
+    overflow-y: auto;        /* scroll vertically */
+    -webkit-overflow-scrolling: touch; /* smooth scrolling for mobile */
   }
 }
 
@@ -1092,6 +1098,8 @@
   .admin-main-content {
     margin-left: 0;
     padding: 0.75rem;
+    height: auto;
+    overflow-y: visible;
   }
 
   .admin-sidebar.closed {
@@ -1101,12 +1109,28 @@
   .bookings-section,
   .users-section {
     padding: 0.75rem;
+    height: auto;
+    overflow: visible;
   }
 
   .bookings-section h2,
   .users-section h2 {
     font-size: 1.2rem;
     margin-bottom: 1rem;
+  }
+
+  /* Make users table fully scrollable on mobile */
+  .users-table-wrapper {
+    overflow-x: auto;
+    overflow-y: visible;
+    max-height: none;
+    height: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .users-table-wrapper .admin-table {
+    display: table;
+    table-layout: auto;
   }
 
   /* Booking card adjustments for mobile */
@@ -1245,11 +1269,23 @@
 
   .admin-main-content {
     padding: 0.5rem;
+    height: auto;
+    overflow-y: visible;
   }
 
   .bookings-section,
   .users-section {
     padding: 0.5rem;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Ensure users table is fully scrollable on very small screens */
+  .users-table-wrapper {
+    overflow-x: auto;
+    overflow-y: visible;
+    max-height: none;
+    height: auto;
   }
 
   .filter-btn {
