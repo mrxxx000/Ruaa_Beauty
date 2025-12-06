@@ -124,13 +124,26 @@ export class AuthService {
     const supabase = this.getSupabase();
     const { data, error } = await supabase
       .from('users')
-      .select('id, name, email, role');
+      .select('*');
 
     if (error) {
       throw new Error(`Error fetching users: ${error.message}`);
     }
 
-    return data || [];
+    console.log('📞 Raw data from Supabase:', JSON.stringify(data?.[0], null, 2));
+    console.log('📞 All user phone numbers:', data?.map((u: any) => ({ id: u.id, name: u.name, phone_number: u.phone_number })));
+    
+    // Return only the necessary fields
+    const mappedUsers = data?.map((u: any) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      phone_number: u.phone_number,
+      role: u.role
+    })) || [];
+    
+    console.log('📞 Mapped users being returned:', JSON.stringify(mappedUsers[0], null, 2));
+    return mappedUsers;
   }
 
   async isAdmin(userId: number) {
