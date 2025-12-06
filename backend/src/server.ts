@@ -49,6 +49,11 @@ app.get('/', (_req, res) => {
   res.send('Hello from backend - Time Slot System v2.0');
 });
 
+// Health check endpoint (prevents Render.com free tier cold starts)
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok' });
+});
+
 // Debug endpoint to check if routes are loaded
 app.get('/api/status', (_req, res) => {
   res.json({
