@@ -402,7 +402,7 @@ const BookingForm: React.FC = () => {
         });
 
         // Redirect to PayPal checkout
-        const paypalMode = process.env.REACT_APP_PAYPAL_MODE || 'sandbox';
+        const paypalMode = process.env.REACT_APP_PAYPAL_MODE || 'live';
         const paypalCheckoutUrl = paypalMode === 'live'
           ? `https://www.paypal.com/checkoutnow?token=${paypalOrderId}`
           : `https://www.sandbox.paypal.com/checkoutnow?token=${paypalOrderId}`;
