@@ -102,19 +102,23 @@ const BookingForm: React.FC = () => {
             const data = await response.json();
             const profileData = data.user || data; // Handle both response formats
             // Update form only with non-empty values from backend
-            setFormData(prev => ({
-              ...prev,
-              name: profileData.name || prev.name || '',
-              email: profileData.email || prev.email || '',
-              phone: profileData.phone_number || prev.phone || '',
-            }));
-            // Also update localStorage with latest data
-            localStorage.setItem('currentUser', JSON.stringify({
+            const updatedUserData = {
               ...userData,
               name: profileData.name || userData.name,
               email: profileData.email || userData.email,
               phone: profileData.phone_number || userData.phone,
+            };
+            
+            setFormData(prev => ({
+              ...prev,
+              name: updatedUserData.name || '',
+              email: updatedUserData.email || '',
+              phone: updatedUserData.phone || '',
             }));
+            
+            // Update currentUser state and localStorage with latest data
+            setCurrentUser(updatedUserData);
+            localStorage.setItem('currentUser', JSON.stringify(updatedUserData));
           }
         } catch (err) {
           console.log('Could not fetch latest profile, using localStorage:', err);
@@ -154,13 +158,25 @@ const BookingForm: React.FC = () => {
             if (response.ok) {
               const data = await response.json();
               const profileData = data.user || data; // Handle both response formats
-              // Update form with latest data, preserving existing values if backend returns empty
+              
+              const updatedUserData = {
+                id: profileData.id || currentUser?.id,
+                name: profileData.name || currentUser?.name || '',
+                email: profileData.email || currentUser?.email || '',
+                phone: profileData.phone_number || currentUser?.phone || '',
+              };
+              
+              // Update form with latest data
               setFormData(prev => ({
                 ...prev,
-                name: profileData.name || prev.name || '',
-                email: profileData.email || prev.email || '',
-                phone: profileData.phone_number || prev.phone || '',
+                name: updatedUserData.name,
+                email: updatedUserData.email,
+                phone: updatedUserData.phone,
               }));
+              
+              // Update currentUser state and localStorage
+              setCurrentUser(updatedUserData);
+              localStorage.setItem('currentUser', JSON.stringify(updatedUserData));
             }
           } catch (err) {
             console.log('Could not fetch updated profile:', err);
@@ -329,7 +345,7 @@ const BookingForm: React.FC = () => {
       try {
         // Prepare booking data to store for after payment
         const address = formData.location === 'studio' 
-          ? 'Odengatan 56274 31 Skurup'
+          ? 'Odengatan 56 274 31 Skurup'
           : formData.customAddress;
 
         const finalThreadingAreas = getFinalThreadingAreas(formData.threadingAreas);
@@ -385,8 +401,11 @@ const BookingForm: React.FC = () => {
           service: formData.services.join(', '),
         });
 
-        // Redirect to PayPal checkout (use sandbox for testing)
-        const paypalCheckoutUrl = `https://www.sandbox.paypal.com/checkoutnow?token=${paypalOrderId}`;
+        // Redirect to PayPal checkout
+        const paypalMode = process.env.REACT_APP_PAYPAL_MODE || 'sandbox';
+        const paypalCheckoutUrl = paypalMode === 'live'
+          ? `https://www.paypal.com/checkoutnow?token=${paypalOrderId}`
+          : `https://www.sandbox.paypal.com/checkoutnow?token=${paypalOrderId}`;
         window.location.href = paypalCheckoutUrl;
       } catch (err) {
         alert('Failed to create PayPal order. Please try again.');
@@ -401,7 +420,7 @@ const BookingForm: React.FC = () => {
     try {
       // Determine the address based on location choice
       const address = formData.location === 'studio' 
-        ? 'Odengatan 56274 31 Skurup'
+        ? 'Odengatan 56 274 31 Skurup'
         : formData.customAddress;
 
       // Prepare booking data - only send fields the API expects
@@ -477,7 +496,13 @@ const BookingForm: React.FC = () => {
         const responseData = await resp.json();
         console.log('Success response:', responseData);
         setSubmitted(true);
-        setFormData(defaultData);
+        // Reset form but preserve user info if logged in
+        setFormData({
+          ...defaultData,
+          name: isLoggedIn && currentUser ? currentUser.name : '',
+          email: isLoggedIn && currentUser ? currentUser.email : '',
+          phone: isLoggedIn && currentUser ? (currentUser.phone || '') : '',
+        });
         setTimeout(() => setSubmitted(false), 5000);
       } else if (resp.status === 409) {
         // Time slot conflict - refresh available times and show error

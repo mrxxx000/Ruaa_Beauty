@@ -9,7 +9,7 @@ export class PaymentService {
   constructor() {
     this.clientId = process.env.PAYPAL_CLIENT_ID || '';
     this.clientSecret = process.env.PAYPAL_CLIENT_SECRET || '';
-    this.mode = (process.env.PAYPAL_MODE || 'sandbox') as 'sandbox' | 'live';
+    this.mode = (process.env.PAYPAL_MODE || 'live') as 'sandbox' | 'live';
     this.baseUrl = this.mode === 'sandbox' 
       ? 'https://api-m.sandbox.paypal.com'
       : 'https://api-m.paypal.com';

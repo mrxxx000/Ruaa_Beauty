@@ -33,7 +33,7 @@ export const organizationSchema: SchemaMarkup = {
   email: 'ruaa.azimeh123@gmail.com',
   address: {
     '@type': 'PostalAddress',
-    streetAddress: 'Odengatan 56274 31',
+    streetAddress: 'Odengatan 56 274 31',
     addressLocality: 'Skurup',
     addressCountry: 'SE'
   },
