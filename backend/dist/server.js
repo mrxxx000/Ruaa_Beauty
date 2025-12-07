@@ -13,6 +13,7 @@ const adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 const reviewRoutes_1 = __importDefault(require("./routes/reviewRoutes"));
 const paymentRoutes_1 = __importDefault(require("./routes/paymentRoutes"));
 const loyaltyRoutes_1 = __importDefault(require("./routes/loyaltyRoutes"));
+const mediaRoutes_1 = __importDefault(require("./routes/mediaRoutes"));
 const sitemap_1 = __importDefault(require("./sitemap"));
 const ReminderService_1 = require("./services/ReminderService");
 dotenv_1.default.config();
@@ -74,6 +75,8 @@ app.use('/api', reviewRoutes_1.default);
 app.use('/api', loyaltyRoutes_1.default);
 // Use admin routes
 app.use('/api/admin', adminRoutes_1.default);
+// Use media routes
+app.use('/api/media', mediaRoutes_1.default);
 // Use sitemap routes (for SEO)
 app.use('/', sitemap_1.default);
 // Error handling middleware

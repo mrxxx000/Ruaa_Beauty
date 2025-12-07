@@ -8,6 +8,7 @@ import adminRoutes from './routes/adminRoutes';
 import reviewRoutes from './routes/reviewRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import loyaltyRoutes from './routes/loyaltyRoutes';
+import mediaRoutes from './routes/mediaRoutes';
 import sitemapRouter from './sitemap';
 import { ReminderService } from './services/ReminderService';
 
@@ -84,6 +85,9 @@ app.use('/api', loyaltyRoutes);
 
 // Use admin routes
 app.use('/api/admin', adminRoutes);
+
+// Use media routes
+app.use('/api/media', mediaRoutes);
 
 // Use sitemap routes (for SEO)
 app.use('/', sitemapRouter);

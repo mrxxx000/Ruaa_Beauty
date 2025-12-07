@@ -7,6 +7,7 @@ import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import Hero from '../components/Hero';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AuthModal from '../components/AuthModal';
+import { getMediaByService, MediaItem } from '../mediaApi';
 import { 
   injectSchemaMarkup, 
   organizationSchema,
@@ -115,6 +116,44 @@ const Home: React.FC = () => {
   const { t } = useTranslation();
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const [lashesHomeVideos, setLashesHomeVideos] = useState<string[]>([]);
+  const [mehendiHomeVideos, setMehendiHomeVideos] = useState<string[]>([]);
+
+  // Load lashes videos for home page
+  useEffect(() => {
+    const loadLashesVideos = async () => {
+      try {
+        const media = await getMediaByService('lashes_videos');
+        const videoUrls = media
+          .filter(m => m.type === 'video')
+          .map(m => m.url);
+        setLashesHomeVideos(videoUrls);
+      } catch (err) {
+        console.error('Failed to load lashes videos:', err);
+        setLashesHomeVideos([]);
+      }
+    };
+
+    loadLashesVideos();
+  }, []);
+
+  // Load mehendi videos for home page
+  useEffect(() => {
+    const loadMehendiVideos = async () => {
+      try {
+        const media = await getMediaByService('mehendi_videos');
+        const videoUrls = media
+          .filter(m => m.type === 'video')
+          .map(m => m.url);
+        setMehendiHomeVideos(videoUrls);
+      } catch (err) {
+        console.error('Failed to load mehendi videos:', err);
+        setMehendiHomeVideos([]);
+      }
+    };
+
+    loadMehendiVideos();
+  }, []);
 
   useEffect(() => {
     const user = localStorage.getItem('currentUser');
@@ -221,13 +260,13 @@ const Home: React.FC = () => {
 
         <section className="videos container" id="Lashes">
           <h2 style={{ marginTop: 18, marginBottom: 18 }}>{t('home.lashesTitle')}</h2>
-          <VideoGrid />
+          <VideoGrid videos={lashesHomeVideos.length > 0 ? lashesHomeVideos : undefined} />
         </section>
 
         <section className="videos container" id="mehendi-shorts">
           <h2 style={{ marginTop: 18, marginBottom: 18 }}>{t('home.mehendiTitle')}</h2>
           <VideoGrid
-            videos={[
+            videos={mehendiHomeVideos.length > 0 ? mehendiHomeVideos : [
               process.env.PUBLIC_URL + '/assets/mehendi1.mp4',
               process.env.PUBLIC_URL + '/assets/mehendi2.mp4'
             ]}
