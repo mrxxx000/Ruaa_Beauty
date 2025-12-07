@@ -15,18 +15,11 @@ export const organizationSchema: SchemaMarkup = {
   '@type': 'LocalBusiness',
   '@id': 'https://www.ruaa-beauty.eu/#organization',
   name: 'Ruaa Beauty',
-  image: {
-    '@type': 'ImageObject',
-    url: 'https://www.ruaa-beauty.eu/logo512.png',
-    width: 512,
-    height: 512
-  },
-  logo: {
-    '@type': 'ImageObject',
-    url: 'https://www.ruaa-beauty.eu/logo512.png',
-    width: 512,
-    height: 512
-  },
+  image: [
+    'https://www.ruaa-beauty.eu/logo512.png',
+    'https://www.ruaa-beauty.eu/logo192.png'
+  ],
+  logo: 'https://www.ruaa-beauty.eu/logo512.png',
   description: 'Professional beauty services including bridal mehendi, lashes, and makeup',
   url: 'https://www.ruaa-beauty.eu',
   telephone: '+46704679469',
@@ -137,12 +130,7 @@ export const websiteSchema: SchemaMarkup = {
     '@type': 'Organization',
     '@id': 'https://www.ruaa-beauty.eu/#organization',
     name: 'Ruaa Beauty',
-    logo: {
-      '@type': 'ImageObject',
-      url: 'https://www.ruaa-beauty.eu/logo512.png',
-      width: 512,
-      height: 512
-    }
+    logo: 'https://www.ruaa-beauty.eu/logo512.png'
   },
   potentialAction: {
     '@type': 'SearchAction',
@@ -172,9 +160,10 @@ export const injectSchemaMarkup = (schema: SchemaMarkup): void => {
   const script = document.createElement('script');
   script.type = 'application/ld+json';
   script.textContent = JSON.stringify(schema);
+  script.id = `schema-${schema['@type']}`;
   
-  // Remove old schema if exists
-  const oldScript = document.querySelector('script[type="application/ld+json"]');
+  // Remove old schema of the same type if exists (don't remove all)
+  const oldScript = document.getElementById(`schema-${schema['@type']}`);
   if (oldScript) {
     oldScript.remove();
   }

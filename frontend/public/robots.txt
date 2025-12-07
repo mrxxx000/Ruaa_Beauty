@@ -1,3 +1,10 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Disallow:
+
+# Allow Googlebot access to favicon files
+User-agent: Googlebot
+Allow: /favicon.ico
+Allow: /logo192.png
+Allow: /logo512.png
+Allow: /apple-touch-icon.png
