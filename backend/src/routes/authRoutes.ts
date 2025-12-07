@@ -48,40 +48,19 @@ router.post('/register', async (req, res) => {
       { expiresIn: TOKEN_EXPIRY }
     );
 
-    // Check for pending bookings made with this email
-    console.log('🔍 Checking for pending bookings for email:', email);
-    const pendingBookings = await authService.getPendingBookingsForUser(email);
+    // Claim any unclaimed bookings made with this email
+    console.log('🔍 Checking for unclaimed bookings for email:', email);
+    const claimedBookings = await bookingService.claimUnclaimedBookings(email, user.id);
     
-    let convertedBookings = [];
-    if (pendingBookings.length > 0) {
-      console.log(`📦 Found ${pendingBookings.length} pending booking(s) for ${email}`);
-      
-      // Convert pending bookings to actual bookings
-      for (const pendingBooking of pendingBookings) {
-        try {
-          const { bookingId } = await bookingService.createBookingFromPendingBooking(pendingBooking, user.id);
-          convertedBookings.push({
-            id: bookingId,
-            service: pendingBooking.service,
-            date: pendingBooking.date,
-            time: pendingBooking.time,
-          });
-          console.log(`✅ Converted pending booking to actual booking: ${bookingId}`);
-        } catch (conversionErr) {
-          console.error(`⚠️ Failed to convert pending booking:`, conversionErr);
-        }
-      }
-
-      // Mark pending bookings as processed
-      await authService.markPendingBookingsProcessed(email);
+    if (claimedBookings.length > 0) {
+      console.log(`✅ Claimed ${claimedBookings.length} unclaimed booking(s) for user ${user.id}`);
     }
 
     res.status(201).json({
       message: 'Registration successful',
       user,
       token,
-      pendingBookings: pendingBookings.length,
-      convertedBookings: convertedBookings.length > 0 ? convertedBookings : undefined,
+      claimedBookings: claimedBookings.length > 0 ? claimedBookings : undefined,
     });
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Registration failed';
@@ -112,40 +91,19 @@ router.post('/login', async (req, res) => {
       { expiresIn: TOKEN_EXPIRY }
     );
 
-    // Check for pending bookings made with this email before account creation
-    console.log('🔍 Checking for pending bookings for email:', email);
-    const pendingBookings = await authService.getPendingBookingsForUser(email);
+    // Claim any unclaimed bookings made with this email
+    console.log('🔍 Checking for unclaimed bookings for email:', email);
+    const claimedBookings = await bookingService.claimUnclaimedBookings(email, user.id);
     
-    let convertedBookings = [];
-    if (pendingBookings.length > 0) {
-      console.log(`📦 Found ${pendingBookings.length} pending booking(s) for ${email}`);
-      
-      // Convert pending bookings to actual bookings
-      for (const pendingBooking of pendingBookings) {
-        try {
-          const { bookingId } = await bookingService.createBookingFromPendingBooking(pendingBooking, user.id);
-          convertedBookings.push({
-            id: bookingId,
-            service: pendingBooking.service,
-            date: pendingBooking.date,
-            time: pendingBooking.time,
-          });
-          console.log(`✅ Converted pending booking to actual booking: ${bookingId}`);
-        } catch (conversionErr) {
-          console.error(`⚠️ Failed to convert pending booking:`, conversionErr);
-        }
-      }
-
-      // Mark pending bookings as processed
-      await authService.markPendingBookingsProcessed(email);
+    if (claimedBookings.length > 0) {
+      console.log(`✅ Claimed ${claimedBookings.length} unclaimed booking(s) for user ${user.id}`);
     }
 
     res.status(200).json({
       message: 'Login successful',
       user,
       token,
-      pendingBookings: pendingBookings.length,
-      convertedBookings: convertedBookings.length > 0 ? convertedBookings : undefined,
+      claimedBookings: claimedBookings.length > 0 ? claimedBookings : undefined,
     });
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Login failed';

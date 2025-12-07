@@ -443,42 +443,28 @@ export class BookingService {
     }
   }
 
-  /**
-   * Create booking from pending booking data and link it to user
-   */
-  async createBookingFromPendingBooking(pendingBookingData: any, userId: number) {
+  async claimUnclaimedBookings(email: string, userId: number) {
     const supabase = this.getSupabase();
-    const cancelToken = randomUUID();
+    console.log(`🔗 Claiming unclaimed bookings for email: ${email}, userId: ${userId}`);
 
-    const insertData: any = {
-      name: pendingBookingData.name,
-      email: pendingBookingData.email,
-      phone: pendingBookingData.phone,
-      service: pendingBookingData.service,
-      date: pendingBookingData.date,
-      time: pendingBookingData.time,
-      location: pendingBookingData.location,
-      address: pendingBookingData.address,
-      notes: pendingBookingData.notes,
-      cancel_token: cancelToken,
-      total_price: pendingBookingData.total_price || 0,
-      service_pricing: pendingBookingData.service_pricing || [],
-      mehendi_hours: pendingBookingData.mehendi_hours || 0,
-      payment_method: pendingBookingData.payment_method || 'none',
-      payment_status: pendingBookingData.payment_status || 'unpaid',
-      user_id: userId, // Link to the newly registered user
-    };
-
-    const { data, error: dbError } = await supabase
+    const { data, error } = await supabase
       .from('bookings')
-      .insert([insertData])
-      .select('id')
-      .single();
+      .update({ user_id: userId, claim_status: 'claimed' })
+      .eq('email', email.toLowerCase())
+      .eq('claim_status', 'unclaimed')
+      .select('id, service, date, time');
 
-    if (dbError) {
-      throw new Error(`Database error: ${dbError.message}`);
+    if (error) {
+      throw new Error(`Error claiming bookings: ${error.message}`);
     }
 
-    return { cancelToken, bookingId: data?.id };
+    if (data && data.length > 0) {
+      console.log(`✅ Claimed ${data.length} unclaimed booking(s) for user ${userId}`);
+      return data;
+    }
+
+    console.log(`ℹ️ No unclaimed bookings found for email: ${email}`);
+    return [];
   }
 }
+

@@ -100,6 +100,11 @@ export class EmailService {
       console.log(`📤 Sending confirmation email to: ${bookingData.email}`);
       const userPricingSection = this.getPricingSection(bookingData.servicePricing, bookingData.totalPrice);
 
+      // Build cancel link - only include if cancelToken exists (for confirmed bookings)
+      const cancelLink = bookingData.cancelToken 
+        ? `<p><small>Need to cancel? <a href="${this.siteUrl}/unbook?token=${bookingData.cancelToken}">Click here to cancel your booking</a></small></p>`
+        : '';
+
       const userEmailObj = new brevo.SendSmtpEmail();
       userEmailObj.sender = { email: this.fromEmail, name: 'Ruaa Beauty' };
       userEmailObj.to = [{ email: bookingData.email }];
@@ -117,7 +122,7 @@ export class EmailService {
         ${userPricingSection}
         <p>We will contact you shortly to confirm your appointment.</p>
         <hr>
-        <p><small>Need to cancel? <a href="${this.siteUrl}/unbook?token=${bookingData.cancelToken}">Click here to cancel your booking</a></small></p>
+        ${cancelLink}
       `;
 
       await apiInstance.sendTransacEmail(userEmailObj);
@@ -347,4 +352,62 @@ export class EmailService {
       throw emailErr;
     }
   }
+
+  /**
+   * Send only admin notification email (for pending booking confirmations)
+   */
+  async sendAdminNotificationEmail(bookingData: any) {
+    if (!this.apiKey) {
+      console.warn('⚠️ Brevo API key not configured');
+      return;
+    }
+
+    try {
+      console.log('📧 Sending admin notification email via Brevo API...');
+
+      const apiInstance = this.getApiInstance();
+
+      // Email to admin only
+      console.log(`📤 Sending admin email to: ${this.adminEmail}`);
+      const adminPricingRows = this.formatPricingRows(bookingData.servicePricing);
+      const adminPricingSection = bookingData.totalPrice && bookingData.totalPrice > 0 ? `
+        <h4 style="color: #1f2937; margin-top: 20px; margin-bottom: 10px;">Pricing Summary:</h4>
+        <table style="width: 100%; border-collapse: collapse;">
+          ${adminPricingRows}
+          <tr style="border-top: 2px solid #ff6fa3; font-weight: bold;">
+            <td style="padding: 12px; text-align: left; font-size: 1.1em;">Total Price</td>
+            <td style="padding: 12px; text-align: right; font-size: 1.2em; color: #ff6fa3;">${bookingData.totalPrice} kr</td>
+          </tr>
+        </table>
+      ` : '';
+
+      const adminEmailObj = new brevo.SendSmtpEmail();
+      adminEmailObj.sender = { email: this.fromEmail, name: 'Ruaa Beauty Bookings' };
+      adminEmailObj.to = [{ email: this.adminEmail }];
+      adminEmailObj.subject = `New Booking from ${bookingData.name}`;
+      adminEmailObj.htmlContent = `
+        <h3>New Booking Request</h3>
+        <p><strong>Name:</strong> ${bookingData.name}</p>
+        <p><strong>Email:</strong> ${bookingData.email}</p>
+        <p><strong>Phone:</strong> ${bookingData.phone}</p>
+        <p><strong>Service:</strong> ${bookingData.service}</p>
+        <p><strong>Date:</strong> ${bookingData.date}</p>
+        <p><strong>Time:</strong> ${bookingData.time}</p>
+        <p><strong>Location:</strong> ${bookingData.location}</p>
+        <p><strong>Address:</strong> ${bookingData.address || 'N/A'}</p>
+        <p><strong>Notes:</strong> ${bookingData.notes || 'None'}</p>
+        ${adminPricingSection}
+      `;
+
+      await apiInstance.sendTransacEmail(adminEmailObj);
+      console.log('✅ Admin notification email sent');
+    } catch (emailErr: any) {
+      console.error('❌ Admin notification email sending failed:', {
+        message: emailErr.message,
+        body: emailErr.response?.body,
+      });
+    }
+  }
 }
+
+

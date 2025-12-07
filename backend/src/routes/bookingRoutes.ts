@@ -1,13 +1,11 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { BookingService } from '../services/BookingService';
-import { PendingBookingService } from '../services/PendingBookingService';
 import { EmailService } from '../services/EmailService';
 import { LoyaltyPointsService } from '../services/LoyaltyPointsService';
 
 const router = express.Router();
 const bookingService = new BookingService();
-const pendingBookingService = new PendingBookingService();
 const emailService = new EmailService();
 const loyaltyService = new LoyaltyPointsService();
 
@@ -147,29 +145,34 @@ router.post('/booking', async (req, res) => {
       }
     }
 
-    // Send response immediately
+    // Send emails first, then respond
+    try {
+      await emailService.sendBookingConfirmation({
+        name,
+        email,
+        phone,
+        service,
+        date,
+        time,
+        location,
+        address,
+        notes,
+        totalPrice,
+        servicePricing,
+        mehendiHours,
+        cancelToken,
+      });
+      console.log('✅ Email confirmation sent successfully');
+    } catch (emailErr) {
+      console.error('⚠️ Email sending failed but booking was saved:', emailErr);
+    }
+
+    // Send response
     res.status(200).json({
-      message: 'Booking saved successfully. Confirmation email will be sent shortly.',
+      message: 'Booking saved successfully. Confirmation email has been sent.',
       cancelToken,
       discountApplied: discountApplied || 0,
       finalPrice: finalPrice,
-    });
-
-    // Send emails asynchronously
-    emailService.sendBookingConfirmation({
-      name,
-      email,
-      phone,
-      service,
-      date,
-      time,
-      location,
-      address,
-      notes,
-      totalPrice,
-      servicePricing,
-      mehendiHours,
-      cancelToken,
     });
   } catch (err) {
     console.error('❌ Error processing booking:', err);
@@ -325,9 +328,9 @@ router.get('/available-times', async (req, res) => {
   }
 });
 
-// POST /api/booking/pending - Save a pending booking for unregistered user
+// POST /api/booking/pending - Save a guest booking (creates confirmed booking with unclaimed status)
 router.post('/booking/pending', async (req, res) => {
-  console.log('💾 Pending booking request received');
+  console.log('💾 Guest booking request received');
   
   const { name, email, phone, service, date, time, location, address, notes, totalPrice, servicePricing, mehendiHours, paymentMethod, paymentStatus } = req.body;
 
@@ -351,8 +354,8 @@ router.post('/booking/pending', async (req, res) => {
       });
     }
 
-    // Save pending booking
-    const pendingBooking = await pendingBookingService.savePendingBooking({
+    // Create booking (without user_id, but with confirmed status and unclaimed claim_status)
+    const { cancelToken, bookingId } = await bookingService.createBooking({
       name,
       email,
       phone,
@@ -367,46 +370,45 @@ router.post('/booking/pending', async (req, res) => {
       mehendiHours: mehendiHours || 0,
       paymentMethod: paymentMethod || 'none',
       paymentStatus: paymentStatus || 'unpaid',
+      userId: null, // No user for guest bookings
     });
 
-    console.log('✅ Pending booking saved with ID:', pendingBooking.id);
+    console.log('✅ Guest booking saved with ID:', bookingId);
 
+    // Send booking confirmation emails (customer + admin) - ONLY ONCE
+    console.log('📧 Sending booking confirmation emails (customer + admin)...');
+    try {
+      await emailService.sendBookingConfirmation({
+        name,
+        email,
+        phone,
+        service,
+        date,
+        time,
+        location,
+        address,
+        notes,
+        totalPrice,
+        servicePricing,
+        mehendiHours,
+        cancelToken, // Include cancel token for guest bookings
+      });
+      console.log('✅ Email confirmation sent successfully');
+    } catch (emailErr) {
+      console.error('⚠️ Email sending failed but guest booking was saved:', emailErr);
+    }
+
+    // Send response
     res.status(200).json({
-      message: 'Booking saved. Please create an account or login to confirm your booking.',
-      pendingBookingId: pendingBooking.id,
+      message: 'Booking saved successfully. Confirmation email has been sent.',
+      bookingId,
+      cancelToken,
     });
   } catch (err) {
-    console.error('❌ Error saving pending booking:', err);
+    console.error('❌ Error saving guest booking:', err);
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     res.status(500).json({
-      message: 'Error saving pending booking',
-      details: errorMessage,
-    });
-  }
-});
-
-// GET /api/booking/pending/:email - Get pending bookings by email (for unregistered users)
-router.get('/booking/pending/:email', async (req, res) => {
-  const email = req.params.email;
-
-  if (!email) {
-    return res.status(400).json({ message: 'Email is required' });
-  }
-
-  try {
-    console.log('🔍 Fetching pending bookings for email:', email);
-    const pendingBookings = await pendingBookingService.getPendingBookingsByEmail(email);
-
-    res.status(200).json({
-      message: 'Pending bookings retrieved successfully',
-      pendingBookings,
-      count: pendingBookings.length,
-    });
-  } catch (err) {
-    console.error('Error fetching pending bookings:', err);
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-    res.status(500).json({
-      message: 'Error fetching pending bookings',
+      message: 'Error saving guest booking',
       details: errorMessage,
     });
   }

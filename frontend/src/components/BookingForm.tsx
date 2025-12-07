@@ -511,6 +511,7 @@ const BookingForm: React.FC = () => {
           // For pending bookings, show message to encourage login/registration
           alert(
             'Your booking has been saved! 🎉\n\n' +
+            'A confirmation email has been sent to your inbox.\n\n' +
             'Please create an account or login with this email to confirm your booking.\n' +
             'Your pending booking will be automatically linked to your account.'
           );
