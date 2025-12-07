@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
@@ -6,12 +6,32 @@ import '../styles/App.css';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AuthModal from '../components/AuthModal';
+import { getMediaByService, MediaItem } from '../mediaApi';
 
 const Lashes: React.FC = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const [lashesVideos, setLashesVideos] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load lashes media from database (both images and videos)
+  useEffect(() => {
+    const loadLashesMedia = async () => {
+      try {
+        const media = await getMediaByService('lashes');
+        setLashesVideos(media);
+      } catch (err) {
+        console.error('Failed to load lashes media:', err);
+        setLashesVideos([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadLashesMedia();
+  }, []);
   
   return (
     <div className="page-coming-soon">
@@ -77,9 +97,40 @@ const Lashes: React.FC = () => {
       </div>
 
       <main>
-        <section className="container" style={{ padding: '80px 0', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '2rem', marginBottom: 12 }}>{t('nav.lashes')} — {t('pages.comingSoon')}</h1>
-          <p style={{ color: '#666' }}>We're working on this page. Check back soon for lash services and galleries.</p>
+        <section className="container" style={{ padding: '60px 0' }}>
+          <h1 style={{ fontSize: '2rem', marginBottom: 24, textAlign: 'center' }}>{t('nav.lashes')}</h1>
+          
+          {loading && (
+            <p style={{ textAlign: 'center', color: '#666' }}>Loading lashes gallery...</p>
+          )}
+
+          {!loading && lashesVideos.length === 0 && (
+            <p style={{ textAlign: 'center', color: '#666' }}>Gallery coming soon...</p>
+          )}
+
+          {!loading && lashesVideos.length > 0 && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+              {lashesVideos.map((item) => (
+                <div key={item.id} style={{ borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
+                  {item.type === 'image' ? (
+                    <img 
+                      src={item.url} 
+                      alt={item.filename}
+                      style={{ width: '100%', height: '300px', objectFit: 'cover' }}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <video 
+                      src={item.url}
+                      style={{ width: '100%', height: '300px', objectFit: 'cover' }}
+                      controls
+                      preload="metadata"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </main>
 

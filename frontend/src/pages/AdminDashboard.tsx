@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Users, Calendar, Menu, Check, AlertCircle, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { LogOut, Users, Calendar, Menu, Check, AlertCircle, ChevronDown, ChevronUp, FileText, MessageSquare, Trash2 } from 'lucide-react';
 import '../styles/admin-dashboard.css';
+import '../styles/reviews.css';
 import ConfirmModal from '../components/ConfirmModal';
+import MediaManagement from '../components/MediaManagement';
 import { useReviewUpdates } from '../hooks/useReviewUpdates';
 import {
   getAllBookings,
@@ -17,13 +19,13 @@ import { getAllReviews, deleteReview, deleteReply } from '../reviewApi';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { notifyReviewDeleted, notifyReplyDeleted } = useReviewUpdates();
+  useReviewUpdates();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'bookings' | 'users' | 'reviews'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'users' | 'media' | 'reviews'>('bookings');
   const [token, setToken] = useState('');
   const [currentUser, setCurrentUser] = useState<{ name: string; email: string } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -182,18 +184,29 @@ export default function AdminDashboard() {
     });
   };
 
+  const toggleBookingExpand = (bookingId: string) => {
+    setExpandedBookings((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(bookingId)) {
+        newSet.delete(bookingId);
+      } else {
+        newSet.add(bookingId);
+      }
+      return newSet;
+    });
+  };
+
   const handleDeleteReview = async (reviewId: number) => {
     setConfirmModal({
       isOpen: true,
       title: 'Delete Review',
-      message: 'Are you sure you want to delete this review? This will also delete all its replies. This action cannot be undone.',
+      message: 'Are you sure you want to delete this review? This action cannot be undone.',
       confirmText: 'Delete',
       isDanger: true,
       onConfirm: async () => {
         try {
           await deleteReview(reviewId);
           setReviews(reviews.filter((review) => review.id !== reviewId));
-          notifyReviewDeleted(reviewId);
           setConfirmModal({ ...confirmModal, isOpen: false });
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Failed to delete review');
@@ -213,36 +226,23 @@ export default function AdminDashboard() {
       onConfirm: async () => {
         try {
           await deleteReply(reviewId, replyId);
-          // Update the reviews list to remove the reply
           setReviews(
-            reviews.map((review) =>
-              review.id === reviewId
-                ? {
-                    ...review,
-                    review_replies: review.review_replies.filter((r: any) => r.id !== replyId),
-                  }
-                : review
-            )
+            reviews.map((review) => {
+              if (review.id === reviewId) {
+                return {
+                  ...review,
+                  review_replies: (review.review_replies || []).filter((reply: any) => reply.id !== replyId),
+                };
+              }
+              return review;
+            })
           );
-          notifyReplyDeleted(reviewId, replyId);
           setConfirmModal({ ...confirmModal, isOpen: false });
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Failed to delete reply');
           setConfirmModal({ ...confirmModal, isOpen: false });
         }
       },
-    });
-  };
-
-  const toggleBookingExpand = (bookingId: string) => {
-    setExpandedBookings((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(bookingId)) {
-        newSet.delete(bookingId);
-      } else {
-        newSet.add(bookingId);
-      }
-      return newSet;
     });
   };
 
@@ -318,6 +318,14 @@ export default function AdminDashboard() {
             <Users className="w-5 h-5" />
             <span>Users</span>
             {users.length > 0 && <span className="badge">{users.length}</span>}
+          </button>
+
+          <button
+            className={`admin-nav-item ${activeTab === 'media' ? 'active' : ''}`}
+            onClick={() => setActiveTab('media')}
+          >
+            <FileText className="w-5 h-5" />
+            <span>Media</span>
           </button>
 
           <button
@@ -494,7 +502,7 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-          ) : activeTab === 'users' ? (
+          ) : activeTab === 'users' && (
             <div className="users-section">
               <h2>All Users</h2>
               {users.length === 0 ? (
@@ -528,7 +536,17 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-          ) : (
+          )}
+
+          {/* Media Tab */}
+          {activeTab === 'media' && (
+            <div className="admin-tab-content">
+              <MediaManagement token={token} />
+            </div>
+          )}
+
+          {/* Reviews Tab */}
+          {activeTab === 'reviews' && (
             <div className="reviews-section">
               <h2>All Reviews</h2>
               {reviews.length === 0 ? (
@@ -536,48 +554,64 @@ export default function AdminDashboard() {
               ) : (
                 <div className="reviews-list">
                   {reviews.map((review) => (
-                    <div key={review.id} className="admin-review-card">
+                    <div key={review.id} className="review-item">
                       <div className="review-header">
-                        <div className="review-info">
-                          <h3>{review.user?.name || 'Anonymous'}</h3>
-                          <p className="review-email">{review.user?.email || 'N/A'}</p>
-                          <p className="review-date">{new Date(review.created_at).toLocaleDateString()}</p>
+                        <div className="reviewer-info">
+                          <div className="reviewer-avatar">
+                            {((review.users?.name || review.user?.name) || 'A').charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="reviewer-name">{review.users?.name || review.user?.name || 'Anonymous'}</div>
+                            <div className="review-date">{new Date(review.created_at).toLocaleDateString()}</div>
+                            {review.service && <div className="review-service">{review.service}</div>}
+                          </div>
                         </div>
-                        <div className="review-rating">
-                          <span className="stars">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
-                          <span className="rating-value">{review.rating}/5</span>
+                        <div className="review-actions">
+                          <div className="rating-stars">
+                            {[...Array(5)].map((_, i) => (
+                              <span key={i} style={{
+                                color: i < review.rating ? '#ff6fa3' : '#ddd',
+                                fontSize: '1.2rem'
+                              }}>★</span>
+                            ))}
+                          </div>
+                          <button
+                            className="delete-btn"
+                            onClick={() => handleDeleteReview(review.id)}
+                            title="Delete review"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
                         </div>
-                        <button
-                          className="delete-review-btn"
-                          onClick={() => handleDeleteReview(review.id)}
-                          title="Delete review"
-                        >
-                          🗑️ Delete
-                        </button>
                       </div>
                       <p className="review-comment">{review.comment}</p>
 
-                      {(review.review_replies || review.replies) && (review.review_replies || review.replies).length > 0 && (
-                        <div className="admin-replies-section">
-                          <h4>Replies ({(review.review_replies || review.replies).length})</h4>
-                          {(review.review_replies || review.replies).map((reply: any) => (
-                            <div key={reply.id} className="admin-reply-item">
-                              <div className="admin-reply-header">
-                                <div>
-                                  <p className="reply-author"><strong>{reply.user?.name || 'Anonymous'}</strong> ({reply.user?.email || 'N/A'})</p>
-                                  <p className="reply-date">{new Date(reply.created_at).toLocaleDateString()}</p>
+                      {(review.review_replies && review.review_replies.length > 0) && (
+                        <div className="replies-section">
+                          <div className="replies-label">
+                            <MessageSquare className="w-4 h-4" />
+                            Replies ({review.review_replies.length})
+                          </div>
+                          <div className="replies-list">
+                            {review.review_replies.map((reply: any) => (
+                              <div key={reply.id} className="reply-item">
+                                <div className="reply-header">
+                                  <div className="reply-info">
+                                    <strong>{reply.users?.name || reply.user?.name || 'Admin'}</strong>
+                                    <span className="reply-date">{new Date(reply.created_at).toLocaleDateString()}</span>
+                                  </div>
+                                  <button
+                                    className="delete-reply-btn"
+                                    onClick={() => handleDeleteReply(review.id, reply.id)}
+                                    title="Delete reply"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
                                 </div>
-                                <button
-                                  className="delete-reply-btn"
-                                  onClick={() => handleDeleteReply(review.id, reply.id)}
-                                  title="Delete reply"
-                                >
-                                  🗑️
-                                </button>
+                                <p className="reply-text">{reply.reply_text || reply.reply}</p>
                               </div>
-                              <p className="reply-text">{reply.reply}</p>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>

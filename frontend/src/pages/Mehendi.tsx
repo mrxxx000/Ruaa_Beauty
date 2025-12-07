@@ -6,6 +6,7 @@ import { ChevronDown } from 'lucide-react';
 import logoImg from '../WhatsApp Image 2025-11-10 at 18.10.38.png';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AuthModal from '../components/AuthModal';
+import { getMediaByService, MediaItem } from '../mediaApi';
 
 const slideA = process.env.PUBLIC_URL + '/assets/SnapInsta.to_448241189_1815301755622097_667881131947720916_n.jpg';
 const slideB = process.env.PUBLIC_URL + '/assets/SnapInsta.to_448396960_432194449635910_11943437998895029_n.jpg';
@@ -17,16 +18,40 @@ const more3 = process.env.PUBLIC_URL + '/assets/SnapInsta.to_173380434_115415750
 const more4 = process.env.PUBLIC_URL + '/assets/SnapInsta.to_130305880_129954255557964_2672503637875550747_n.jpg';
 const more5 = process.env.PUBLIC_URL + '/assets/SnapInsta.to_125829760_423863109003604_954682821372848647_n.jpg';
 
+// Fallback images for when no media is uploaded
+const defaultImages = [singleImg, more1, more2, more3, more4, more5];
+
 const Mehendi: React.FC = () => {
 	const [active, setActive] = useState<'a' | 'b'>('a');
 	const [salonDropdownOpen, setSalonDropdownOpen] = useState(false);
 	const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+	const [mehendiImages, setMehendiImages] = useState<MediaItem[]>([]);
+	const [loading, setLoading] = useState(true);
 	const location = useLocation();
 	const { t } = useTranslation();
 
 	useEffect(() => {
 		const t = setInterval(() => setActive((p) => (p === 'a' ? 'b' : 'a')), 3500);
 		return () => clearInterval(t);
+	}, []);
+
+	// Load mehendi images from database
+	useEffect(() => {
+		const loadMehendiImages = async () => {
+			try {
+				const media = await getMediaByService('mehendi');
+				// Filter only images for mehendi
+				const images = media.filter(m => m.type === 'image');
+				setMehendiImages(images);
+			} catch (err) {
+				console.error('Failed to load mehendi images:', err);
+				setMehendiImages([]);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		loadMehendiImages();
 	}, []);
 
 	return (
@@ -125,27 +150,24 @@ const Mehendi: React.FC = () => {
 				<div style={{ marginTop: 28 }}>
 					<h3 style={{ textAlign: 'center', marginTop: 18, marginBottom: 18 }}>{t('mehendi.moreDesigns')}</h3>
 					<div className="more-designs-grid" style={{ marginTop: 12 }}>
-							<div className="single-wrap">
-								<img src={singleImg} alt="Mehendi single" className="single-img" />
-							</div>
-							<div className="single-wrap">
-								<img src={more1} alt="Mehendi extra 1" className="single-img" />
-							</div>
-							<div className="single-wrap">
-								<img src={more2} alt="Mehendi extra 2" className="single-img" />
-							</div>
-							<div className="single-wrap">
-								<img src={more3} alt="Mehendi extra 3" className="single-img" />
-							</div>
-							<div className="single-wrap">
-								<img src={more4} alt="Mehendi extra 4" className="single-img" />
-							</div>
-							<div className="single-wrap">
-								<img src={more5} alt="Mehendi extra 5" className="single-img" />
-							</div>
-						</div>
+						{loading ? (
+							<p style={{ textAlign: 'center', gridColumn: '1 / -1' }}>Loading designs...</p>
+						) : mehendiImages.length > 0 ? (
+							mehendiImages.map((image) => (
+								<div key={image.id} className="single-wrap">
+									<img src={image.url} alt={image.filename} className="single-img" loading="lazy" />
+								</div>
+							))
+						) : (
+							defaultImages.map((img, idx) => (
+								<div key={idx} className="single-wrap">
+									<img src={img} alt={`Mehendi design ${idx}`} className="single-img" />
+								</div>
+							))
+						)}
 					</div>
-				</section>
+				</div>
+			</section>
 			</main>
 
 			<footer className="site-footer">
