@@ -1,10 +1,12 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { AuthService } from '../services/AuthService';
+import { BookingService } from '../services/BookingService';
 import { EmailService } from '../services/EmailService';
 
 const router = express.Router();
 const authService = new AuthService();
+const bookingService = new BookingService();
 const emailService = new EmailService();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -46,10 +48,40 @@ router.post('/register', async (req, res) => {
       { expiresIn: TOKEN_EXPIRY }
     );
 
+    // Check for pending bookings made with this email
+    console.log('🔍 Checking for pending bookings for email:', email);
+    const pendingBookings = await authService.getPendingBookingsForUser(email);
+    
+    let convertedBookings = [];
+    if (pendingBookings.length > 0) {
+      console.log(`📦 Found ${pendingBookings.length} pending booking(s) for ${email}`);
+      
+      // Convert pending bookings to actual bookings
+      for (const pendingBooking of pendingBookings) {
+        try {
+          const { bookingId } = await bookingService.createBookingFromPendingBooking(pendingBooking, user.id);
+          convertedBookings.push({
+            id: bookingId,
+            service: pendingBooking.service,
+            date: pendingBooking.date,
+            time: pendingBooking.time,
+          });
+          console.log(`✅ Converted pending booking to actual booking: ${bookingId}`);
+        } catch (conversionErr) {
+          console.error(`⚠️ Failed to convert pending booking:`, conversionErr);
+        }
+      }
+
+      // Mark pending bookings as processed
+      await authService.markPendingBookingsProcessed(email);
+    }
+
     res.status(201).json({
       message: 'Registration successful',
       user,
       token,
+      pendingBookings: pendingBookings.length,
+      convertedBookings: convertedBookings.length > 0 ? convertedBookings : undefined,
     });
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Registration failed';
@@ -80,10 +112,40 @@ router.post('/login', async (req, res) => {
       { expiresIn: TOKEN_EXPIRY }
     );
 
+    // Check for pending bookings made with this email before account creation
+    console.log('🔍 Checking for pending bookings for email:', email);
+    const pendingBookings = await authService.getPendingBookingsForUser(email);
+    
+    let convertedBookings = [];
+    if (pendingBookings.length > 0) {
+      console.log(`📦 Found ${pendingBookings.length} pending booking(s) for ${email}`);
+      
+      // Convert pending bookings to actual bookings
+      for (const pendingBooking of pendingBookings) {
+        try {
+          const { bookingId } = await bookingService.createBookingFromPendingBooking(pendingBooking, user.id);
+          convertedBookings.push({
+            id: bookingId,
+            service: pendingBooking.service,
+            date: pendingBooking.date,
+            time: pendingBooking.time,
+          });
+          console.log(`✅ Converted pending booking to actual booking: ${bookingId}`);
+        } catch (conversionErr) {
+          console.error(`⚠️ Failed to convert pending booking:`, conversionErr);
+        }
+      }
+
+      // Mark pending bookings as processed
+      await authService.markPendingBookingsProcessed(email);
+    }
+
     res.status(200).json({
       message: 'Login successful',
       user,
       token,
+      pendingBookings: pendingBookings.length,
+      convertedBookings: convertedBookings.length > 0 ? convertedBookings : undefined,
     });
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Login failed';

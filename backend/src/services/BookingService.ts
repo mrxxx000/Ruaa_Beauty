@@ -442,4 +442,43 @@ export class BookingService {
       throw new Error(`Error cancelling booking: ${error.message}`);
     }
   }
+
+  /**
+   * Create booking from pending booking data and link it to user
+   */
+  async createBookingFromPendingBooking(pendingBookingData: any, userId: number) {
+    const supabase = this.getSupabase();
+    const cancelToken = randomUUID();
+
+    const insertData: any = {
+      name: pendingBookingData.name,
+      email: pendingBookingData.email,
+      phone: pendingBookingData.phone,
+      service: pendingBookingData.service,
+      date: pendingBookingData.date,
+      time: pendingBookingData.time,
+      location: pendingBookingData.location,
+      address: pendingBookingData.address,
+      notes: pendingBookingData.notes,
+      cancel_token: cancelToken,
+      total_price: pendingBookingData.total_price || 0,
+      service_pricing: pendingBookingData.service_pricing || [],
+      mehendi_hours: pendingBookingData.mehendi_hours || 0,
+      payment_method: pendingBookingData.payment_method || 'none',
+      payment_status: pendingBookingData.payment_status || 'unpaid',
+      user_id: userId, // Link to the newly registered user
+    };
+
+    const { data, error: dbError } = await supabase
+      .from('bookings')
+      .insert([insertData])
+      .select('id')
+      .single();
+
+    if (dbError) {
+      throw new Error(`Database error: ${dbError.message}`);
+    }
+
+    return { cancelToken, bookingId: data?.id };
+  }
 }

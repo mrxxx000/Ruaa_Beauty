@@ -1,11 +1,13 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { BookingService } from '../services/BookingService';
+import { PendingBookingService } from '../services/PendingBookingService';
 import { EmailService } from '../services/EmailService';
 import { LoyaltyPointsService } from '../services/LoyaltyPointsService';
 
 const router = express.Router();
 const bookingService = new BookingService();
+const pendingBookingService = new PendingBookingService();
 const emailService = new EmailService();
 const loyaltyService = new LoyaltyPointsService();
 
@@ -318,6 +320,93 @@ router.get('/available-times', async (req, res) => {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     res.status(500).json({
       message: 'Error fetching available times',
+      details: errorMessage,
+    });
+  }
+});
+
+// POST /api/booking/pending - Save a pending booking for unregistered user
+router.post('/booking/pending', async (req, res) => {
+  console.log('💾 Pending booking request received');
+  
+  const { name, email, phone, service, date, time, location, address, notes, totalPrice, servicePricing, mehendiHours, paymentMethod, paymentStatus } = req.body;
+
+  if (!name || !email) {
+    return res.status(400).json({ message: 'Name and email are required' });
+  }
+
+  if (!date || !time) {
+    return res.status(400).json({ message: 'Date and time are required' });
+  }
+
+  try {
+    // Validate time slot first
+    const validation = await bookingService.validateTimeSlot(date, time, service, mehendiHours);
+    if (!validation.isAvailable) {
+      return res.status(409).json({
+        message: 'This time slot is already booked. Please select a different date or time.',
+        conflictingService: validation.conflictingService,
+        conflictingHour: validation.conflictingHour,
+        conflictingDate: date,
+      });
+    }
+
+    // Save pending booking
+    const pendingBooking = await pendingBookingService.savePendingBooking({
+      name,
+      email,
+      phone,
+      service,
+      date,
+      time,
+      location,
+      address,
+      notes,
+      totalPrice: totalPrice || 0,
+      servicePricing: servicePricing || [],
+      mehendiHours: mehendiHours || 0,
+      paymentMethod: paymentMethod || 'none',
+      paymentStatus: paymentStatus || 'unpaid',
+    });
+
+    console.log('✅ Pending booking saved with ID:', pendingBooking.id);
+
+    res.status(200).json({
+      message: 'Booking saved. Please create an account or login to confirm your booking.',
+      pendingBookingId: pendingBooking.id,
+    });
+  } catch (err) {
+    console.error('❌ Error saving pending booking:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({
+      message: 'Error saving pending booking',
+      details: errorMessage,
+    });
+  }
+});
+
+// GET /api/booking/pending/:email - Get pending bookings by email (for unregistered users)
+router.get('/booking/pending/:email', async (req, res) => {
+  const email = req.params.email;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  try {
+    console.log('🔍 Fetching pending bookings for email:', email);
+    const pendingBookings = await pendingBookingService.getPendingBookingsByEmail(email);
+
+    res.status(200).json({
+      message: 'Pending bookings retrieved successfully',
+      pendingBookings,
+      count: pendingBookings.length,
+    });
+  } catch (err) {
+    console.error('Error fetching pending bookings:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({
+      message: 'Error fetching pending bookings',
       details: errorMessage,
     });
   }

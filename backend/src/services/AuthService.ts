@@ -357,4 +357,42 @@ export class AuthService {
       user: updatedData,
     };
   }
+
+  /**
+   * Get pending bookings for a user by email
+   * This is called after user registration/login to retrieve any bookings made before account creation
+   */
+  async getPendingBookingsForUser(email: string) {
+    const supabase = this.getSupabase();
+    const { data, error } = await supabase
+      .from('pending_bookings')
+      .select('*')
+      .eq('email', email.toLowerCase())
+      .eq('is_processed', false)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching pending bookings:', error);
+      return [];
+    }
+
+    return data || [];
+  }
+
+  /**
+   * Mark pending bookings as processed after they've been converted to actual bookings
+   */
+  async markPendingBookingsProcessed(email: string) {
+    const supabase = this.getSupabase();
+    const { error } = await supabase
+      .from('pending_bookings')
+      .update({ is_processed: true, processed_at: new Date().toISOString() })
+      .eq('email', email.toLowerCase())
+      .eq('is_processed', false);
+
+    if (error) {
+      console.error('Error marking pending bookings as processed:', error);
+      // Don't throw - this is not critical
+    }
+  }
 }

@@ -470,18 +470,29 @@ const BookingForm: React.FC = () => {
       
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
       //const backendUrl = 'http://localhost:10000';
-      const url = `${backendUrl}/api/booking`;
       
       // Get JWT token if user is logged in
       const token = localStorage.getItem('authToken');
       console.log('🔑 Token from localStorage:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN');
+      
+      // Determine which endpoint to use based on login status
+      let url: string;
+      if (token) {
+        // User is logged in - use regular booking endpoint
+        url = `${backendUrl}/api/booking`;
+        console.log('📤 User is logged in - using regular booking endpoint');
+      } else {
+        // User is NOT logged in - use pending booking endpoint
+        url = `${backendUrl}/api/booking/pending`;
+        console.log('📤 User is NOT logged in - saving as pending booking');
+      }
       
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
         console.log('📤 Sending request with Authorization header');
       } else {
-        console.log('📤 Sending request WITHOUT Authorization header');
+        console.log('📤 Sending request WITHOUT Authorization header (pending booking)');
       }
 
       const resp = await fetch(url, {
@@ -495,6 +506,18 @@ const BookingForm: React.FC = () => {
       if (resp.ok) {
         const responseData = await resp.json();
         console.log('Success response:', responseData);
+        
+        if (!token) {
+          // For pending bookings, show message to encourage login/registration
+          alert(
+            'Your booking has been saved! 🎉\n\n' +
+            'Please create an account or login with this email to confirm your booking.\n' +
+            'Your pending booking will be automatically linked to your account.'
+          );
+          // Optionally redirect to login/register page
+          navigate('/');
+        }
+        
         setSubmitted(true);
         // Reset form but preserve user info if logged in
         setFormData({
