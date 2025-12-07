@@ -145,7 +145,7 @@ export class ReviewService {
         };
       }
 
-      // Enrich with user data only (skip replies for now to avoid query issues)
+      // Enrich with user data and replies
       const enrichedReviews = await Promise.all(
         reviews.map(async (review: any) => {
           try {
@@ -159,17 +159,44 @@ export class ReviewService {
               console.warn(`⚠️ Could not fetch user ${review.user_id}`);
             }
 
+            // Fetch replies for this review
+            const { data: replies, error: repliesError } = await supabase
+              .from('review_replies')
+              .select('id, user_id, reply_text, is_admin_reply, created_at')
+              .eq('review_id', review.id)
+              .order('created_at', { ascending: true });
+
+            // Enrich replies with user data
+            const enrichedReplies = await Promise.all(
+              (replies || []).map(async (reply: any) => {
+                const { data: replyUser, error: replyUserError } = await supabase
+                  .from('users')
+                  .select('id, name, email, role')
+                  .eq('id', reply.user_id)
+                  .single();
+
+                if (replyUserError) {
+                  console.warn(`⚠️ Could not fetch reply user ${reply.user_id}`);
+                }
+
+                return {
+                  ...reply,
+                  user: replyUser || null,
+                };
+              })
+            );
+
             return {
               ...review,
               user: user || null,
-              replies: [], // Empty replies for now
+              review_replies: enrichedReplies || [],
             };
           } catch (err: any) {
             console.error(`❌ Error processing review ${review.id}:`, err?.message);
             return {
               ...review,
               user: null,
-              replies: [],
+              review_replies: [],
             };
           }
         })

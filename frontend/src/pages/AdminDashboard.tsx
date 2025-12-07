@@ -539,8 +539,8 @@ export default function AdminDashboard() {
                     <div key={review.id} className="admin-review-card">
                       <div className="review-header">
                         <div className="review-info">
-                          <h3>{review.users.name}</h3>
-                          <p className="review-email">{review.users.email}</p>
+                          <h3>{review.user?.name || 'Anonymous'}</h3>
+                          <p className="review-email">{review.user?.email || 'N/A'}</p>
                           <p className="review-date">{new Date(review.created_at).toLocaleDateString()}</p>
                         </div>
                         <div className="review-rating">
@@ -557,14 +557,14 @@ export default function AdminDashboard() {
                       </div>
                       <p className="review-comment">{review.comment}</p>
 
-                      {review.review_replies && review.review_replies.length > 0 && (
+                      {(review.review_replies || review.replies) && (review.review_replies || review.replies).length > 0 && (
                         <div className="admin-replies-section">
-                          <h4>Replies ({review.review_replies.length})</h4>
-                          {review.review_replies.map((reply: any) => (
+                          <h4>Replies ({(review.review_replies || review.replies).length})</h4>
+                          {(review.review_replies || review.replies).map((reply: any) => (
                             <div key={reply.id} className="admin-reply-item">
                               <div className="admin-reply-header">
                                 <div>
-                                  <p className="reply-author"><strong>{reply.users.name}</strong> ({reply.users.email})</p>
+                                  <p className="reply-author"><strong>{reply.user?.name || 'Anonymous'}</strong> ({reply.user?.email || 'N/A'})</p>
                                   <p className="reply-date">{new Date(reply.created_at).toLocaleDateString()}</p>
                                 </div>
                                 <button
