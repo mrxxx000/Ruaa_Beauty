@@ -1,4 +1,24 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:10000/api';
+// Determine API base URL - use environment variable or construct from current location
+let API_BASE_URL = process.env.REACT_APP_API_URL || process.env.REACT_APP_BACKEND_URL;
+
+if (!API_BASE_URL) {
+  // Fallback: construct from current location
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    // Development environment
+    API_BASE_URL = 'http://localhost:10000/api';
+  } else {
+    // Production environment - use same domain
+    API_BASE_URL = `${protocol}//${hostname}/api`;
+  }
+}
+
+// Ensure API_BASE_URL ends without /api if REACT_APP_BACKEND_URL was used
+if (API_BASE_URL && !API_BASE_URL.endsWith('/api')) {
+  API_BASE_URL = API_BASE_URL + '/api';
+}
 
 export interface MediaItem {
   id: string;
