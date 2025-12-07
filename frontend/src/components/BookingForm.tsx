@@ -2497,7 +2497,7 @@ const BookingForm: React.FC = () => {
                   <input
                     type="text"
                     readOnly
-                    value="Odengatan 56274 31 Skurup"
+                    value="Odengatan 56 274 31 Skurup"
                     className="w-full px-6 py-4 text-lg bg-background border-2 border-border rounded-2xl outline-none cursor-default text-foreground"
                   />
                 </div>

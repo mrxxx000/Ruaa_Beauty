@@ -204,26 +204,21 @@ router.post('/forgot-password', async (req, res) => {
   try {
     const result = await authService.requestPasswordReset(email);
 
-    // If user exists, send reset email
+    // If user exists, send reset email asynchronously (don't wait for it)
     if (result.resetToken) {
-      try {
-        console.log(`📧 Attempting to send password reset email to: ${result.email}`);
-        console.log(`🔑 Reset token: ${result.resetToken.substring(0, 10)}...`);
-        await emailService.sendPasswordResetEmail(result.email, result.resetToken);
-        console.log(`✅ Password reset email sent to ${result.email}`);
-      } catch (emailErr: any) {
+      // Send email in the background without awaiting
+      emailService.sendPasswordResetEmail(result.email, result.resetToken).catch((emailErr: any) => {
         console.error('❌ Failed to send reset email:', emailErr);
         console.error('📍 Error details:', {
           message: emailErr.message,
           statusCode: emailErr.statusCode,
           response: emailErr.response,
         });
-        // Don't fail the request - email sending is not critical
-        console.warn('⚠️ Email failed but continuing with response');
-      }
+        console.warn('⚠️ Email failed - user may not receive reset link');
+      });
     }
 
-    // Always return the same message for security
+    // Immediately return response (email sending happens in background)
     res.status(200).json({
       message: 'If this email exists, a password reset link has been sent to your inbox',
     });

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import '../styles/reset-password.css';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:10000';
+
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -33,8 +35,8 @@ export default function ResetPassword() {
       setError('Password cannot be empty');
       return false;
     }
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (newPassword.length < 8) {
+      setError('Password must be at least 8 characters long');
       return false;
     }
     if (newPassword !== confirmPassword) {
@@ -55,7 +57,7 @@ export default function ResetPassword() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
+      const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +193,7 @@ export default function ResetPassword() {
         <div className="password-hints">
           <p>🔒 Password requirements:</p>
           <ul>
-            <li>At least 6 characters long</li>
+            <li>At least 8 characters long</li>
             <li>Must match the confirmation password</li>
             <li>Must be different from your current password</li>
           </ul>

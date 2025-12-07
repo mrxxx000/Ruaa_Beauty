@@ -1352,8 +1352,11 @@ const AuthModal: React.FC = () => {
                 textAlign: 'center',
               }}>
                 <h3 style={{ margin: '0 0 12px 0', color: '#155724' }}>✅ Check Your Email</h3>
-                <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem' }}>
                   We've sent a password reset link to your inbox. The link expires in 1 hour.
+                </p>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#1a6f3f', fontStyle: 'italic' }}>
+                  ⏱️ Please note: It can take up to 5 minutes to receive the email. Please check your spam folder if you don't see it.
                 </p>
               </div>
             ) : (
