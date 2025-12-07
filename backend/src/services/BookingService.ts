@@ -209,7 +209,7 @@ export class BookingService {
 
     const insertData: any = {
       name: bookingData.name,
-      email: bookingData.email,
+      email: bookingData.email.toLowerCase(), // Store emails in lowercase
       phone: bookingData.phone,
       service: bookingData.service,
       date: bookingData.date,
@@ -224,6 +224,7 @@ export class BookingService {
       payment_method: bookingData.paymentMethod || 'none',
       payment_status: bookingData.paymentStatus || 'unpaid',
       user_id: bookingData.userId || null,
+      claim_status: bookingData.userId ? 'claimed' : 'unclaimed', // Set based on user_id
     };
 
     // Add discount fields if provided
@@ -445,12 +446,13 @@ export class BookingService {
 
   async claimUnclaimedBookings(email: string, userId: number) {
     const supabase = this.getSupabase();
-    console.log(`🔗 Claiming unclaimed bookings for email: ${email}, userId: ${userId}`);
+    const normalizedEmail = email.toLowerCase();
+    console.log(`🔗 Claiming unclaimed bookings for email: ${normalizedEmail}, userId: ${userId}`);
 
     const { data, error } = await supabase
       .from('bookings')
       .update({ user_id: userId, claim_status: 'claimed' })
-      .eq('email', email.toLowerCase())
+      .eq('email', normalizedEmail) // Use exact match with normalized email
       .eq('claim_status', 'unclaimed')
       .select('id, service, date, time');
 
@@ -463,7 +465,7 @@ export class BookingService {
       return data;
     }
 
-    console.log(`ℹ️ No unclaimed bookings found for email: ${email}`);
+    console.log(`ℹ️ No unclaimed bookings found for email: ${normalizedEmail}`);
     return [];
   }
 }

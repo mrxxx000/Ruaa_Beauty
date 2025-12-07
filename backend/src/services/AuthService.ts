@@ -39,6 +39,9 @@ export class AuthService {
       throw new Error('Password must be at least 8 characters long');
     }
 
+    // Normalize email to lowercase
+    const normalizedEmail = email.toLowerCase();
+
     // Hash password - use rounds 10 for balance between security and speed
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -49,7 +52,7 @@ export class AuthService {
       .insert([
         {
           name,
-          email,
+          email: normalizedEmail,
           password: hashedPassword,
           phone_number: phone_number || null,
           role: 'user',
@@ -78,12 +81,15 @@ export class AuthService {
       throw new Error('Email and password are required');
     }
 
+    // Normalize email to lowercase
+    const normalizedEmail = email.toLowerCase();
+
     // Fetch user - select only needed columns for faster query
     const supabase = this.getSupabase();
     const { data, error } = await supabase
       .from('users')
       .select('id, name, email, password, role')
-      .eq('email', email)
+      .eq('email', normalizedEmail)
       .single();
 
     if (error || !data) {
