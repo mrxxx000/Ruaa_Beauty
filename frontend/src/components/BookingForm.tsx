@@ -45,7 +45,7 @@ const SERVICES_PRICING: { [key: string]: number } = {
   'makeup': 700,
   'combined-lash-brow': 500,
   'bridal-makeup': 2000,
-  'mehendi': 400,
+  'mehendi': 600,
   'threading': 200,
 };
 
@@ -251,7 +251,7 @@ const BookingForm: React.FC = () => {
   const calculateTotalPrice = (services: string[], mehendiHours: number = 0, lashLiftTint: boolean = false, browLiftTint: boolean = false, threadingAreas: string[] = []): number => {
     let total = services.reduce((sum, service) => {
       if (service === 'mehendi' && mehendiHours > 0) {
-        // Mehendi is priced per hour (400 kr/hour)
+        // Mehendi is priced per hour (600 kr/hour)
         return sum + (SERVICES_PRICING[service] * mehendiHours);
       }
       if (service === 'threading' && threadingAreas.length > 0) {
