@@ -10,6 +10,7 @@ import AuthModal from '../components/AuthModal';
 import { getMediaByService, MediaItem } from '../mediaApi';
 import { 
   injectSchemaMarkup, 
+  orgLogoSchema,
   organizationSchema,
   websiteSchema,
   createBreadcrumbSchema
@@ -178,6 +179,7 @@ const Home: React.FC = () => {
       'https://www.ruaa-beauty.eu/assets/logo.png',
       '/'
     );
+    injectSchemaMarkup(orgLogoSchema);
     injectSchemaMarkup(organizationSchema);
     injectSchemaMarkup(websiteSchema);
     injectSchemaMarkup(createBreadcrumbSchema([

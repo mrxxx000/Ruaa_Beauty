@@ -9,17 +9,29 @@ interface SchemaMarkup {
   [key: string]: any;
 }
 
-// Organization schema for homepage
+export const orgLogoSchema: SchemaMarkup = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': 'https://www.ruaa-beauty.eu/#organization',
+  name: 'Ruaa Beauty',
+  url: 'https://www.ruaa-beauty.eu',
+  logo: 'https://www.ruaa-beauty.eu/logo512.png',
+  sameAs: [
+    'https://www.tiktok.com/@ruaa25az?_r=1&_t=ZN-91tLUtWvLxW',
+    'https://www.instagram.com/ruaa5r?igsh=MXQ3azNnNXl2emc5cg==',
+    'https://www.instagram.com/glamourmehendi?igsh=MXh3aG10ZzFjbnJtbg=='
+  ]
+};
+
 export const organizationSchema: SchemaMarkup = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  '@id': 'https://www.ruaa-beauty.eu/#organization',
+  '@id': 'https://www.ruaa-beauty.eu/#local-business',
   name: 'Ruaa Beauty',
   image: [
     'https://www.ruaa-beauty.eu/logo512.png',
     'https://www.ruaa-beauty.eu/logo192.png'
   ],
-  logo: 'https://www.ruaa-beauty.eu/logo512.png',
   description: 'Professional beauty services including bridal mehendi, lashes, and makeup',
   url: 'https://www.ruaa-beauty.eu',
   telephone: '+46704679469',
